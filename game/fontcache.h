@@ -29,6 +29,9 @@ public:
     };
     const Glyph *getGlyph(int codepoint);
 
+    template<typename StringT>
+    int horizontalAdvance(const StringT &text);
+
 private:
     std::unique_ptr<Glyph> initializeGlyph(int codepoint);
     Pixmap getCodepointPixmap(int codepoint) const;

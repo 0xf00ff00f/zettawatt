@@ -41,3 +41,27 @@ PUBLIC
 
 add_executable(tst_textrendering tst_textrendering.cpp)
 target_link_libraries(tst_textrendering gx)
+
+set(game_SOURCES
+    main.cpp
+    world.cpp
+    world.h
+    uipainter.cpp
+    uipainter.h
+    loadprogram.cpp
+    loadprogram.h
+)
+add_executable(game
+    ${game_SOURCES}
+)
+target_link_libraries(game
+    gx
+    fmt
+) 
+
+if (NOT WIN32)
+    add_custom_command(TARGET game
+        POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E create_symlink "${PROJECT_SOURCE_DIR}/assets" "${CMAKE_CURRENT_BINARY_DIR}/assets"
+    )
+endif()
