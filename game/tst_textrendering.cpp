@@ -17,44 +17,6 @@
 #include <iostream>
 #include <numeric>
 
-const auto vertexShader = R"(
-#version 420 core
-
-layout(location=0) in vec2 position;
-layout(location=1) in vec2 texcoord;
-layout(location=2) in vec4 color;
-
-uniform mat4 mvp;
-
-out vec2 vs_texcoord;
-out vec4 vs_color;
-
-void main(void)
-{
-    vs_texcoord = texcoord;
-    vs_color = color;
-    gl_Position = mvp * vec4(position, 0, 1);
-}
-)";
-
-const auto fragmentShader = R"(
-#version 420 core
-
-uniform sampler2D spriteTexture;
-
-in vec2 vs_texcoord;
-in vec4 vs_color;
-
-out vec4 fragColor;
-
-void main(void)
-{
-    float alpha = texture(spriteTexture, vs_texcoord).r;
-    vec4 textureColor = vec4(vec3(1), alpha);
-    fragColor = textureColor  * vs_color;
-}
-)";
-
 class TestWindow : public GX::GLWindow
 {
 public:
@@ -66,9 +28,9 @@ private:
     void paintGL() override;
     void update(double elapsed) override;
 
+    std::unique_ptr<GX::ShaderManager> m_shaderManager;
     std::unique_ptr<GX::TextureAtlas> m_textureAtlas;
     std::unique_ptr<GX::FontCache> m_fontCache;
-    std::unique_ptr<GX::GL::ShaderProgram> m_program;
     std::unique_ptr<GX::SpriteBatcher> m_spriteBatcher;
     double m_angle = 0.0;
 };
@@ -90,21 +52,10 @@ void TestWindow::initializeGL()
         spdlog::warn("failed to load {}", font.c_str());
     }
 
-    m_spriteBatcher = std::make_unique<GX::SpriteBatcher>();
+    m_shaderManager = std::make_unique<GX::ShaderManager>();
+    m_spriteBatcher = std::make_unique<GX::SpriteBatcher>(m_shaderManager.get());
 
-    m_program = std::make_unique<GX::GL::ShaderProgram>();
-
-    if (!m_program->addShaderSource(GL_VERTEX_SHADER, vertexShader)) {
-        spdlog::error("Failed to add vertex shader: {}", m_program->log().c_str());
-    }
-    if (!m_program->addShaderSource(GL_FRAGMENT_SHADER, fragmentShader)) {
-        spdlog::error("Failed to add vertex shader: {}", m_program->log().c_str());
-    }
-    if (!m_program->link()) {
-        spdlog::error("Failed to link program: {}", m_program->log().c_str());
-    }
-
-    m_spriteBatcher->setBatchProgram(m_program.get());
+    m_spriteBatcher->setBatchProgram(GX::ShaderManager::Program::Text);
 }
 
 void TestWindow::paintGL()

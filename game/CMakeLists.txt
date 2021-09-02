@@ -43,8 +43,8 @@ PUBLIC
     glew
 )
 
-# add_executable(tst_textrendering tst_textrendering.cpp)
-# target_link_libraries(tst_textrendering gx)
+add_executable(tst_textrendering tst_textrendering.cpp)
+target_link_libraries(tst_textrendering gx)
 
 set(game_SOURCES
     main.cpp
