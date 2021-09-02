@@ -62,13 +62,11 @@ void World::paintGraph(UIPainter * /* painter */) const
 
 void World::paintState(UIPainter *painter) const
 {
-    const auto sceneBox = painter->sceneBox();
-
     constexpr auto CounterWidth = 320.0f;
     constexpr auto CounterHeight = 160.0f;
 
-    auto paintCounter = [painter](float centerX, const std::u32string &label, const std::string &unit, double value, double delta) {
-        painter->drawRoundedRect(glm::vec2(centerX - 0.5 * CounterWidth, -0.5 * CounterHeight), glm::vec2(centerX + 0.5 * CounterWidth, 0.5 * CounterHeight), 20, glm::vec4(1, 1, 1, 0.25), -1);
+    auto paintCounter = [painter](float centerX, float centerY, const std::u32string &label, const std::string &unit, double value, double delta) {
+        painter->drawRoundedRect(glm::vec2(centerX - 0.5 * CounterWidth, centerY - 0.5 * CounterHeight), glm::vec2(centerX + 0.5 * CounterWidth, centerY + 0.5 * CounterHeight), 20, glm::vec4(1, 1, 1, 0.25), -1);
 
         static const char *fontName = "IBMPlexSans-Regular.ttf";
         static const auto LabelFont = UIPainter::Font { fontName, 40 };
@@ -76,7 +74,7 @@ void World::paintState(UIPainter *painter) const
         static const auto CounterFontSmall = UIPainter::Font { fontName, 40 };
         static const auto DeltaFont = UIPainter::Font { fontName, 40 };
 
-        float y = -40;
+        float y = centerY - 40;
 
         auto paintCentered = [painter, centerX, &y](auto s) {
             const auto advance = painter->horizontalAdvance(s);
@@ -138,8 +136,11 @@ void World::paintState(UIPainter *painter) const
         }
     };
 
-    paintCounter(-1.5f * CounterWidth, U"EXTROPY"s, ""s, m_state.extropy, m_stateDelta.extropy);
-    paintCounter(-0.5f * CounterWidth, U"ENERGY"s, "Wh"s, m_state.energy, m_stateDelta.energy);
-    paintCounter(0.5f * CounterWidth, U"MATERIALS"s, "t"s, m_state.materials, m_stateDelta.materials);
-    paintCounter(1.5f * CounterWidth, U"CO\U00002082"s, "t"s, m_state.carbon, m_stateDelta.carbon);
+    const auto sceneBox = painter->sceneBox();
+    const float y = sceneBox.min.y + 0.5 * CounterHeight;
+
+    paintCounter(-1.5f * CounterWidth, y, U"EXTROPY"s, ""s, m_state.extropy, m_stateDelta.extropy);
+    paintCounter(-0.5f * CounterWidth, y, U"ENERGY"s, "Wh"s, m_state.energy, m_stateDelta.energy);
+    paintCounter(0.5f * CounterWidth, y, U"MATERIALS"s, "t"s, m_state.materials, m_stateDelta.materials);
+    paintCounter(1.5f * CounterWidth, y, U"CO\U00002082"s, "t"s, m_state.carbon, m_stateDelta.carbon);
 }
