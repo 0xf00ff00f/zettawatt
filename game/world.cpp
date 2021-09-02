@@ -116,7 +116,7 @@ void World::paintState(UIPainter *painter) const
                 painter->setFont(CounterFontSmall);
                 painter->drawText(glm::vec2(left + bigAdvance, y), glm::vec4(1), 0, smallText);
             } else {
-                const auto text = fmt::format("{}", big);
+                const auto text = fmt::format("{}{}", big, unit);
                 painter->setFont(CounterFontBig);
                 paintCentered(text);
             }
