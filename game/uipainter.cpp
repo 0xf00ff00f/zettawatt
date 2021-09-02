@@ -119,6 +119,59 @@ int UIPainter::horizontalAdvance(const StringT &text)
 template int UIPainter::horizontalAdvance(const std::u32string &text);
 template int UIPainter::horizontalAdvance(const std::string &text);
 
+void UIPainter::drawCircle(const glm::vec2 &center, float radius, const glm::vec4 &color, int depth)
+{
+    const auto &p0 = center - glm::vec2(radius, radius);
+    const auto &p1 = center + glm::vec2(radius, radius);
+
+    const auto verts = GX::SpriteBatcher::QuadVerts {
+        { { { p0.x, p0.y }, { 0.0f, 0.0f }, color, { 2.0f * radius, 0, 0, 0 } },
+          { { p1.x, p0.y }, { 1.0f, 0.0f }, color, { 2.0f * radius, 0, 0, 0 } },
+          { { p1.x, p1.y }, { 1.0f, 1.0f }, color, { 2.0f * radius, 0, 0, 0 } },
+          { { p0.x, p1.y }, { 0.0f, 1.0f }, color, { 2.0f * radius, 0, 0, 0 } } }
+    };
+
+    m_spriteBatcher->setBatchProgram(GX::ShaderManager::Program::Circle);
+    m_spriteBatcher->addSprite(nullptr, verts, depth);
+}
+
+void UIPainter::drawRoundedRect(const glm::vec2 &min, const glm::vec2 &max, float radius, const glm::vec4 &color, int depth)
+{
+    m_spriteBatcher->setBatchProgram(GX::ShaderManager::Program::Circle);
+
+    const auto drawPatch = [this, radius, &color, depth](const glm::vec2 &p0, const glm::vec2 &p1, const glm::vec2 &t0, const glm::vec2 &t1) {
+        const auto verts = GX::SpriteBatcher::QuadVerts {
+            { { { p0.x, p0.y }, { t0.x, t0.y }, color, { 2.0f * radius, 0, 0, 0 } },
+              { { p1.x, p0.y }, { t1.x, t0.y }, color, { 2.0f * radius, 0, 0, 0 } },
+              { { p1.x, p1.y }, { t1.x, t1.y }, color, { 2.0f * radius, 0, 0, 0 } },
+              { { p0.x, p1.y }, { t0.x, t1.y }, color, { 2.0f * radius, 0, 0, 0 } } }
+        };
+        m_spriteBatcher->addSprite(nullptr, verts, depth);
+    };
+
+    const auto x0 = min.x;
+    const auto x1 = min.x + radius;
+    const auto x2 = max.x - radius;
+    const auto x3 = max.x;
+
+    const auto y0 = min.y;
+    const auto y1 = min.y + radius;
+    const auto y2 = max.y - radius;
+    const auto y3 = max.y;
+
+    drawPatch(glm::vec2(x0, y0), glm::vec2(x1, y1), glm::vec2(0.0, 0.0), glm::vec2(0.5, 0.5));
+    drawPatch(glm::vec2(x1, y0), glm::vec2(x2, y1), glm::vec2(0.5, 0.0), glm::vec2(0.5, 0.5));
+    drawPatch(glm::vec2(x2, y0), glm::vec2(x3, y1), glm::vec2(0.5, 0.0), glm::vec2(1.0, 0.5));
+
+    drawPatch(glm::vec2(x0, y1), glm::vec2(x1, y2), glm::vec2(0.0, 0.5), glm::vec2(0.5, 0.5));
+    drawPatch(glm::vec2(x1, y1), glm::vec2(x2, y2), glm::vec2(0.5, 0.5), glm::vec2(0.5, 0.5));
+    drawPatch(glm::vec2(x2, y1), glm::vec2(x3, y2), glm::vec2(0.5, 0.5), glm::vec2(1.0, 0.5));
+
+    drawPatch(glm::vec2(x0, y2), glm::vec2(x1, y3), glm::vec2(0.0, 0.5), glm::vec2(0.5, 1.0));
+    drawPatch(glm::vec2(x1, y2), glm::vec2(x2, y3), glm::vec2(0.5, 0.5), glm::vec2(0.5, 1.0));
+    drawPatch(glm::vec2(x2, y2), glm::vec2(x3, y3), glm::vec2(0.5, 0.5), glm::vec2(1.0, 1.0));
+}
+
 void UIPainter::updateSceneBox(int width, int height)
 {
     static constexpr auto PreferredSceneSize = glm::vec2(1280, 720);

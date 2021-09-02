@@ -100,6 +100,7 @@ public:
 
 private:
     void paintState(UIPainter *painter) const;
+    void paintGraph(UIPainter *painter) const;
     void updateStateDelta();
 
     StateVector m_state;

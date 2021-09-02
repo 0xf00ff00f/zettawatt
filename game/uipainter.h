@@ -41,6 +41,9 @@ public:
     template<typename StringT>
     int horizontalAdvance(const StringT &text);
 
+    void drawCircle(const glm::vec2 &center, float radius, const glm::vec4 &color, int depth);
+    void drawRoundedRect(const glm::vec2 &min, const glm::vec2 &max, float radius, const glm::vec4 &color, int depth);
+
     void resetTransform();
     void scale(const glm::vec2 &s);
     void scale(float sx, float sy);

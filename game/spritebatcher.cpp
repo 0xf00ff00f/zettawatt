@@ -177,14 +177,16 @@ void SpriteBatcher::renderBatch() const
 
         if (currentTexture != batchTexture) {
             currentTexture = batchTexture;
-            currentTexture->bind();
+            if (currentTexture)
+                currentTexture->bind();
         }
 
         if (currentProgram != batchProgram) {
             currentProgram = batchProgram;
             m_shaderManager->useProgram(batchProgram);
             m_shaderManager->setUniform(ShaderManager::Uniform::ModelViewProjection, m_transformMatrix);
-            m_shaderManager->setUniform(ShaderManager::Uniform::BaseColorTexture, 0);
+            if (currentTexture)
+                m_shaderManager->setUniform(ShaderManager::Uniform::BaseColorTexture, 0);
         }
 
         glDrawArrays(GL_TRIANGLES, m_bufferOffset / GLVertexSize, quadCount * 6);

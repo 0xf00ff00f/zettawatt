@@ -52,21 +52,31 @@ void World::updateStateDelta()
 
 void World::paint(UIPainter *painter) const
 {
+    paintGraph(painter);
     paintState(painter);
+}
+
+void World::paintGraph(UIPainter * /* painter */) const
+{
 }
 
 void World::paintState(UIPainter *painter) const
 {
     const auto sceneBox = painter->sceneBox();
 
+    constexpr auto CounterWidth = 320.0f;
+    constexpr auto CounterHeight = 160.0f;
+
     auto paintCounter = [painter](float centerX, const std::u32string &label, const std::string &unit, double value, double delta) {
+        painter->drawRoundedRect(glm::vec2(centerX - 0.5 * CounterWidth, -0.5 * CounterHeight), glm::vec2(centerX + 0.5 * CounterWidth, 0.5 * CounterHeight), 20, glm::vec4(1, 1, 1, 0.25), -1);
+
         static const char *fontName = "IBMPlexSans-Regular.ttf";
         static const auto LabelFont = UIPainter::Font { fontName, 40 };
         static const auto CounterFontBig = UIPainter::Font { fontName, 80 };
         static const auto CounterFontSmall = UIPainter::Font { fontName, 40 };
         static const auto DeltaFont = UIPainter::Font { fontName, 40 };
 
-        float y = 0;
+        float y = -40;
 
         auto paintCentered = [painter, centerX, &y](auto s) {
             const auto advance = painter->horizontalAdvance(s);
@@ -127,8 +137,6 @@ void World::paintState(UIPainter *painter) const
             paintCentered(text);
         }
     };
-
-    constexpr auto CounterWidth = 300.0f;
 
     paintCounter(-1.5f * CounterWidth, U"EXTROPY"s, ""s, m_state.extropy, m_stateDelta.extropy);
     paintCounter(-0.5f * CounterWidth, U"ENERGY"s, "Wh"s, m_state.energy, m_stateDelta.energy);
