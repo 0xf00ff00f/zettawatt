@@ -1,5 +1,7 @@
 #include <glwindow.h>
 
+#include <shadermanager.h>
+
 #include "uipainter.h"
 #include "world.h"
 
@@ -14,13 +16,15 @@ private:
     void paintGL() override;
     void update(double elapsed) override;
 
+    std::unique_ptr<GX::ShaderManager> m_shaderManager;
     std::unique_ptr<UIPainter> m_painter;
     World m_world;
 };
 
 void GameWindow::initializeGL()
 {
-    m_painter = std::make_unique<UIPainter>();
+    m_shaderManager = std::make_unique<GX::ShaderManager>();
+    m_painter = std::make_unique<UIPainter>(m_shaderManager.get());
     m_painter->resize(width(), height());
 }
 

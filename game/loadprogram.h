@@ -2,8 +2,12 @@
 
 #include <memory>
 
-namespace GX::GL {
+namespace GX {
+
+namespace GL {
 class ShaderProgram;
 }
 
-std::unique_ptr<GX::GL::ShaderProgram> loadProgram(const char *vertexShader, const char *geometryShader, const char *fragmentShader);
+std::unique_ptr<GL::ShaderProgram> loadProgram(const char *vertexShader, const char *geometryShader, const char *fragmentShader);
+
+} // namespace GX

@@ -11,6 +11,8 @@ set(gx_SOURCES
     textureatlas.cpp
     textureatlaspage.cpp
     texture.cpp
+    loadprogram.cpp
+    shadermanager.cpp
     fontcache.h
     glwindow.h
     ioutil.h
@@ -21,6 +23,8 @@ set(gx_SOURCES
     textureatlas.h
     textureatlaspage.h
     texture.h
+    loadprogram.h
+    shadermanager.h
 )
 
 add_library(gx
@@ -39,8 +43,8 @@ PUBLIC
     glew
 )
 
-add_executable(tst_textrendering tst_textrendering.cpp)
-target_link_libraries(tst_textrendering gx)
+# add_executable(tst_textrendering tst_textrendering.cpp)
+# target_link_libraries(tst_textrendering gx)
 
 set(game_SOURCES
     main.cpp
@@ -48,8 +52,6 @@ set(game_SOURCES
     world.h
     uipainter.cpp
     uipainter.h
-    loadprogram.cpp
-    loadprogram.h
 )
 add_executable(game
     ${game_SOURCES}

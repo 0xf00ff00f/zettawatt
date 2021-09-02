@@ -1,8 +1,8 @@
 #include "uipainter.h"
 
-#include "loadprogram.h"
-
 #include <fontcache.h>
+#include <loadprogram.h>
+#include <shadermanager.h>
 #include <spritebatcher.h>
 
 #include <glm/gtc/matrix_transform.hpp>
@@ -21,11 +21,10 @@ std::string fontPath(std::string_view basename)
 }
 } // namespace
 
-UIPainter::UIPainter()
-    : m_spriteBatcher(new GX::SpriteBatcher)
+UIPainter::UIPainter(GX::ShaderManager *shaderManager)
+    : m_spriteBatcher(new GX::SpriteBatcher(shaderManager))
     , m_textureAtlas(new GX::TextureAtlas(TextureAtlasPageSize, TextureAtlasPageSize, GX::PixelType::Grayscale))
 {
-    m_textProgram = loadProgram("text.vert", nullptr, "text.frag");
 }
 
 UIPainter::~UIPainter() = default;
@@ -75,7 +74,7 @@ void UIPainter::drawText(const glm::vec2 &pos, const glm::vec4 &color, int depth
 
     glm::vec2 glyphPosition = pos;
 
-    m_spriteBatcher->setBatchProgram(m_textProgram.get());
+    m_spriteBatcher->setBatchProgram(GX::ShaderManager::Program::Text);
 
     for (auto ch : text) {
         const auto glyph = m_font->getGlyph(ch);

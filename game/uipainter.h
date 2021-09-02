@@ -12,12 +12,13 @@ namespace GX {
 class TextureAtlas;
 class FontCache;
 class SpriteBatcher;
+class ShaderManager;
 } // namespace GX
 
 class UIPainter : private GX::NonCopyable
 {
 public:
-    explicit UIPainter();
+    explicit UIPainter(GX::ShaderManager *shaderManager);
     ~UIPainter();
 
     void resize(int width, int height);
@@ -63,7 +64,6 @@ private:
     std::unordered_map<Font, std::unique_ptr<GX::FontCache>, FontHasher> m_fonts;
     std::unique_ptr<GX::SpriteBatcher> m_spriteBatcher;
     std::unique_ptr<GX::TextureAtlas> m_textureAtlas;
-    std::unique_ptr<GX::GL::ShaderProgram> m_textProgram;
     GX::BoxF m_sceneBox = {};
     GX::FontCache *m_font = nullptr;
     glm::mat4 m_transform;

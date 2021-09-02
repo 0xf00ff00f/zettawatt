@@ -1,7 +1,7 @@
 #pragma once
 
 #include "noncopyable.h"
-#include "shaderprogram.h"
+#include "shadermanager.h"
 #include "util.h"
 
 #include <GL/glew.h>
@@ -17,14 +17,14 @@ struct PackedPixmap;
 class SpriteBatcher : private NonCopyable
 {
 public:
-    SpriteBatcher();
+    explicit SpriteBatcher(GX::ShaderManager *shaderManager);
     ~SpriteBatcher();
 
     void setTransformMatrix(const glm::mat4 &matrix);
     glm::mat4 transformMatrix() const;
 
-    void setBatchProgram(const GL::ShaderProgram *program);
-    const GL::ShaderProgram *batchProgram() const;
+    void setBatchProgram(ShaderManager::Program program);
+    ShaderManager::Program batchProgram() const;
 
     struct Vertex {
         glm::vec2 position;
@@ -47,7 +47,7 @@ private:
 
     struct Quad {
         const AbstractTexture *texture;
-        const GL::ShaderProgram *program;
+        ShaderManager::Program program;
         QuadVerts verts;
         int depth;
     };
@@ -57,12 +57,13 @@ private:
     static constexpr int GLQuadSize = 6 * GLVertexSize; // 6 verts per quad
     static constexpr int MaxQuadsPerBatch = BufferCapacity / GLQuadSize;
 
+    GX::ShaderManager *m_shaderManager;
     std::array<Quad, MaxQuadsPerBatch> m_quads;
     int m_quadCount = 0;
     GLuint m_vao;
     GLuint m_vbo;
     glm::mat4 m_transformMatrix;
-    const GL::ShaderProgram *m_batchProgram = nullptr;
+    ShaderManager::Program m_batchProgram = ShaderManager::Program::Text;
     mutable bool m_bufferAllocated = false;
     mutable int m_bufferOffset = 0;
 };

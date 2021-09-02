@@ -10,7 +10,8 @@
 
 namespace GX {
 
-SpriteBatcher::SpriteBatcher()
+SpriteBatcher::SpriteBatcher(GX::ShaderManager *shaderManager)
+    : m_shaderManager(shaderManager)
 {
     initializeResources();
 }
@@ -30,12 +31,12 @@ glm::mat4 SpriteBatcher::transformMatrix() const
     return m_transformMatrix;
 }
 
-void SpriteBatcher::setBatchProgram(const GL::ShaderProgram *program)
+void SpriteBatcher::setBatchProgram(ShaderManager::Program program)
 {
     m_batchProgram = program;
 }
 
-const GL::ShaderProgram *SpriteBatcher::batchProgram() const
+ShaderManager::Program SpriteBatcher::batchProgram() const
 {
     return m_batchProgram;
 }
@@ -116,12 +117,12 @@ void SpriteBatcher::renderBatch() const
     glBindVertexArray(m_vao);
 
     const AbstractTexture *currentTexture = nullptr;
-    const GL::ShaderProgram *currentProgram = nullptr;
+    std::optional<ShaderManager::Program> currentProgram = std::nullopt;
 
     auto batchStart = sortedQuads.begin();
     while (batchStart != sortedQuadsEnd) {
         const auto *batchTexture = (*batchStart)->texture;
-        const auto *batchProgram = (*batchStart)->program;
+        const auto batchProgram = (*batchStart)->program;
         const auto batchEnd = std::find_if(batchStart + 1, sortedQuadsEnd, [batchTexture, batchProgram](const Quad *quad) {
             return quad->texture != batchTexture || quad->program != batchProgram;
         });
@@ -181,9 +182,9 @@ void SpriteBatcher::renderBatch() const
 
         if (currentProgram != batchProgram) {
             currentProgram = batchProgram;
-            currentProgram->bind();
-            currentProgram->setUniform(currentProgram->uniformLocation("mvp"), m_transformMatrix);
-            currentProgram->setUniform(currentProgram->uniformLocation("spriteTexture"), 0);
+            m_shaderManager->useProgram(batchProgram);
+            m_shaderManager->setUniform(ShaderManager::Uniform::ModelViewProjection, m_transformMatrix);
+            m_shaderManager->setUniform(ShaderManager::Uniform::BaseColorTexture, 0);
         }
 
         glDrawArrays(GL_TRIANGLES, m_bufferOffset / GLVertexSize, quadCount * 6);

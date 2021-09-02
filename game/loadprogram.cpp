@@ -1,11 +1,13 @@
 #include "loadprogram.h"
 
-#include <shaderprogram.h>
+#include "shaderprogram.h"
 
 #include <glm/glm.hpp>
 #include <spdlog/spdlog.h>
 
 #include <vector>
+
+namespace GX {
 
 namespace {
 
@@ -16,10 +18,10 @@ std::string shaderPath(std::string_view basename)
 
 } // namespace
 
-std::unique_ptr<GX::GL::ShaderProgram>
+std::unique_ptr<GL::ShaderProgram>
 loadProgram(const char *vertexShader, const char *geometryShader, const char *fragmentShader)
 {
-    std::unique_ptr<GX::GL::ShaderProgram> program(new GX::GL::ShaderProgram);
+    auto program = std::make_unique<GL::ShaderProgram>();
     if (!program->addShader(GL_VERTEX_SHADER, shaderPath(vertexShader))) {
         spdlog::warn("Failed to add vertex shader for program {}: {}", vertexShader, program->log());
         return {};
@@ -40,3 +42,5 @@ loadProgram(const char *vertexShader, const char *geometryShader, const char *fr
     }
     return program;
 }
+
+} // namespace GX
