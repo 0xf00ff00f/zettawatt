@@ -37,13 +37,13 @@ void World::update(double elapsed)
 void World::updateStateDelta()
 {
     StateVector delta;
-    for (const auto &unit : m_techGraph) {
+    for (const auto &unit : m_techGraph->units) {
         if (!unit->count)
             continue;
         StateVector generated = unit->generated;
-        for (const auto &booster : unit->boosters) {
-            if (booster.enabled)
-                generated *= booster.boost;
+        for (const auto &project : m_techGraph->projects) {
+            if (project->enabled && project->parent == unit.get())
+                generated *= project->boost;
         }
         delta += unit->count * generated;
     }

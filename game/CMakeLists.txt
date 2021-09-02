@@ -52,6 +52,8 @@ set(game_SOURCES
     world.h
     uipainter.cpp
     uipainter.h
+    techgraph.cpp
+    techgraph.h
 )
 add_executable(game
     ${game_SOURCES}
