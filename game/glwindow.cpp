@@ -187,11 +187,11 @@ void GLWindow::renderLoop()
     }
 }
 
-void GLWindow::mousePressEvent()
+void GLWindow::mousePressEvent(int /* button */, const glm::vec2 & /* position */)
 {
 }
 
-void GLWindow::mouseReleaseEvent()
+void GLWindow::mouseReleaseEvent(int /* button */, const glm::vec2 & /* position */)
 {
 }
 
@@ -249,14 +249,17 @@ void GLWindow::keyEvent(int key, int /*scancode*/, int action, int /*mods*/)
 
 void GLWindow::mouseButtonEvent(int button, int action, int /*mods*/)
 {
-    if (button != GLFW_MOUSE_BUTTON_LEFT)
-        return;
+    double x, y;
+    glfwGetCursorPos(m_window, &x, &y);
+
     switch (action) {
-    case GLFW_PRESS:
-        mousePressEvent();
+    case GLFW_PRESS: {
+        mousePressEvent(button, glm::vec2(x, y));
         break;
-    case GLFW_RELEASE:
-        mouseReleaseEvent();
+    }
+    case GLFW_RELEASE: {
+        mouseReleaseEvent(button, glm::vec2(x, y));
+    }
     }
 }
 

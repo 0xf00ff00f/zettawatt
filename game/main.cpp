@@ -2,6 +2,8 @@
 
 #include <shadermanager.h>
 
+#include <GLFW/glfw3.h>
+
 #include "uipainter.h"
 #include "world.h"
 
@@ -15,6 +17,12 @@ private:
     void initializeGL() override;
     void paintGL() override;
     void update(double elapsed) override;
+
+    void mousePressEvent(int button, const glm::vec2 &pos) override;
+    void mouseReleaseEvent(int button, const glm::vec2 &pos) override;
+    void mouseMoveEvent(const glm::vec2 &pos) override;
+
+    glm::vec2 mapToScene(const glm::vec2 &windowPos) const;
 
     std::unique_ptr<GX::ShaderManager> m_shaderManager;
     std::unique_ptr<UIPainter> m_painter;
@@ -46,6 +54,32 @@ void GameWindow::paintGL()
 void GameWindow::update(double elapsed)
 {
     m_world.update(elapsed);
+}
+
+void GameWindow::mousePressEvent(int button, const glm::vec2 &pos)
+{
+    if (button == GLFW_MOUSE_BUTTON_LEFT) {
+        m_world.mousePressEvent(mapToScene(pos));
+    }
+}
+
+void GameWindow::mouseReleaseEvent(int button, const glm::vec2 &pos)
+{
+    if (button == GLFW_MOUSE_BUTTON_LEFT) {
+        m_world.mouseReleaseEvent(mapToScene(pos));
+    }
+}
+
+void GameWindow::mouseMoveEvent(const glm::vec2 &pos)
+{
+    m_world.mouseMoveEvent(mapToScene(pos));
+}
+
+glm::vec2 GameWindow::mapToScene(const glm::vec2 &windowPos) const
+{
+    const GX::BoxF sceneBox = m_painter->sceneBox();
+    const glm::vec2 p = windowPos / glm::vec2(width(), height());
+    return sceneBox.min + p * (sceneBox.max - sceneBox.min);
 }
 
 int main()

@@ -34,8 +34,8 @@ protected:
     virtual void initializeGL() = 0;
     virtual void paintGL() = 0;
     virtual void update(double elapsed) = 0;
-    virtual void mousePressEvent();
-    virtual void mouseReleaseEvent();
+    virtual void mousePressEvent(int button, const glm::vec2 &position);
+    virtual void mouseReleaseEvent(int button, const glm::vec2 &position);
     virtual void mouseMoveEvent(const glm::vec2 &position);
     virtual void keyPressEvent(int key);
     virtual void keyReleaseEvent(int key);

@@ -17,14 +17,68 @@ std::tuple<int, int, char32_t> formattedValue(double value)
     }
     return { static_cast<int>(value), static_cast<int>(value * 1000) % 1000, units[unit] };
 }
+
+constexpr const char *FontName = "IBMPlexSans-Regular.ttf";
+constexpr auto UnitRadius = 50.0f;
+
+bool unitContains(const Unit *unit, const glm::vec2 &pos)
+{
+    return glm::distance(pos, unit->position) < UnitRadius;
+}
 } // namespace
 
 World::World()
 {
-    m_stateDelta.extropy = 123;
-    m_stateDelta.energy = 4113;
-    m_stateDelta.materials = 1234;
-    m_stateDelta.carbon = 2345;
+    m_state.extropy = 0;
+    m_state.energy = 2100;
+    m_state.material = 2000;
+    m_state.carbon = 0;
+
+    {
+        m_techGraph = std::make_unique<TechGraph>();
+
+        auto mine = std::make_unique<Unit>();
+        mine->name = "Open-pit Mine"s;
+        mine->position = glm::vec2(-100, 200);
+        mine->cost = {
+            .energy = 300,
+        };
+
+        auto furnace = std::make_unique<Unit>();
+        furnace->name = "Blast Furnace"s;
+        furnace->position = glm::vec2(-200, -100);
+        furnace->cost = StateVector {
+            .energy = 100,
+            .material = 200,
+        };
+        furnace->yield = StateVector {
+            .material = 800,
+            .carbon = 300
+        };
+
+        auto oilRig = std::make_unique<Unit>();
+        oilRig->name = "Oil Rig"s;
+        oilRig->position = glm::vec2(100, 200);
+        oilRig->cost = StateVector {
+            .material = 100,
+        };
+
+        auto powerPlant = std::make_unique<Unit>();
+        powerPlant->name = "Thermal Power Plant"s;
+        powerPlant->position = glm::vec2(200, -100);
+        powerPlant->cost = StateVector {
+            .material = 100,
+        };
+        powerPlant->yield = StateVector {
+            .energy = 200,
+            .carbon = 300,
+        };
+
+        m_techGraph->units.push_back(std::move(mine));
+        m_techGraph->units.push_back(std::move(furnace));
+        m_techGraph->units.push_back(std::move(oilRig));
+        m_techGraph->units.push_back(std::move(powerPlant));
+    }
 }
 
 World::~World() = default;
@@ -40,12 +94,12 @@ void World::updateStateDelta()
     for (const auto &unit : m_techGraph->units) {
         if (!unit->count)
             continue;
-        StateVector generated = unit->generated;
+        StateVector yield = unit->yield;
         for (const auto &project : m_techGraph->projects) {
             if (project->enabled && project->parent == unit.get())
-                generated *= project->boost;
+                yield *= project->boost;
         }
-        delta += unit->count * generated;
+        delta += unit->count * yield;
     }
     m_stateDelta = delta;
 }
@@ -56,8 +110,25 @@ void World::paint(UIPainter *painter) const
     paintState(painter);
 }
 
-void World::paintGraph(UIPainter * /* painter */) const
+namespace {
+template<typename StringT>
+void paintCentered(UIPainter *painter, float x, float y, const glm::vec4 &color, int depth, const StringT &s)
 {
+    const auto advance = painter->horizontalAdvance(s);
+    painter->drawText(glm::vec2(x - 0.5f * advance, y), color, depth, s);
+}
+} // namespace
+
+void World::paintGraph(UIPainter *painter) const
+{
+    static const auto LabelFont = UIPainter::Font { FontName, 30 };
+    painter->setFont(LabelFont);
+
+    for (const auto &unit : m_techGraph->units) {
+        const auto color = unit->hovered ? glm::vec4(1, 1, 1, .5) : glm::vec4(1, 1, 1, .25);
+        painter->drawCircle(unit->position, UnitRadius, color, -1);
+        paintCentered(painter, unit->position.x, unit->position.y, glm::vec4(1), 0, unit->name);
+    }
 }
 
 void World::paintState(UIPainter *painter) const
@@ -68,23 +139,17 @@ void World::paintState(UIPainter *painter) const
     auto paintCounter = [painter](float centerX, float centerY, const std::u32string &label, const std::string &unit, double value, double delta) {
         painter->drawRoundedRect(glm::vec2(centerX - 0.5 * CounterWidth, centerY - 0.5 * CounterHeight), glm::vec2(centerX + 0.5 * CounterWidth, centerY + 0.5 * CounterHeight), 20, glm::vec4(1, 1, 1, 0.25), -1);
 
-        static const char *fontName = "IBMPlexSans-Regular.ttf";
-        static const auto LabelFont = UIPainter::Font { fontName, 40 };
-        static const auto CounterFontBig = UIPainter::Font { fontName, 80 };
-        static const auto CounterFontSmall = UIPainter::Font { fontName, 40 };
-        static const auto DeltaFont = UIPainter::Font { fontName, 40 };
+        static const auto LabelFont = UIPainter::Font { FontName, 40 };
+        static const auto CounterFontBig = UIPainter::Font { FontName, 80 };
+        static const auto CounterFontSmall = UIPainter::Font { FontName, 40 };
+        static const auto DeltaFont = UIPainter::Font { FontName, 40 };
 
         float y = centerY - 40;
-
-        auto paintCentered = [painter, centerX, &y](auto s) {
-            const auto advance = painter->horizontalAdvance(s);
-            painter->drawText(glm::vec2(centerX - 0.5f * advance, y), glm::vec4(1), 0, s);
-        };
 
         // label
         {
             painter->setFont(LabelFont);
-            paintCentered(label);
+            paintCentered(painter, centerX, y, glm::vec4(1), 0, label);
         }
         y += 60;
 
@@ -116,7 +181,7 @@ void World::paintState(UIPainter *painter) const
             } else {
                 const auto text = fmt::format("{}{}", big, unit);
                 painter->setFont(CounterFontBig);
-                paintCentered(text);
+                paintCentered(painter, centerX, y, glm::vec4(1), 0, text);
             }
         }
         y += 40;
@@ -132,15 +197,53 @@ void World::paintState(UIPainter *painter) const
                 }
             }();
             painter->setFont(DeltaFont);
-            paintCentered(text);
+            paintCentered(painter, centerX, y, glm::vec4(1), 0, text);
         }
     };
 
-    const auto sceneBox = painter->sceneBox();
+    const GX::BoxF sceneBox = painter->sceneBox();
     const float y = sceneBox.min.y + 0.5 * CounterHeight;
 
     paintCounter(-1.5f * CounterWidth, y, U"EXTROPY"s, ""s, m_state.extropy, m_stateDelta.extropy);
     paintCounter(-0.5f * CounterWidth, y, U"ENERGY"s, "Wh"s, m_state.energy, m_stateDelta.energy);
-    paintCounter(0.5f * CounterWidth, y, U"MATERIALS"s, "t"s, m_state.materials, m_stateDelta.materials);
+    paintCounter(0.5f * CounterWidth, y, U"MATERIALS"s, "t"s, m_state.material, m_stateDelta.material);
     paintCounter(1.5f * CounterWidth, y, U"CO\U00002082"s, "t"s, m_state.carbon, m_stateDelta.carbon);
+}
+
+void World::mousePressEvent(const glm::vec2 &pos)
+{
+    const auto &units = m_techGraph->units;
+    for (auto &unit : m_techGraph->units) {
+        if (unitContains(unit.get(), pos))
+            unitClicked(unit.get());
+    }
+}
+
+void World::mouseReleaseEvent(const glm::vec2 &pos)
+{
+}
+
+void World::mouseMoveEvent(const glm::vec2 &pos)
+{
+    const auto &units = m_techGraph->units;
+    for (auto &unit : m_techGraph->units) {
+        unit->hovered = unitContains(unit.get(), pos);
+    }
+}
+
+void World::unitClicked(Unit *unit)
+{
+    if (!canAcquire(unit))
+        return;
+
+    ++unit->count;
+    m_state -= unit->cost;
+
+    updateStateDelta();
+}
+
+bool World::canAcquire(const Unit *unit) const
+{
+    const auto &cost = unit->cost;
+    return cost.extropy <= m_state.extropy && cost.energy <= m_state.energy && cost.material <= m_state.material;
 }
