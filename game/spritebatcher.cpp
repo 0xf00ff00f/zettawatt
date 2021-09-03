@@ -1,5 +1,5 @@
-#include "abstracttexture.h"
 #include "spritebatcher.h"
+#include "abstracttexture.h"
 #include "textureatlas.h"
 
 #include <glm/gtc/matrix_transform.hpp>

@@ -1,5 +1,5 @@
-#include "pixmap.h"
 #include "textureatlas.h"
+#include "pixmap.h"
 
 #include <spdlog/spdlog.h>
 

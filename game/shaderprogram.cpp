@@ -1,5 +1,5 @@
-#include "ioutil.h"
 #include "shaderprogram.h"
+#include "ioutil.h"
 
 #include <array>
 #include <fstream>
