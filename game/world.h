@@ -11,11 +11,38 @@
 class UIPainter;
 struct Unit;
 
+class World;
+
+class GraphItem
+{
+public:
+    explicit GraphItem(World *world);
+    virtual ~GraphItem();
+
+    virtual void update(double elapsed) = 0;
+    virtual void paint(UIPainter *painter) const = 0;
+    virtual bool contains(const glm::vec2 &pos) const = 0;
+
+    void mousePressEvent(const glm::vec2 &pos);
+    void mouseReleaseEvent(const glm::vec2 &pos);
+    void mouseMoveEvent(const glm::vec2 &pos);
+
+    virtual void handleMousePress();
+    virtual void handleMouseRelease();
+
+protected:
+    World *m_world;
+    bool m_hovered = false;
+};
+
 class World
 {
 public:
     World();
     ~World();
+
+    void initialize(TechGraph *techGraph);
+    void reset();
 
     void update(double elapsed);
     void paint(UIPainter *painter) const;
@@ -24,15 +51,17 @@ public:
     void mouseReleaseEvent(const glm::vec2 &pos);
     void mouseMoveEvent(const glm::vec2 &pos);
 
+    bool unitClicked(Unit *unit);
+
 private:
     void paintState(UIPainter *painter) const;
     void paintGraph(UIPainter *painter) const;
     void updateStateDelta();
 
-    void unitClicked(Unit *unit);
     bool canAcquire(const Unit *unit) const;
 
     StateVector m_state;
     StateVector m_stateDelta;
-    std::unique_ptr<TechGraph> m_techGraph;
+    TechGraph *m_techGraph;
+    std::vector<std::unique_ptr<GraphItem>> m_graphItems;
 };

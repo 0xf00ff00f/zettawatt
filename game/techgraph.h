@@ -109,8 +109,6 @@ struct Unit {
     std::vector<const Project *> requiredProjects;
 
     int count = 0;
-
-    bool hovered = false;
 };
 
 struct TechGraph {

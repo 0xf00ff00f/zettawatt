@@ -29,8 +29,10 @@ public:
     };
     const Glyph *getGlyph(int codepoint);
 
-    template<typename StringT>
-    int horizontalAdvance(const StringT &text);
+    int pixelHeight() const { return m_pixelHeight; }
+    float ascent() const { return m_ascent; }
+    float descent() const { return m_descent; }
+    float lineGap() const { return m_lineGap; }
 
 private:
     std::unique_ptr<Glyph> initializeGlyph(int codepoint);
@@ -40,6 +42,7 @@ private:
     stbtt_fontinfo m_font;
     TextureAtlas *m_textureAtlas;
     std::unordered_map<int, std::unique_ptr<Glyph>> m_glyphs;
+    int m_pixelHeight;
     float m_scale = 0.0f;
     float m_ascent;
     float m_descent;

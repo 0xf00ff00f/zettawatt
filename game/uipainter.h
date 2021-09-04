@@ -5,6 +5,7 @@
 #include <util.h>
 
 #include <memory>
+#include <string_view>
 #include <unordered_map>
 #include <vector>
 
@@ -38,11 +39,14 @@ public:
 
     template<typename StringT>
     void drawText(const glm::vec2 &pos, const glm::vec4 &color, int depth, const StringT &text);
+
+    void drawTextBox(const GX::BoxF &box, const glm::vec4 &color, int depth, const std::string &text);
+
     template<typename StringT>
-    int horizontalAdvance(const StringT &text);
+    float horizontalAdvance(const StringT &text);
 
     void drawCircle(const glm::vec2 &center, float radius, const glm::vec4 &color, int depth);
-    void drawRoundedRect(const glm::vec2 &min, const glm::vec2 &max, float radius, const glm::vec4 &color, int depth);
+    void drawRoundedRect(const GX::BoxF &box, float radius, const glm::vec4 &color, int depth);
 
     void resetTransform();
     void scale(const glm::vec2 &s);
@@ -55,11 +59,31 @@ public:
     void restoreTransform();
 
     GX::SpriteBatcher *spriteBatcher() const { return m_spriteBatcher.get(); }
+    const GX::FontCache *font() const { return m_font; }
     GX::BoxF sceneBox() const { return m_sceneBox; }
+
+    enum class VerticalAlign {
+        Top,
+        Middle,
+        Bottom
+    };
+    void setVerticalAlign(VerticalAlign align);
+
+    enum class HorizontalAlign {
+        Left,
+        Center,
+        Right
+    };
+    void setHorizontalAlign(HorizontalAlign align);
 
 private:
     void updateSceneBox(int width, int height);
-    GX::BoxI textBoundingBox(const std::u32string &text);
+
+    struct TextRow {
+        std::string_view text;
+        float width;
+    };
+    std::vector<TextRow> breakTextLines(const std::string &text, float lineWidth);
 
     struct FontHasher {
         std::size_t operator()(const Font &font) const;
@@ -71,4 +95,6 @@ private:
     GX::FontCache *m_font = nullptr;
     glm::mat4 m_transform;
     std::vector<glm::mat4> m_transformStack;
+    VerticalAlign m_verticalAlign = VerticalAlign::Top;
+    HorizontalAlign m_horizontalAlign = HorizontalAlign::Left;
 };

@@ -4,13 +4,16 @@
 
 #include <GLFW/glfw3.h>
 
+#include "techgraph.h"
 #include "uipainter.h"
 #include "world.h"
+
+using namespace std::string_literals;
 
 class GameWindow : public GX::GLWindow
 {
 public:
-    GameWindow() = default;
+    GameWindow();
     ~GameWindow() override = default;
 
 private:
@@ -24,16 +27,65 @@ private:
 
     glm::vec2 mapToScene(const glm::vec2 &windowPos) const;
 
+    std::unique_ptr<TechGraph> m_techGraph;
     std::unique_ptr<GX::ShaderManager> m_shaderManager;
     std::unique_ptr<UIPainter> m_painter;
     World m_world;
 };
+
+GameWindow::GameWindow()
+    : m_techGraph(std::make_unique<TechGraph>())
+{
+    auto mine = std::make_unique<Unit>();
+    mine->name = "Open-pit Mine"s;
+    mine->position = glm::vec2(-100, 200);
+    mine->cost = {
+        .energy = 300,
+    };
+
+    auto furnace = std::make_unique<Unit>();
+    furnace->name = "Blast Furnace"s;
+    furnace->position = glm::vec2(-200, -100);
+    furnace->cost = StateVector {
+        .energy = 100,
+        .material = 200,
+    };
+    furnace->yield = StateVector {
+        .material = 800,
+        .carbon = 300
+    };
+
+    auto oilRig = std::make_unique<Unit>();
+    oilRig->name = "Oil Rig"s;
+    oilRig->position = glm::vec2(100, 200);
+    oilRig->cost = StateVector {
+        .material = 100,
+    };
+
+    auto powerPlant = std::make_unique<Unit>();
+    powerPlant->name = "Thermal Power Plant"s;
+    powerPlant->position = glm::vec2(200, -100);
+    powerPlant->cost = StateVector {
+        .material = 100,
+    };
+    powerPlant->yield = StateVector {
+        .energy = 200,
+        .carbon = 300,
+    };
+
+    m_techGraph->units.push_back(std::move(mine));
+    m_techGraph->units.push_back(std::move(furnace));
+    m_techGraph->units.push_back(std::move(oilRig));
+    m_techGraph->units.push_back(std::move(powerPlant));
+}
 
 void GameWindow::initializeGL()
 {
     m_shaderManager = std::make_unique<GX::ShaderManager>();
     m_painter = std::make_unique<UIPainter>(m_shaderManager.get());
     m_painter->resize(width(), height());
+
+    m_world.initialize(m_techGraph.get());
 }
 
 void GameWindow::paintGL()
@@ -58,16 +110,14 @@ void GameWindow::update(double elapsed)
 
 void GameWindow::mousePressEvent(int button, const glm::vec2 &pos)
 {
-    if (button == GLFW_MOUSE_BUTTON_LEFT) {
+    if (button == GLFW_MOUSE_BUTTON_LEFT)
         m_world.mousePressEvent(mapToScene(pos));
-    }
 }
 
 void GameWindow::mouseReleaseEvent(int button, const glm::vec2 &pos)
 {
-    if (button == GLFW_MOUSE_BUTTON_LEFT) {
+    if (button == GLFW_MOUSE_BUTTON_LEFT)
         m_world.mouseReleaseEvent(mapToScene(pos));
-    }
 }
 
 void GameWindow::mouseMoveEvent(const glm::vec2 &pos)

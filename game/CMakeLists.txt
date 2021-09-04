@@ -46,6 +46,12 @@ PUBLIC
 add_executable(tst_textrendering tst_textrendering.cpp)
 target_link_libraries(tst_textrendering gx)
 
+add_executable(tst_textbox
+    tst_textbox.cpp
+    uipainter.cpp
+)
+target_link_libraries(tst_textbox gx)
+
 set(game_SOURCES
     main.cpp
     world.cpp

@@ -8,6 +8,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/string_cast.hpp>
 #include <iostream>
+#include <numeric>
 #include <spdlog/spdlog.h>
 
 using namespace std::string_literals;
@@ -111,13 +112,57 @@ template void UIPainter::drawText(const glm::vec2 &pos, const glm::vec4 &color, 
 template void UIPainter::drawText(const glm::vec2 &pos, const glm::vec4 &color, int depth, const std::string &text);
 
 template<typename StringT>
-int UIPainter::horizontalAdvance(const StringT &text)
+float UIPainter::horizontalAdvance(const StringT &text)
 {
-    return m_font->horizontalAdvance(text);
+    return std::accumulate(text.begin(), text.end(), 0.0f, [this](float advance, auto ch) {
+        const auto *g = m_font->getGlyph(ch);
+        return advance + g->advanceWidth;
+    });
 }
 
-template int UIPainter::horizontalAdvance(const std::u32string &text);
-template int UIPainter::horizontalAdvance(const std::string &text);
+template float UIPainter::horizontalAdvance(const std::u32string &text);
+template float UIPainter::horizontalAdvance(const std::string &text);
+
+void UIPainter::drawTextBox(const GX::BoxF &box, const glm::vec4 &color, int depth, const std::string &text)
+{
+    if (!m_font) {
+        spdlog::warn("No font set lol");
+        return;
+    }
+
+    const auto rows = breakTextLines(text, box.width());
+
+    auto y = [this, &box, rowCount = rows.size()] {
+        const auto textHeight = rowCount * (m_font->ascent() - m_font->descent()) + (rowCount - 1) * m_font->lineGap();
+
+        switch (m_verticalAlign) {
+        case VerticalAlign::Top:
+            return box.min.y + m_font->ascent();
+        case VerticalAlign::Bottom:
+            return box.max.y - textHeight + m_font->ascent();
+        case VerticalAlign::Middle:
+        default:
+            return 0.5f * (box.min.y + box.max.y) - 0.5f * textHeight + m_font->ascent();
+        }
+    }();
+    const auto lineHeight = m_font->ascent() - m_font->descent() + m_font->lineGap();
+    for (const auto &row : rows) {
+        assert(horizontalAdvance(row.text) == row.width);
+        const float x = [this, &box, rowWidth = row.width] {
+            switch (m_horizontalAlign) {
+            case HorizontalAlign::Left:
+                return box.min.x;
+            case HorizontalAlign::Right:
+                return box.max.x - rowWidth;
+            case HorizontalAlign::Center:
+            default:
+                return 0.5f * (box.min.x + box.max.x) - 0.5f * rowWidth;
+            }
+        }();
+        drawText(glm::vec2(x, y), color, depth, row.text);
+        y += lineHeight;
+    }
+}
 
 void UIPainter::drawCircle(const glm::vec2 &center, float radius, const glm::vec4 &color, int depth)
 {
@@ -135,7 +180,7 @@ void UIPainter::drawCircle(const glm::vec2 &center, float radius, const glm::vec
     m_spriteBatcher->addSprite(nullptr, verts, depth);
 }
 
-void UIPainter::drawRoundedRect(const glm::vec2 &min, const glm::vec2 &max, float radius, const glm::vec4 &color, int depth)
+void UIPainter::drawRoundedRect(const GX::BoxF &box, float radius, const glm::vec4 &color, int depth)
 {
     m_spriteBatcher->setBatchProgram(GX::ShaderManager::Program::Circle);
 
@@ -149,15 +194,15 @@ void UIPainter::drawRoundedRect(const glm::vec2 &min, const glm::vec2 &max, floa
         m_spriteBatcher->addSprite(nullptr, verts, depth);
     };
 
-    const auto x0 = min.x;
-    const auto x1 = min.x + radius;
-    const auto x2 = max.x - radius;
-    const auto x3 = max.x;
+    const auto x0 = box.min.x;
+    const auto x1 = box.min.x + radius;
+    const auto x2 = box.max.x - radius;
+    const auto x3 = box.max.x;
 
-    const auto y0 = min.y;
-    const auto y1 = min.y + radius;
-    const auto y2 = max.y - radius;
-    const auto y3 = max.y;
+    const auto y0 = box.min.y;
+    const auto y1 = box.min.y + radius;
+    const auto y2 = box.max.y - radius;
+    const auto y3 = box.max.y;
 
     drawPatch(glm::vec2(x0, y0), glm::vec2(x1, y1), glm::vec2(0.0, 0.0), glm::vec2(0.5, 0.5));
     drawPatch(glm::vec2(x1, y0), glm::vec2(x2, y1), glm::vec2(0.5, 0.0), glm::vec2(0.5, 0.5));
@@ -243,6 +288,71 @@ void UIPainter::restoreTransform()
     }
     m_transform = m_transformStack.back();
     m_transformStack.pop_back();
+}
+
+std::vector<UIPainter::TextRow> UIPainter::breakTextLines(const std::string &text, float maxWidth)
+{
+    assert(m_font);
+
+    std::vector<TextRow> rows;
+
+    auto rowStart = text.begin(), lastBreak = rowStart;
+    float lineWidth = 0, lastBreakWidth = 0;
+
+    const auto spaceWidth = m_font->getGlyph(' ')->advanceWidth;
+
+    const auto toStringView = [](auto start, auto end) {
+        return std::string_view(&*start, std::distance(start, end));
+    };
+
+    for (auto it = text.begin(); it != text.end(); ++it) {
+        const auto ch = *it;
+        if (ch == ' ') {
+            if (lineWidth > maxWidth) {
+                if (lastBreak != rowStart) {
+                    rows.push_back(TextRow { toStringView(rowStart, lastBreak), lastBreakWidth });
+                    rowStart = lastBreak + 1;
+                    lineWidth -= lastBreakWidth;
+                    lastBreak = it;
+                    lastBreakWidth = lineWidth;
+                } else {
+                    rows.push_back(TextRow { toStringView(rowStart, it), lineWidth });
+                    rowStart = it + 1;
+                    lineWidth = 0;
+                    lastBreak = rowStart;
+                    lastBreakWidth = 0;
+                }
+            } else {
+                lastBreak = it;
+                lastBreakWidth = lineWidth;
+                lineWidth += spaceWidth;
+            }
+        } else {
+            lineWidth += m_font->getGlyph(ch)->advanceWidth;
+        }
+    }
+    if (rowStart != text.end()) {
+        if (lineWidth > maxWidth && lastBreak != rowStart) {
+            rows.push_back(TextRow { toStringView(rowStart, lastBreak), lastBreakWidth });
+            rowStart = lastBreak + 1;
+            lineWidth -= lastBreakWidth + spaceWidth;
+            rows.push_back(TextRow { toStringView(rowStart, text.end()), lineWidth });
+        } else {
+            rows.push_back(TextRow { toStringView(rowStart, text.end()), lineWidth });
+        }
+    }
+
+    return rows;
+}
+
+void UIPainter::setVerticalAlign(VerticalAlign align)
+{
+    m_verticalAlign = align;
+}
+
+void UIPainter::setHorizontalAlign(HorizontalAlign align)
+{
+    m_horizontalAlign = align;
 }
 
 std::size_t UIPainter::FontHasher::operator()(const Font &font) const

@@ -5,8 +5,6 @@
 
 #include <spdlog/spdlog.h>
 
-#include <numeric>
-
 namespace GX {
 
 FontCache::FontCache(TextureAtlas *textureAtlas)
@@ -38,6 +36,8 @@ bool FontCache::load(const std::string &ttfPath, int pixelHeight)
     m_ascent = m_scale * ascent;
     m_descent = m_scale * descent;
     m_lineGap = m_scale * lineGap;
+
+    m_pixelHeight = pixelHeight;
 
     return true;
 }
@@ -91,17 +91,5 @@ Pixmap FontCache::getCodepointPixmap(int codepoint) const
 
     return pm;
 }
-
-template<typename StringT>
-int FontCache::horizontalAdvance(const StringT &text)
-{
-    return std::accumulate(text.begin(), text.end(), 0, [this](int advance, auto ch) {
-        const auto *g = getGlyph(ch);
-        return advance + g->advanceWidth;
-    });
-}
-
-template int FontCache::horizontalAdvance(const std::u32string &text);
-template int FontCache::horizontalAdvance(const std::string &text);
 
 } // namespace GX
