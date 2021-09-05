@@ -5,7 +5,11 @@
 #include <fontcache.h>
 
 #include <fmt/format.h>
+
+#include <glm/gtc/constants.hpp>
 #include <glm/gtc/random.hpp>
+
+#include <algorithm>
 
 using namespace std::string_literals;
 
@@ -23,6 +27,8 @@ std::tuple<int, int, char32_t> formattedValue(double value)
 
 constexpr const char *FontName = "IBMPlexSans-Regular.ttf";
 
+constexpr const auto GraphColor = glm::vec4(1, 0, 0, 1);
+
 template<typename StringT>
 void paintCentered(UIPainter *painter, float x, float y, const glm::vec4 &color, int depth, const StringT &s)
 {
@@ -30,6 +36,53 @@ void paintCentered(UIPainter *painter, float x, float y, const glm::vec4 &color,
     painter->drawText(glm::vec2(x - 0.5f * advance, y), color, depth, s);
 }
 
+class Wobble
+{
+public:
+    explicit Wobble(float radius);
+
+    void update(float elapsed);
+    glm::vec2 offset() const;
+
+private:
+    struct Wave {
+        Wave(float radius)
+            : dir(glm::circularRand(radius))
+            , phase(glm::linearRand(0.0f, 2.0f * glm::pi<float>()))
+            , speed(glm::linearRand(1.0f, 3.0f))
+        {
+        }
+        glm::vec2 eval(float t) const
+        {
+            return dir * sinf(speed * t + phase);
+        }
+        glm::vec2 dir;
+        float phase;
+        float speed;
+    };
+    std::vector<Wave> m_waves;
+    float m_t = 0.0f;
+};
+
+Wobble::Wobble(float radius)
+{
+    std::generate_n(std::back_inserter(m_waves), 3, [radius] {
+        return Wave(glm::linearRand(0.5f * radius, radius));
+    });
+}
+
+void Wobble::update(float elapsed)
+{
+    m_t += elapsed;
+}
+
+glm::vec2 Wobble::offset() const
+{
+    auto o = glm::vec2(0);
+    for (const auto &wave : m_waves)
+        o += wave.eval(m_t);
+    return o;
+}
 } // namespace
 
 GraphItem::GraphItem(World *world)
@@ -80,15 +133,14 @@ public:
 
 private:
     Unit *m_unit;
-    glm::vec2 m_wobbleDirection;
-    float m_localTime = 0.0f;
+    Wobble m_wobble;
     static constexpr auto Radius = 20.0f;
 };
 
 UnitItem::UnitItem(Unit *unit, World *world)
     : GraphItem(world)
     , m_unit(unit)
-    , m_wobbleDirection(glm::circularRand(12.0f))
+    , m_wobble(6.0f)
 {
 }
 
@@ -96,12 +148,12 @@ UnitItem::~UnitItem() = default;
 
 void UnitItem::update(double elapsed)
 {
-    m_localTime += elapsed;
+    m_wobble.update(elapsed);
 }
 
 glm::vec2 UnitItem::position() const
 {
-    return m_unit->position + sinf(3.0f * m_localTime) * m_wobbleDirection;
+    return m_unit->position + m_wobble.offset();
 }
 
 float UnitItem::radius() const
@@ -116,10 +168,9 @@ void UnitItem::paint(UIPainter *painter) const
     painter->setFont(LabelFont);
 
     const auto p = position();
-    painter->drawCircle(p, radius(), glm::vec4(1), -1);
+    painter->drawCircle(p, radius(), GraphColor, -1);
 
     const auto textBox = GX::BoxF { p + glm::vec2(-2.0 * Radius, Radius), p + glm::vec2(2.0 * Radius, 2.0 + Radius) };
-
     painter->setVerticalAlign(UIPainter::VerticalAlign::Top);
     painter->setHorizontalAlign(UIPainter::HorizontalAlign::Center);
     painter->drawTextBox(textBox, glm::vec4(1), 0, m_unit->name);
@@ -209,7 +260,7 @@ void World::paintGraph(UIPainter *painter) const
         const auto d = glm::normalize(fromPosition - toPosition);
         fromPosition -= (from->radius() - NodeBorder) * d;
         toPosition += (to->radius() - NodeBorder) * d;
-        painter->drawThickLine(fromPosition, toPosition, 5, glm::vec4(1), -1);
+        painter->drawThickLine(fromPosition, toPosition, 5, GraphColor, -1);
     }
 
     for (auto &item : m_graphItems) {
