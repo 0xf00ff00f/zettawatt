@@ -47,6 +47,7 @@ public:
 
     void drawCircle(const glm::vec2 &center, float radius, const glm::vec4 &color, int depth);
     void drawRoundedRect(const GX::BoxF &box, float radius, const glm::vec4 &color, int depth);
+    void drawThickLine(const glm::vec2 &from, const glm::vec2 &to, float thickness, const glm::vec4 &color, int depth);
 
     void resetTransform();
     void scale(const glm::vec2 &s);

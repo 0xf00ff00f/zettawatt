@@ -19,6 +19,7 @@ public:
     enum Program {
         Text,
         Circle,
+        ThickLine,
         NumPrograms
     };
     void useProgram(Program program);

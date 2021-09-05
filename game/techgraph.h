@@ -101,11 +101,11 @@ struct Unit {
     StateVector cost;
     StateVector yield;
 
-    struct RequiredUnit {
+    struct Dependency {
         int count;
         const Unit *unit;
     };
-    std::vector<RequiredUnit> requiredUnits;
+    std::vector<Dependency> dependencies;
     std::vector<const Project *> requiredProjects;
 
     int count = 0;

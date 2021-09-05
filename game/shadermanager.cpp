@@ -26,6 +26,7 @@ loadProgram(ShaderManager::Program id)
     static const ProgramSource programSources[] = {
         { "text.vert", nullptr, "text.frag" }, // Text
         { "circle.vert", nullptr, "circle.frag" }, // Circle
+        { "thickline.vert", nullptr, "thickline.frag" }, // ThickLine
     };
     static_assert(std::extent_v<decltype(programSources)> == ShaderManager::NumPrograms, "expected number of programs to match");
 

@@ -54,6 +54,7 @@ GameWindow::GameWindow()
         .material = 800,
         .carbon = 300
     };
+    furnace->dependencies.push_back(Unit::Dependency { 1, mine.get() });
 
     auto oilRig = std::make_unique<Unit>();
     oilRig->name = "Oil Rig"s;

@@ -217,6 +217,29 @@ void UIPainter::drawRoundedRect(const GX::BoxF &box, float radius, const glm::ve
     drawPatch(glm::vec2(x2, y2), glm::vec2(x3, y3), glm::vec2(0.5, 0.5), glm::vec2(1.0, 1.0));
 }
 
+void UIPainter::drawThickLine(const glm::vec2 &from, const glm::vec2 &to, float thickness, const glm::vec4 &color, int depth)
+{
+    m_spriteBatcher->setBatchProgram(GX::ShaderManager::Program::ThickLine);
+
+    const auto dir = glm::normalize(to - from);
+    const auto tangent = glm::vec2(-dir.y, dir.x);
+
+    const auto p0 = from - 0.5f * thickness * tangent;
+    const auto p1 = from + 0.5f * thickness * tangent;
+
+    const auto p2 = to - 0.5f * thickness * tangent;
+    const auto p3 = to + 0.5f * thickness * tangent;
+
+    const auto verts = GX::SpriteBatcher::QuadVerts {
+        { { p0, { 0.0f, 0.0f }, color, { 2.0f * thickness, 0, 0, 0 } },
+          { p2, { 1.0f, 0.0f }, color, { 2.0f * thickness, 0, 0, 0 } },
+          { p3, { 1.0f, 1.0f }, color, { 2.0f * thickness, 0, 0, 0 } },
+          { p1, { 0.0f, 1.0f }, color, { 2.0f * thickness, 0, 0, 0 } } }
+    };
+
+    m_spriteBatcher->addSprite(nullptr, verts, depth);
+}
+
 void UIPainter::updateSceneBox(int width, int height)
 {
     static constexpr auto PreferredSceneSize = glm::vec2(1280, 720);
