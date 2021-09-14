@@ -138,7 +138,7 @@ void ConnectionItem::updateGeometry()
 
 void ConnectionItem::setSink(const Unit *sink)
 {
-    Q_ASSERT(sink == nullptr);
+    Q_ASSERT(m_sink == nullptr);
     m_sink = sink;
     updateGeometry();
 }
@@ -277,16 +277,20 @@ TechGraphView::TechGraphView(TechGraph *graph, QWidget *parent)
     });
 
     connect(m_graph, &TechGraph::unitChanged, this, [this](const Unit *unit) {
-        const auto items = scene()->items();
-        auto it = std::find_if(items.begin(), items.end(), [unit](const QGraphicsItem *item) {
-            return static_cast<const UnitItem *>(item)->unit() == unit;
-        });
-        if (it != items.end()) {
-            auto *item = *it;
-            if (unit->position != item->pos())
-                item->setPos(unit->position);
-            item->update();
-        }
+        auto it = m_unitItems.find(unit);
+        Q_ASSERT(it != m_unitItems.end());
+        auto *item = it->second;
+        if (unit->position != item->pos())
+            item->setPos(unit->position);
+        item->update();
+    });
+
+    connect(m_graph, &TechGraph::unitAboutToBeRemoved, this, [this](const Unit *unit) {
+        removeConnections(unit);
+        auto it = m_unitItems.find(unit);
+        Q_ASSERT(it != m_unitItems.end());
+        auto *item = it->second;
+        delete item;
     });
 
     auto *deleteAction = new QAction(this);
@@ -325,6 +329,7 @@ std::vector<const Unit *> TechGraphView::selectedUnits() const
 ConnectionItem *TechGraphView::addConnection(const Unit *source, const QPointF &pos)
 {
     auto *connection = new ConnectionItem(this, source, pos);
+    connection->setZValue(-1);
     scene()->addItem(connection);
     m_unitConnections[source].push_back(connection);
     return connection;
@@ -361,32 +366,53 @@ void TechGraphView::connectToSink(ConnectionItem *connection, const QPointF &pos
 
 void TechGraphView::updateConnections(const Unit *unit)
 {
-    auto &connections = m_unitConnections[unit];
+    auto it = m_unitConnections.find(unit);
+    if (it == m_unitConnections.end())
+        return;
+    auto &connections = it->second;
     for (auto *connection : connections)
         connection->updateGeometry();
 }
 
+void TechGraphView::removeConnections(const Unit *unit)
+{
+    auto it = m_unitConnections.find(unit);
+    if (it == m_unitConnections.end())
+        return;
+    auto &connections = it->second;
+    for (auto *connection : connections) {
+        if (auto *source = connection->source(); source != unit)
+            removeUnitConnection(source, connection);
+        if (auto *sink = connection->sink(); sink != unit)
+            removeUnitConnection(sink, connection);
+    }
+    qDeleteAll(connections);
+    m_unitConnections.erase(it);
+}
+
 void TechGraphView::removeConnection(ConnectionItem *connection)
 {
-    auto removeUnitConnection = [this, connection](const Unit *unit) {
-        auto &connections = m_unitConnections[unit];
-        auto it = std::find(connections.begin(), connections.end(), connection);
-        Q_ASSERT(it != connections.end());
-        connections.erase(it);
-    };
-
-    removeUnitConnection(connection->source());
+    removeUnitConnection(connection->source(), connection);
 
     if (connection->sink()) {
-        removeUnitConnection(connection->sink());
+        removeUnitConnection(connection->sink(), connection);
         m_graph->removeDependency(connection->sink(), connection->source());
     }
 
     delete connection;
 }
 
+void TechGraphView::removeUnitConnection(const Unit *unit, ConnectionItem *connection)
+{
+    auto &connections = m_unitConnections[unit];
+    auto it = std::find(connections.begin(), connections.end(), connection);
+    Q_ASSERT(it != connections.end());
+    connections.erase(it);
+}
+
 void TechGraphView::removeUnit(UnitItem *unit)
 {
+    m_graph->removeUnit(unit->unit());
 }
 
 void TechGraphView::mousePressEvent(QMouseEvent *event)

@@ -49,6 +49,12 @@ void TechGraph::removeUnit(const Unit *unit)
     });
     Q_ASSERT(it != m_units.end());
     emit unitAboutToBeRemoved(unit);
+    for (auto &otherUnit : m_units) {
+        if (otherUnit.get() == unit)
+            continue;
+        auto &dependencies = otherUnit->dependencies;
+        dependencies.erase(std::remove(dependencies.begin(), dependencies.end(), unit), dependencies.end());
+    }
     m_units.erase(it);
 }
 

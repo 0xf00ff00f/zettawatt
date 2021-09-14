@@ -36,7 +36,9 @@ protected:
     void mousePressEvent(QMouseEvent *event) override;
 
 private:
+    void removeConnections(const Unit *unit);
     void removeConnection(ConnectionItem *item);
+    void removeUnitConnection(const Unit *unit, ConnectionItem *connection);
     void removeUnit(UnitItem *item);
 
     TechGraph *m_graph;
