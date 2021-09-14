@@ -1,5 +1,10 @@
 #include "techgraph.h"
 
+#include <QJsonArray>
+#include <QJsonObject>
+
+#include <algorithm>
+
 TechGraph::TechGraph(QObject *parent)
     : QObject(parent)
 {
@@ -95,4 +100,94 @@ std::vector<const Unit *> TechGraph::units() const
         return item.get();
     });
     return result;
+}
+
+namespace {
+QString unitsKey()
+{
+    return QLatin1String("units");
+}
+
+QString nameKey()
+{
+    return QLatin1String("name");
+}
+
+QString descriptionKey()
+{
+    return QLatin1String("description");
+}
+
+QString positionKey()
+{
+    return QLatin1String("position");
+}
+
+QString dependenciesKey()
+{
+    return QLatin1String("dependencies");
+}
+} // namespace
+
+QJsonObject TechGraph::save() const
+{
+    std::unordered_map<const Unit *, int> unitIndices;
+    for (size_t i = 0, count = m_units.size(); i < count; ++i)
+        unitIndices[m_units[i].get()] = i;
+
+    QJsonObject settings;
+
+    QJsonArray unitsArray;
+    for (const auto &unit : m_units) {
+        QJsonObject unitSettings;
+        unitSettings[nameKey()] = unit->name;
+        unitSettings[descriptionKey()] = unit->description;
+        QJsonArray positionArray;
+        positionArray.append(unit->position.x());
+        positionArray.append(unit->position.y());
+        unitSettings[positionKey()] = positionArray;
+        QJsonArray dependenciesArray;
+        for (auto *dependency : unit->dependencies)
+            dependenciesArray.append(unitIndices[dependency]);
+        unitSettings[dependenciesKey()] = dependenciesArray;
+        unitsArray.append(unitSettings);
+    }
+    settings[unitsKey()] = unitsArray;
+
+    return settings;
+}
+
+void TechGraph::load(const QJsonObject &settings)
+{
+    m_units.clear();
+
+    const auto unitsArray = settings[unitsKey()].toArray();
+
+    const auto unitsCount = unitsArray.size();
+
+    m_units.reserve(unitsCount);
+    std::generate_n(std::back_inserter(m_units), unitsCount, [] { return std::make_unique<Unit>(); });
+
+    for (size_t i = 0; i < unitsCount; ++i) {
+        const auto &unitSettings = unitsArray[i].toObject();
+        auto &unit = m_units[i];
+        unit->name = unitSettings[nameKey()].toString();
+        unit->description = unitSettings[descriptionKey()].toString();
+        const auto positionArray = unitSettings[positionKey()].toArray();
+        unit->position = QPointF(positionArray[0].toDouble(), positionArray[1].toDouble());
+        const auto dependenciesArray = unitSettings[dependenciesKey()].toArray();
+        for (const auto &value : dependenciesArray) {
+            const auto index = value.toInt();
+            Q_ASSERT(index >= 0 && index < m_units.size());
+            unit->dependencies.push_back(m_units[index].get());
+        }
+    }
+
+    emit graphReset();
+}
+
+void TechGraph::clear()
+{
+    m_units.clear();
+    emit graphReset();
 }

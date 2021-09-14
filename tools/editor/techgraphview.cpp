@@ -75,7 +75,7 @@ private:
 class ConnectionItem : public QGraphicsItem
 {
 public:
-    ConnectionItem(TechGraphView *view, const Unit *source, const QPointF &pos, QGraphicsItem *parent = nullptr);
+    ConnectionItem(TechGraphView *view, const Unit *source, const QPointF &pos = {}, QGraphicsItem *parent = nullptr);
 
     QRectF boundingRect() const override;
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = nullptr) override;
@@ -307,6 +307,8 @@ TechGraphView::TechGraphView(TechGraph *graph, QWidget *parent)
         delete item;
     });
 
+    connect(m_graph, &TechGraph::graphReset, this, &TechGraphView::resetItems);
+
     auto *deleteAction = new QAction(this);
     deleteAction->setShortcuts({ QKeySequence::Delete, Qt::Key_Backspace });
     connect(deleteAction, &QAction::triggered, this, [this] {
@@ -324,6 +326,8 @@ TechGraphView::TechGraphView(TechGraph *graph, QWidget *parent)
         }
     });
     addAction(deleteAction);
+
+    resetItems();
 }
 
 TechGraphView::~TechGraphView() = default;
@@ -436,4 +440,34 @@ void TechGraphView::mousePressEvent(QMouseEvent *event)
         m_graph->setUnitPosition(unit, mapToScene(event->pos()));
     }
     QGraphicsView::mousePressEvent(event);
+}
+
+void TechGraphView::resetItems()
+{
+    scene()->clear();
+
+    m_unitItems.clear();
+    m_unitConnections.clear();
+
+    const auto units = m_graph->units();
+
+    // units
+    for (const auto *unit : units) {
+        auto *item = new UnitItem(this, unit);
+        item->setPos(unit->position);
+        scene()->addItem(item);
+        m_unitItems[unit] = item;
+    }
+
+    // connections
+    for (const auto *sink : units) {
+        for (const auto *source : sink->dependencies) {
+            auto *connection = new ConnectionItem(this, source);
+            connection->setSink(sink);
+            connection->updateGeometry();
+            scene()->addItem(connection);
+            m_unitConnections[sink].push_back(connection);
+            m_unitConnections[source].push_back(connection);
+        }
+    }
 }

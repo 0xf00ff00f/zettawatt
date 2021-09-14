@@ -36,6 +36,7 @@ protected:
     void mousePressEvent(QMouseEvent *event) override;
 
 private:
+    void resetItems();
     void removeConnections(const Unit *unit);
     void removeConnection(ConnectionItem *item);
     void removeUnitConnection(const Unit *unit, ConnectionItem *connection);
