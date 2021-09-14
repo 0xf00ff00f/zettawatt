@@ -79,6 +79,7 @@ public:
 
     QRectF boundingRect() const override;
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = nullptr) override;
+    QPainterPath shape() const override;
 
     void mouseMoveEvent(QGraphicsSceneMouseEvent *event) override;
     void mouseReleaseEvent(QGraphicsSceneMouseEvent *event) override;
@@ -148,6 +149,19 @@ void ConnectionItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *op
     const QColor color = option->state & QStyle::State_Selected ? Qt::red : Qt::black;
     painter->setPen(color);
     painter->drawLine(m_from, m_to);
+}
+
+QPainterPath ConnectionItem::shape() const
+{
+    QPainterPath path;
+    path.moveTo(m_from);
+    path.lineTo(m_to);
+
+    // create a thick shape, otherwise picking is too hard
+    constexpr auto StrokeWidth = 20.0f;
+    QPainterPathStroker ps;
+    ps.setWidth(StrokeWidth);
+    return ps.createStroke(path);
 }
 
 void ConnectionItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
