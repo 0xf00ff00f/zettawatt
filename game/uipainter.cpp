@@ -147,7 +147,7 @@ void UIPainter::drawTextBox(const GX::BoxF &box, const glm::vec4 &color, int dep
     }();
     const auto lineHeight = m_font->ascent() - m_font->descent() + m_font->lineGap();
     for (const auto &row : rows) {
-        assert(horizontalAdvance(row.text) == row.width);
+        assert(std::abs(horizontalAdvance(row.text) - row.width) < 1e-3);
         const float x = [this, &box, rowWidth = row.width] {
             switch (m_horizontalAlign) {
             case HorizontalAlign::Left:
@@ -319,49 +319,42 @@ std::vector<UIPainter::TextRow> UIPainter::breakTextLines(const std::string &tex
 
     std::vector<TextRow> rows;
 
-    auto rowStart = text.begin(), lastBreak = rowStart;
-    float lineWidth = 0, lastBreakWidth = 0;
+    using Position = std::pair<std::string::const_iterator, float>;
+
+    Position rowStart = { text.begin(), 0.0f };
+    std::optional<Position> lastBreak;
 
     const auto spaceWidth = m_font->getGlyph(' ')->advanceWidth;
 
-    const auto toStringView = [](auto start, auto end) {
-        return std::string_view(&*start, std::distance(start, end));
+    const auto makeRow = [](auto start, float xStart, auto end, float xEnd) {
+        return TextRow { std::string_view(&*start, std::distance(start, end)), xEnd - xStart };
     };
 
+    float lineWidth = 0.0f;
     for (auto it = text.begin(); it != text.end(); ++it) {
         const auto ch = *it;
         if (ch == ' ') {
-            if (lineWidth > maxWidth) {
-                if (lastBreak != rowStart) {
-                    rows.push_back(TextRow { toStringView(rowStart, lastBreak), lastBreakWidth });
-                    rowStart = lastBreak + 1;
-                    lineWidth -= lastBreakWidth;
-                    lastBreak = it;
-                    lastBreakWidth = lineWidth;
+            if (lineWidth - rowStart.second > maxWidth) {
+                if (lastBreak) {
+                    rows.push_back(makeRow(rowStart.first, rowStart.second, lastBreak->first, lastBreak->second));
+                    rowStart = { lastBreak->first + 1, lastBreak->second + spaceWidth };
+                    lastBreak = { it, lineWidth };
                 } else {
-                    rows.push_back(TextRow { toStringView(rowStart, it), lineWidth });
-                    rowStart = it + 1;
-                    lineWidth = 0;
-                    lastBreak = rowStart;
-                    lastBreakWidth = 0;
+                    rows.push_back(makeRow(rowStart.first, rowStart.second, it, lineWidth));
+                    rowStart = { it + 1, lineWidth + spaceWidth };
                 }
             } else {
-                lastBreak = it;
-                lastBreakWidth = lineWidth;
-                lineWidth += spaceWidth;
+                lastBreak = { it, lineWidth };
             }
-        } else {
-            lineWidth += m_font->getGlyph(ch)->advanceWidth;
         }
+        lineWidth += m_font->getGlyph(ch)->advanceWidth;
     }
-    if (rowStart != text.end()) {
-        if (lineWidth > maxWidth && lastBreak != rowStart) {
-            rows.push_back(TextRow { toStringView(rowStart, lastBreak), lastBreakWidth });
-            rowStart = lastBreak + 1;
-            lineWidth -= lastBreakWidth + spaceWidth;
-            rows.push_back(TextRow { toStringView(rowStart, text.end()), lineWidth });
+    if (rowStart.first != text.end()) {
+        if (lineWidth - rowStart.second > maxWidth && lastBreak) {
+            rows.push_back(makeRow(rowStart.first, rowStart.second, lastBreak->first, lastBreak->second));
+            rows.push_back(makeRow(lastBreak->first + 1, lastBreak->second + spaceWidth, text.end(), lineWidth));
         } else {
-            rows.push_back(TextRow { toStringView(rowStart, text.end()), lineWidth });
+            rows.push_back(makeRow(rowStart.first, rowStart.second, text.end(), lineWidth));
         }
     }
 
