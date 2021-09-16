@@ -202,8 +202,8 @@ void World::initialize(TechGraph *techGraph)
 
     for (auto &unit : m_techGraph->units) {
         const auto *fromUnit = m_unitItems[unit.get()];
-        for (auto &dependency : unit->dependencies) {
-            const auto *toUnit = m_unitItems[dependency.unit];
+        for (const auto *dependency : unit->dependencies) {
+            const auto *toUnit = m_unitItems[dependency];
             assert(toUnit);
             m_edges.push_back(Edge { fromUnit, toUnit });
         }
@@ -235,10 +235,6 @@ void World::updateStateDelta()
         if (!unit->count)
             continue;
         StateVector yield = unit->yield;
-        for (const auto &project : m_techGraph->projects) {
-            if (project->enabled && project->parent == unit.get())
-                yield *= project->boost;
-        }
         delta += unit->count * yield;
     }
     m_stateDelta = delta;

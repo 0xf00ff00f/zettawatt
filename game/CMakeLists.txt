@@ -67,6 +67,7 @@ add_executable(game
 target_link_libraries(game
     gx
     fmt
+    rapidjson
 ) 
 
 if (NOT WIN32)

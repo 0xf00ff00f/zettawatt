@@ -78,20 +78,6 @@ inline StateVector operator*(const StateVector &lhs, Real factor)
 
 struct Unit;
 
-struct Project {
-    std::string name;
-    std::string description;
-
-    glm::vec2 position;
-
-    StateVector cost;
-    StateVector boost;
-
-    const Unit *parent;
-
-    bool enabled = false;
-};
-
 struct Unit {
     std::string name;
     std::string description;
@@ -101,17 +87,15 @@ struct Unit {
     StateVector cost;
     StateVector yield;
 
-    struct Dependency {
-        int count;
-        const Unit *unit;
-    };
-    std::vector<Dependency> dependencies;
-    std::vector<const Project *> requiredProjects;
+    std::vector<const Unit *> dependencies;
 
     int count = 0;
 };
 
 struct TechGraph {
     std::vector<std::unique_ptr<Unit>> units;
-    std::vector<std::unique_ptr<Project>> projects;
+
+    bool load(const std::string &jsonPath);
 };
+
+std::unique_ptr<TechGraph> loadTechGraph(const std::string &jsonPath);

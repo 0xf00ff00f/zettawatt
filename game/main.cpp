@@ -36,48 +36,7 @@ private:
 GameWindow::GameWindow()
     : m_techGraph(std::make_unique<TechGraph>())
 {
-    auto mine = std::make_unique<Unit>();
-    mine->name = "Open-pit Mine"s;
-    mine->position = glm::vec2(-100, 200);
-    mine->cost = {
-        .energy = 300,
-    };
-
-    auto furnace = std::make_unique<Unit>();
-    furnace->name = "Blast Furnace"s;
-    furnace->position = glm::vec2(-200, -100);
-    furnace->cost = StateVector {
-        .energy = 100,
-        .material = 200,
-    };
-    furnace->yield = StateVector {
-        .material = 800,
-        .carbon = 300
-    };
-    furnace->dependencies.push_back(Unit::Dependency { 1, mine.get() });
-
-    auto oilRig = std::make_unique<Unit>();
-    oilRig->name = "Oil Rig"s;
-    oilRig->position = glm::vec2(100, 200);
-    oilRig->cost = StateVector {
-        .material = 100,
-    };
-
-    auto powerPlant = std::make_unique<Unit>();
-    powerPlant->name = "Thermal Power Plant"s;
-    powerPlant->position = glm::vec2(200, -100);
-    powerPlant->cost = StateVector {
-        .material = 100,
-    };
-    powerPlant->yield = StateVector {
-        .energy = 200,
-        .carbon = 300,
-    };
-
-    m_techGraph->units.push_back(std::move(mine));
-    m_techGraph->units.push_back(std::move(furnace));
-    m_techGraph->units.push_back(std::move(oilRig));
-    m_techGraph->units.push_back(std::move(powerPlant));
+    m_techGraph->load("assets/data/techgraph.json");
 }
 
 void GameWindow::initializeGL()
