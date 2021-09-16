@@ -90,19 +90,12 @@ void UIPainter::drawText(const glm::vec2 &pos, const glm::vec4 &color, int depth
         const auto &t0 = textureCoords.min;
         const auto &t1 = textureCoords.max;
 
-        const auto v0 = glm::vec2(m_transform * glm::vec4(p0.x, p0.y, 0, 1));
-        const auto v1 = glm::vec2(m_transform * glm::vec4(p1.x, p0.y, 0, 1));
-        const auto v2 = glm::vec2(m_transform * glm::vec4(p1.x, p1.y, 0, 1));
-        const auto v3 = glm::vec2(m_transform * glm::vec4(p0.x, p1.y, 0, 1));
-
-        const GX::SpriteBatcher::QuadVerts verts = {
-            { { v0, { t0.x, t0.y }, color, glm::vec4(0) },
-              { v1, { t1.x, t0.y }, color, glm::vec4(0) },
-              { v2, { t1.x, t1.y }, color, glm::vec4(0) },
-              { v3, { t0.x, t1.y }, color, glm::vec4(0) } }
-        };
-
-        m_spriteBatcher->addSprite(pixmap.texture, verts, depth);
+        addQuad(pixmap.texture,
+                { { p0.x, p0.y }, { t0.x, t0.y } },
+                { { p1.x, p0.y }, { t1.x, t0.y } },
+                { { p1.x, p1.y }, { t1.x, t1.y } },
+                { { p0.x, p1.y }, { t0.x, t1.y } },
+                color, glm::vec4(0), depth);
 
         glyphPosition += glm::vec2(glyph->advanceWidth, 0);
     }
@@ -169,15 +162,23 @@ void UIPainter::drawCircle(const glm::vec2 &center, float radius, const glm::vec
     const auto &p0 = center - glm::vec2(radius, radius);
     const auto &p1 = center + glm::vec2(radius, radius);
 
-    const auto verts = GX::SpriteBatcher::QuadVerts {
-        { { { p0.x, p0.y }, { 0.0f, 0.0f }, color, { 2.0f * radius, 0, 0, 0 } },
-          { { p1.x, p0.y }, { 1.0f, 0.0f }, color, { 2.0f * radius, 0, 0, 0 } },
-          { { p1.x, p1.y }, { 1.0f, 1.0f }, color, { 2.0f * radius, 0, 0, 0 } },
-          { { p0.x, p1.y }, { 0.0f, 1.0f }, color, { 2.0f * radius, 0, 0, 0 } } }
-    };
-
     m_spriteBatcher->setBatchProgram(GX::ShaderManager::Program::Circle);
-    m_spriteBatcher->addSprite(nullptr, verts, depth);
+    addQuad(nullptr,
+            { { p0.x, p0.y }, { 0.0f, 0.0f } },
+            { { p1.x, p0.y }, { 1.0f, 0.0f } },
+            { { p1.x, p1.y }, { 1.0f, 1.0f } },
+            { { p0.x, p1.y }, { 0.0f, 1.0f } }, color, { 2.0f * radius, 0, 0, 0 }, depth);
+}
+
+void UIPainter::addQuad(const GX::AbstractTexture *texture, const Vertex &v0, const Vertex &v1, const Vertex &v2, const Vertex &v3, const glm::vec4 &fgColor, const glm::vec4 &bgColor, int depth)
+{
+    const auto quad = GX::SpriteBatcher::QuadVerts {
+        { { glm::vec2(m_transform * glm::vec4(v0.position, 0, 1)), v0.textureCoords, fgColor, bgColor },
+          { glm::vec2(m_transform * glm::vec4(v1.position, 0, 1)), v1.textureCoords, fgColor, bgColor },
+          { glm::vec2(m_transform * glm::vec4(v2.position, 0, 1)), v2.textureCoords, fgColor, bgColor },
+          { glm::vec2(m_transform * glm::vec4(v3.position, 0, 1)), v3.textureCoords, fgColor, bgColor } }
+    };
+    m_spriteBatcher->addSprite(texture, quad, depth);
 }
 
 void UIPainter::drawRoundedRect(const GX::BoxF &box, float radius, const glm::vec4 &color, int depth)
@@ -185,13 +186,14 @@ void UIPainter::drawRoundedRect(const GX::BoxF &box, float radius, const glm::ve
     m_spriteBatcher->setBatchProgram(GX::ShaderManager::Program::Circle);
 
     const auto drawPatch = [this, radius, &color, depth](const glm::vec2 &p0, const glm::vec2 &p1, const glm::vec2 &t0, const glm::vec2 &t1) {
-        const auto verts = GX::SpriteBatcher::QuadVerts {
-            { { { p0.x, p0.y }, { t0.x, t0.y }, color, { 2.0f * radius, 0, 0, 0 } },
-              { { p1.x, p0.y }, { t1.x, t0.y }, color, { 2.0f * radius, 0, 0, 0 } },
-              { { p1.x, p1.y }, { t1.x, t1.y }, color, { 2.0f * radius, 0, 0, 0 } },
-              { { p0.x, p1.y }, { t0.x, t1.y }, color, { 2.0f * radius, 0, 0, 0 } } }
-        };
-        m_spriteBatcher->addSprite(nullptr, verts, depth);
+        addQuad(nullptr,
+                { { p0.x, p0.y }, { t0.x, t0.y } },
+                { { p1.x, p0.y }, { t1.x, t0.y } },
+                { { p1.x, p1.y }, { t1.x, t1.y } },
+                { { p0.x, p1.y }, { t0.x, t1.y } },
+                color,
+                { 2.0f * radius, 0, 0, 0 },
+                depth);
     };
 
     const auto x0 = box.min.x;
@@ -230,14 +232,11 @@ void UIPainter::drawThickLine(const glm::vec2 &from, const glm::vec2 &to, float 
     const auto p2 = to - 0.5f * thickness * tangent;
     const auto p3 = to + 0.5f * thickness * tangent;
 
-    const auto verts = GX::SpriteBatcher::QuadVerts {
-        { { p0, { 0.0f, 0.0f }, color, { 2.0f * thickness, 0, 0, 0 } },
-          { p2, { 1.0f, 0.0f }, color, { 2.0f * thickness, 0, 0, 0 } },
-          { p3, { 1.0f, 1.0f }, color, { 2.0f * thickness, 0, 0, 0 } },
-          { p1, { 0.0f, 1.0f }, color, { 2.0f * thickness, 0, 0, 0 } } }
-    };
-
-    m_spriteBatcher->addSprite(nullptr, verts, depth);
+    addQuad(nullptr,
+            { p0, { 0.0f, 0.0f } },
+            { p2, { 1.0f, 0.0f } },
+            { p3, { 1.0f, 1.0f } },
+            { p1, { 0.0f, 1.0f } }, color, { 2.0f * thickness, 0, 0, 0 }, depth);
 }
 
 void UIPainter::updateSceneBox(int width, int height)

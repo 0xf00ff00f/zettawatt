@@ -26,11 +26,11 @@ public:
     virtual void paint(UIPainter *painter) const = 0;
     virtual bool contains(const glm::vec2 &pos) const = 0;
 
-    void mousePressEvent(const glm::vec2 &pos);
+    bool mousePressEvent(const glm::vec2 &pos);
     void mouseReleaseEvent(const glm::vec2 &pos);
     void mouseMoveEvent(const glm::vec2 &pos);
 
-    virtual void handleMousePress();
+    virtual bool handleMousePress();
     virtual void handleMouseRelease();
 
 protected:
@@ -73,4 +73,7 @@ private:
         const GraphItem *to;
     };
     std::vector<Edge> m_edges;
+    glm::vec2 m_lastMousePosition;
+    bool m_panningView = false;
+    glm::vec2 m_viewOffset;
 };

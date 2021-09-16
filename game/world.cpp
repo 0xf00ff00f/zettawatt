@@ -8,8 +8,10 @@
 
 #include <glm/gtc/constants.hpp>
 #include <glm/gtc/random.hpp>
+#include <glm/gtx/string_cast.hpp>
 
 #include <algorithm>
+#include <iostream>
 
 using namespace std::string_literals;
 
@@ -92,10 +94,11 @@ GraphItem::GraphItem(World *world)
 
 GraphItem::~GraphItem() = default;
 
-void GraphItem::mousePressEvent(const glm::vec2 &pos)
+bool GraphItem::mousePressEvent(const glm::vec2 &pos)
 {
-    if (contains(pos))
-        handleMousePress();
+    if (!contains(pos))
+        return false;
+    return handleMousePress();
 }
 
 void GraphItem::mouseReleaseEvent(const glm::vec2 &pos)
@@ -109,8 +112,9 @@ void GraphItem::mouseMoveEvent(const glm::vec2 &pos)
     m_hovered = contains(pos);
 }
 
-void GraphItem::handleMousePress()
+bool GraphItem::handleMousePress()
 {
+    return false;
 }
 
 void GraphItem::handleMouseRelease()
@@ -129,7 +133,7 @@ public:
     void paint(UIPainter *painter) const override;
     bool contains(const glm::vec2 &pos) const override;
 
-    void handleMousePress() override;
+    bool handleMousePress() override;
 
 private:
     Unit *m_unit;
@@ -181,9 +185,10 @@ bool UnitItem::contains(const glm::vec2 &pos) const
     return glm::distance(pos, position()) < radius();
 }
 
-void UnitItem::handleMousePress()
+bool UnitItem::handleMousePress()
 {
     m_world->unitClicked(m_unit);
+    return true;
 }
 
 World::World() = default;
@@ -218,6 +223,8 @@ void World::reset()
     m_state.energy = 2100;
     m_state.material = 2000;
     m_state.carbon = 0;
+
+    m_viewOffset = glm::vec2(0);
 }
 
 void World::update(double elapsed)
@@ -248,6 +255,9 @@ void World::paint(UIPainter *painter) const
 
 void World::paintGraph(UIPainter *painter) const
 {
+    painter->saveTransform();
+    painter->translate(m_viewOffset);
+
     for (auto [from, to] : m_edges) {
         constexpr auto NodeBorder = 4.0f;
 
@@ -262,6 +272,8 @@ void World::paintGraph(UIPainter *painter) const
     for (auto &item : m_graphItems) {
         item->paint(painter);
     }
+
+    painter->restoreTransform();
 }
 
 void World::paintState(UIPainter *painter) const
@@ -346,20 +358,34 @@ void World::paintState(UIPainter *painter) const
 
 void World::mousePressEvent(const glm::vec2 &pos)
 {
-    for (auto &item : m_graphItems)
-        item->mousePressEvent(pos);
+    bool accepted = false;
+    for (auto &item : m_graphItems) {
+        if (item->mousePressEvent(pos - m_viewOffset))
+            accepted = true;
+    }
+    m_panningView = !accepted;
+    m_lastMousePosition = pos;
 }
 
 void World::mouseReleaseEvent(const glm::vec2 &pos)
 {
-    for (auto &item : m_graphItems)
-        item->mouseReleaseEvent(pos);
+    if (m_panningView) {
+        m_panningView = false;
+    } else {
+        for (auto &item : m_graphItems)
+            item->mouseReleaseEvent(pos - m_viewOffset);
+    }
 }
 
 void World::mouseMoveEvent(const glm::vec2 &pos)
 {
-    for (auto &item : m_graphItems)
-        item->mouseMoveEvent(pos);
+    if (m_panningView) {
+        m_viewOffset += pos - m_lastMousePosition;
+    } else {
+        for (auto &item : m_graphItems)
+            item->mouseMoveEvent(pos - m_viewOffset);
+    }
+    m_lastMousePosition = pos;
 }
 
 bool World::unitClicked(Unit *unit)

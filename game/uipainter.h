@@ -14,6 +14,7 @@ class TextureAtlas;
 class FontCache;
 class SpriteBatcher;
 class ShaderManager;
+class AbstractTexture;
 } // namespace GX
 
 class UIPainter : private GX::NonCopyable
@@ -78,6 +79,12 @@ public:
     void setHorizontalAlign(HorizontalAlign align);
 
 private:
+    struct Vertex {
+        glm::vec2 position;
+        glm::vec2 textureCoords;
+    };
+    void addQuad(const GX::AbstractTexture *texture, const Vertex &v0, const Vertex &v1, const Vertex &v2, const Vertex &v3, const glm::vec4 &fgColor, const glm::vec4 &bgColor, int depth);
+
     void updateSceneBox(int width, int height);
 
     struct TextRow {
