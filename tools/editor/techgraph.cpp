@@ -47,6 +47,16 @@ void TechGraph::setUnitPosition(const Unit *unit, const QPointF &position)
     mutateUnit(unit, &Unit::position, position);
 }
 
+void TechGraph::setUnitCost(const Unit *unit, const Cost &cost)
+{
+    mutateUnit(unit, &Unit::cost, cost);
+}
+
+void TechGraph::setUnitYield(const Unit *unit, const Cost &yield)
+{
+    mutateUnit(unit, &Unit::yield, yield);
+}
+
 void TechGraph::removeUnit(const Unit *unit)
 {
     auto it = std::find_if(m_units.begin(), m_units.end(), [unit](const auto &item) {
@@ -127,6 +137,56 @@ QString dependenciesKey()
 {
     return QLatin1String("dependencies");
 }
+
+QString costKey()
+{
+    return QLatin1String("cost");
+}
+
+QString yieldKey()
+{
+    return QLatin1String("yield");
+}
+
+QString extropyKey()
+{
+    return QLatin1String("extropy");
+}
+
+QString energyKey()
+{
+    return QLatin1String("energy");
+}
+
+QString materialKey()
+{
+    return QLatin1String("material");
+}
+
+QString carbonKey()
+{
+    return QLatin1String("carbon");
+}
+
+Cost loadCost(const QJsonObject &settings)
+{
+    return {
+        settings[extropyKey()].toDouble(),
+        settings[energyKey()].toDouble(),
+        settings[materialKey()].toDouble(),
+        settings[carbonKey()].toDouble()
+    };
+}
+
+QJsonObject saveCost(const Cost &cost)
+{
+    QJsonObject settings;
+    settings[extropyKey()] = cost.extropy;
+    settings[energyKey()] = cost.energy;
+    settings[materialKey()] = cost.material;
+    settings[carbonKey()] = cost.carbon;
+    return settings;
+}
 } // namespace
 
 QJsonObject TechGraph::save() const
@@ -146,6 +206,8 @@ QJsonObject TechGraph::save() const
         positionArray.append(unit->position.x());
         positionArray.append(unit->position.y());
         unitSettings[positionKey()] = positionArray;
+        unitSettings[costKey()] = saveCost(unit->cost);
+        unitSettings[yieldKey()] = saveCost(unit->yield);
         QJsonArray dependenciesArray;
         for (auto *dependency : unit->dependencies)
             dependenciesArray.append(unitIndices[dependency]);
@@ -175,6 +237,8 @@ void TechGraph::load(const QJsonObject &settings)
         unit->description = unitSettings[descriptionKey()].toString();
         const auto positionArray = unitSettings[positionKey()].toArray();
         unit->position = QPointF(positionArray[0].toDouble(), positionArray[1].toDouble());
+        unit->cost = loadCost(unitSettings[costKey()].toObject());
+        unit->yield = loadCost(unitSettings[yieldKey()].toObject());
         const auto dependenciesArray = unitSettings[dependenciesKey()].toArray();
         for (const auto &value : dependenciesArray) {
             const auto index = value.toInt();

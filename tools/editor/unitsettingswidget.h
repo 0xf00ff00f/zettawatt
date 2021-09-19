@@ -5,12 +5,14 @@
 class TechGraph;
 struct Unit;
 
+class CostWidget;
+
 class QLineEdit;
 
 class UnitSettingsWidget : public QWidget
 {
 public:
-    explicit UnitSettingsWidget(TechGraph *graph, QWidget *widget);
+    explicit UnitSettingsWidget(TechGraph *graph, QWidget *parent = nullptr);
     ~UnitSettingsWidget();
 
     void setUnit(const Unit *unit);
@@ -20,4 +22,6 @@ private:
     const Unit *m_unit = nullptr;
     QLineEdit *m_name;
     QLineEdit *m_description;
+    CostWidget *m_cost;
+    CostWidget *m_yield;
 };

@@ -7,11 +7,25 @@
 
 class QJsonObject;
 
+struct Cost {
+    double extropy;
+    double energy;
+    double material;
+    double carbon;
+
+    bool operator==(const Cost &other) const
+    {
+        return qFuzzyCompare(extropy, other.extropy) && qFuzzyCompare(energy, other.energy) && qFuzzyCompare(material, other.material) && qFuzzyCompare(carbon, other.carbon);
+    }
+};
+
 struct Unit {
     QString name;
     QString description;
     QPointF position;
     std::vector<const Unit *> dependencies;
+    Cost cost;
+    Cost yield;
 };
 
 class TechGraph : public QObject
@@ -26,6 +40,8 @@ public:
     void setUnitName(const Unit *unit, const QString &name);
     void setUnitDescription(const Unit *unit, const QString &name);
     void setUnitPosition(const Unit *unit, const QPointF &position);
+    void setUnitCost(const Unit *unit, const Cost &cost);
+    void setUnitYield(const Unit *unit, const Cost &cost);
 
     void removeUnit(const Unit *unit);
 

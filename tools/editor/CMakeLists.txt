@@ -14,6 +14,8 @@ set(editor_SOURCES
     techgraph.h
     unitsettingswidget.cpp
     unitsettingswidget.h
+    costwidget.cpp
+    costwidget.h
 )
 
 add_executable(editor

@@ -5,6 +5,18 @@
 #include <rapidjson/document.h>
 #include <spdlog/spdlog.h>
 
+namespace {
+StateVector loadStateVector(const rapidjson::Value &value)
+{
+    return {
+        value["extropy"].GetDouble(),
+        value["energy"].GetDouble(),
+        value["material"].GetDouble(),
+        value["carbon"].GetDouble()
+    };
+}
+} // namespace
+
 bool TechGraph::load(const std::string &jsonPath)
 {
     units.clear();
@@ -37,11 +49,13 @@ bool TechGraph::load(const std::string &jsonPath)
         unit->description = unitSettings["description"].GetString();
         const auto &positionArray = unitSettings["position"];
         assert(positionArray.IsArray());
-        unit->position = glm::vec2(positionArray[0].GetFloat(), positionArray[1].GetFloat());
+        unit->position = glm::vec2(positionArray[0].GetDouble(), positionArray[1].GetDouble());
+        unit->cost = loadStateVector(unitSettings["cost"]);
+        unit->yield = loadStateVector(unitSettings["yield"]);
         const auto &dependenciesArray = unitSettings["dependencies"];
         assert(dependenciesArray.IsArray());
-        for (size_t j = 0, size = dependenciesArray.Size(); j < size; ++j) {
-            const auto index = dependenciesArray[j].GetInt();
+        for (const auto& value : dependenciesArray.GetArray()) {
+            const auto index = value.GetInt();
             assert(index >= 0 && index < unitsCount);
             unit->dependencies.push_back(units[index].get());
         }
