@@ -305,6 +305,7 @@ TechGraphView::TechGraphView(TechGraph *graph, QWidget *parent)
         Q_ASSERT(it != m_unitItems.end());
         auto *item = it->second;
         delete item;
+        m_unitItems.erase(it);
     });
 
     connect(m_graph, &TechGraph::graphReset, this, &TechGraphView::resetItems);
