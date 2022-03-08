@@ -7,11 +7,13 @@
 
 class QJsonObject;
 
+struct Unit;
+
 struct Cost {
-    double extropy;
-    double energy;
-    double material;
-    double carbon;
+    double extropy = 0.0;
+    double energy = 0.0;
+    double material = 0.0;
+    double carbon = 0.0;
 
     bool operator==(const Cost &other) const
     {
@@ -19,13 +21,37 @@ struct Cost {
     }
 };
 
+struct Boost {
+    double factor = 1.0;
+    const Unit *target = nullptr;
+
+    bool operator==(const Boost &other) const
+    {
+        return qFuzzyCompare(factor, other.factor) && target == other.target;
+    }
+};
+
 struct Unit {
+    enum class Type {
+        Generator,
+        Booster
+    };
+    Q_ENUM(Type)
+
     QString name;
     QString description;
+    Type type = Type::Generator;
     QPointF position;
     std::vector<const Unit *> dependencies;
     Cost cost;
+
+    // if type == Type::Generator
     Cost yield;
+
+    // if type == Type::Booster
+    Boost boost;
+
+    Q_GADGET
 };
 
 class TechGraph : public QObject
@@ -42,6 +68,8 @@ public:
     void setUnitPosition(const Unit *unit, const QPointF &position);
     void setUnitCost(const Unit *unit, const Cost &cost);
     void setUnitYield(const Unit *unit, const Cost &cost);
+    void setUnitType(const Unit *unit, Unit::Type type);
+    void setUnitBoost(const Unit *unit, const Boost &boost);
 
     void removeUnit(const Unit *unit);
 
@@ -49,6 +77,8 @@ public:
     void removeDependency(const Unit *unit, const Unit *dependency);
 
     std::vector<const Unit *> units() const;
+    const Unit *unit(int index) const;
+    int unitCount() const;
 
     QJsonObject save() const;
     void load(const QJsonObject &settings);
@@ -56,9 +86,11 @@ public:
     void clear();
 
 signals:
+    void unitAboutToBeAdded(const Unit *unit);
     void unitAdded(const Unit *unit);
     void unitChanged(const Unit *unit);
     void unitAboutToBeRemoved(const Unit *unit);
+    void unitRemoved();
     void dependencyAdded(const Unit *unit, const Unit *dependency);
     void dependencyAboutToBeRemoved(const Unit *unit, const Unit *dependency);
     void graphReset();

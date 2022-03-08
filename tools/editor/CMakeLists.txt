@@ -16,6 +16,8 @@ set(editor_SOURCES
     unitsettingswidget.h
     costwidget.cpp
     costwidget.h
+    boostwidget.cpp
+    boostwidget.h
 )
 
 add_executable(editor

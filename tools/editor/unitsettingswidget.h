@@ -6,8 +6,10 @@ class TechGraph;
 struct Unit;
 
 class CostWidget;
+class BoostWidget;
 
 class QLineEdit;
+class QComboBox;
 
 class UnitSettingsWidget : public QWidget
 {
@@ -22,6 +24,8 @@ private:
     const Unit *m_unit = nullptr;
     QLineEdit *m_name;
     QLineEdit *m_description;
+    QComboBox *m_type;
     CostWidget *m_cost;
     CostWidget *m_yield;
+    BoostWidget *m_boost;
 };

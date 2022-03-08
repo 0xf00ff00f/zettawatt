@@ -2,6 +2,7 @@
 
 #include <QJsonArray>
 #include <QJsonObject>
+#include <QMetaEnum>
 
 #include <algorithm>
 
@@ -14,10 +15,12 @@ TechGraph::~TechGraph() = default;
 
 const Unit *TechGraph::addUnit()
 {
-    m_units.emplace_back(new Unit);
-    auto *unit = m_units.back().get();
-    emit unitAdded(unit);
-    return unit;
+    auto unit = std::make_unique<Unit>();
+    emit unitAboutToBeAdded(unit.get());
+    m_units.push_back(std::move(unit));
+    auto *newUnit = m_units.back().get();
+    emit unitAdded(newUnit);
+    return newUnit;
 }
 
 template<typename FieldPtrT, typename ValueT>
@@ -57,6 +60,16 @@ void TechGraph::setUnitYield(const Unit *unit, const Cost &yield)
     mutateUnit(unit, &Unit::yield, yield);
 }
 
+void TechGraph::setUnitType(const Unit *unit, Unit::Type type)
+{
+    mutateUnit(unit, &Unit::type, type);
+}
+
+void TechGraph::setUnitBoost(const Unit *unit, const Boost &boost)
+{
+    mutateUnit(unit, &Unit::boost, boost);
+}
+
 void TechGraph::removeUnit(const Unit *unit)
 {
     auto it = std::find_if(m_units.begin(), m_units.end(), [unit](const auto &item) {
@@ -71,6 +84,7 @@ void TechGraph::removeUnit(const Unit *unit)
         dependencies.erase(std::remove(dependencies.begin(), dependencies.end(), unit), dependencies.end());
     }
     m_units.erase(it);
+    emit unitRemoved();
 }
 
 void TechGraph::addDependency(const Unit *unit, const Unit *dependency)
@@ -112,6 +126,18 @@ std::vector<const Unit *> TechGraph::units() const
     return result;
 }
 
+int TechGraph::unitCount() const
+{
+    return static_cast<int>(m_units.size());
+}
+
+const Unit *TechGraph::unit(int index) const
+{
+    if (index < 0 || index >= m_units.size())
+        return nullptr;
+    return m_units[index].get();
+}
+
 namespace {
 QString unitsKey()
 {
@@ -126,6 +152,11 @@ QString nameKey()
 QString descriptionKey()
 {
     return QLatin1String("description");
+}
+
+QString typeKey()
+{
+    return QLatin1String("type");
 }
 
 QString positionKey()
@@ -148,6 +179,11 @@ QString yieldKey()
     return QLatin1String("yield");
 }
 
+QString boostKey()
+{
+    return QLatin1String("boost");
+}
+
 QString extropyKey()
 {
     return QLatin1String("extropy");
@@ -166,6 +202,30 @@ QString materialKey()
 QString carbonKey()
 {
     return QLatin1String("carbon");
+}
+
+QString factorKey()
+{
+    return QLatin1String("factor");
+}
+
+QString targetKey()
+{
+    return QLatin1String("target");
+}
+
+template<typename T>
+QString enumToString(T value)
+{
+    auto metaEnum = QMetaEnum::fromType<T>();
+    return metaEnum.valueToKey(static_cast<int>(value));
+}
+
+template<typename T>
+T stringToEnum(const QString &key)
+{
+    auto metaEnum = QMetaEnum::fromType<T>();
+    return static_cast<T>(metaEnum.keyToValue(key.toLatin1().data()));
 }
 
 Cost loadCost(const QJsonObject &settings)
@@ -187,6 +247,7 @@ QJsonObject saveCost(const Cost &cost)
     settings[carbonKey()] = cost.carbon;
     return settings;
 }
+
 } // namespace
 
 QJsonObject TechGraph::save() const
@@ -202,12 +263,19 @@ QJsonObject TechGraph::save() const
         QJsonObject unitSettings;
         unitSettings[nameKey()] = unit->name;
         unitSettings[descriptionKey()] = unit->description;
+        unitSettings[typeKey()] = enumToString(unit->type);
         QJsonArray positionArray;
         positionArray.append(unit->position.x());
         positionArray.append(unit->position.y());
         unitSettings[positionKey()] = positionArray;
         unitSettings[costKey()] = saveCost(unit->cost);
         unitSettings[yieldKey()] = saveCost(unit->yield);
+        unitSettings[boostKey()] = [&unitIndices, boost = unit->boost] {
+            QJsonObject settings;
+            settings[factorKey()] = boost.factor;
+            settings[targetKey()] = unitIndices[boost.target];
+            return settings;
+        }();
         QJsonArray dependenciesArray;
         for (auto *dependency : unit->dependencies)
             dependenciesArray.append(unitIndices[dependency]);
@@ -235,10 +303,17 @@ void TechGraph::load(const QJsonObject &settings)
         auto &unit = m_units[i];
         unit->name = unitSettings[nameKey()].toString();
         unit->description = unitSettings[descriptionKey()].toString();
+        unit->type = stringToEnum<Unit::Type>(unitSettings[typeKey()].toString());
         const auto positionArray = unitSettings[positionKey()].toArray();
         unit->position = QPointF(positionArray[0].toDouble(), positionArray[1].toDouble());
         unit->cost = loadCost(unitSettings[costKey()].toObject());
         unit->yield = loadCost(unitSettings[yieldKey()].toObject());
+        unit->boost = [this, settings = unitSettings[boostKey()].toObject()] {
+            const auto factor = settings[factorKey()].toDouble();
+            const auto targetIndex = settings[targetKey()].toInt();
+            Q_ASSERT(targetIndex >= 0 && targetIndex < m_units.size());
+            return Boost { factor, m_units[targetIndex].get() };
+        }();
         const auto dependenciesArray = unitSettings[dependenciesKey()].toArray();
         for (const auto &value : dependenciesArray) {
             const auto index = value.toInt();
