@@ -24,14 +24,14 @@ ShaderProgram::~ShaderProgram()
 
 bool ShaderProgram::addShader(GLenum type, const std::string &filename)
 {
-    const auto source = Util::readFile(filename);
+    auto source = Util::readFile(filename);
     if (!source) {
         std::stringstream ss;
         ss << "Failed to load " << filename;
         m_log = ss.str();
         return false;
     }
-
+    source->push_back('\0');
     return addShaderSource(type, reinterpret_cast<const GLchar *>(source->data()));
 }
 
