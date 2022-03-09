@@ -255,6 +255,13 @@ QJsonObject TechGraph::save() const
     std::unordered_map<const Unit *, int> unitIndices;
     for (size_t i = 0, count = m_units.size(); i < count; ++i)
         unitIndices[m_units[i].get()] = i;
+    const auto unitIndex = [&unitIndices](const Unit *unit) {
+        if (unit == nullptr)
+            return -1;
+        auto it = unitIndices.find(unit);
+        Q_ASSERT(it != unitIndices.end());
+        return it->second;
+    };
 
     QJsonObject settings;
 
@@ -270,15 +277,15 @@ QJsonObject TechGraph::save() const
         unitSettings[positionKey()] = positionArray;
         unitSettings[costKey()] = saveCost(unit->cost);
         unitSettings[yieldKey()] = saveCost(unit->yield);
-        unitSettings[boostKey()] = [&unitIndices, boost = unit->boost] {
+        unitSettings[boostKey()] = [&unitIndices, unitIndex, boost = unit->boost] {
             QJsonObject settings;
             settings[factorKey()] = boost.factor;
-            settings[targetKey()] = unitIndices[boost.target];
+            settings[targetKey()] = unitIndex(boost.target);
             return settings;
         }();
         QJsonArray dependenciesArray;
         for (auto *dependency : unit->dependencies)
-            dependenciesArray.append(unitIndices[dependency]);
+            dependenciesArray.append(unitIndex(dependency));
         unitSettings[dependenciesKey()] = dependenciesArray;
         unitsArray.append(unitSettings);
     }
@@ -297,6 +304,12 @@ void TechGraph::load(const QJsonObject &settings)
 
     m_units.reserve(unitsCount);
     std::generate_n(std::back_inserter(m_units), unitsCount, [] { return std::make_unique<Unit>(); });
+    auto unitFromIndex = [this](int index) -> const Unit * {
+        if (index == -1)
+            return nullptr;
+        Q_ASSERT(index >= 0 && index < m_units.size());
+        return m_units[index].get();
+    };
 
     for (size_t i = 0; i < unitsCount; ++i) {
         const auto &unitSettings = unitsArray[i].toObject();
@@ -308,18 +321,15 @@ void TechGraph::load(const QJsonObject &settings)
         unit->position = QPointF(positionArray[0].toDouble(), positionArray[1].toDouble());
         unit->cost = loadCost(unitSettings[costKey()].toObject());
         unit->yield = loadCost(unitSettings[yieldKey()].toObject());
-        unit->boost = [this, settings = unitSettings[boostKey()].toObject()] {
+        unit->boost = [this, unitFromIndex, settings = unitSettings[boostKey()].toObject()] {
             const auto factor = settings[factorKey()].toDouble();
             const auto targetIndex = settings[targetKey()].toInt();
-            Q_ASSERT(targetIndex >= 0 && targetIndex < m_units.size());
-            return Boost { factor, m_units[targetIndex].get() };
+            return Boost { factor, unitFromIndex(targetIndex) };
         }();
         const auto dependenciesArray = unitSettings[dependenciesKey()].toArray();
-        for (const auto &value : dependenciesArray) {
-            const auto index = value.toInt();
-            Q_ASSERT(index >= 0 && index < m_units.size());
-            unit->dependencies.push_back(m_units[index].get());
-        }
+        std::transform(dependenciesArray.begin(), dependenciesArray.end(), std::back_inserter(unit->dependencies), [unitFromIndex](const QJsonValue &value) {
+            return unitFromIndex(value.toInt());
+        });
     }
 
     emit graphReset();
