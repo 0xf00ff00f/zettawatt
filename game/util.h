@@ -50,7 +50,7 @@ struct Box {
         return *this;
     }
 
-    bool contains(const Point &p)
+    bool contains(const Point &p) const
     {
         return p.x >= min.x && p.x < max.x && p.y >= min.y && p.y < max.y;
     }
