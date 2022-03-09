@@ -1,0 +1,17 @@
+IDEAS
+=====
+  * 2 kinds of units, Booster and Generator
+    * Booster: increase (or decrease) generator efficiency
+    * Generator: generates energy/material/carbon/etc
+
+TODO
+====
+  * editor
+    v add booster/generator settings
+  * game
+    * load booster settings
+    * display booster as square, generator as larger circle
+    * don't display units that can't be activated
+    * show generator count
+    * show unit description on selection
+    * show list of units that can be acquired
