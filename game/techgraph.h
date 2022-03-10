@@ -78,14 +78,26 @@ inline StateVector operator*(const StateVector &lhs, Real factor)
 
 struct Unit;
 
+struct Boost {
+    double factor;
+    const Unit *target;
+};
+
 struct Unit {
+    enum class Type {
+        Generator,
+        Booster
+    };
+
     std::string name;
     std::string description;
+    Type type = Type::Generator;
 
     glm::vec2 position;
 
     StateVector cost;
-    StateVector yield;
+    StateVector yield; // if type == Type::Generator
+    Boost boost; // if type == Type::Boost
 
     std::vector<const Unit *> dependencies;
 

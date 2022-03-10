@@ -5,6 +5,8 @@
 #include <rapidjson/document.h>
 #include <spdlog/spdlog.h>
 
+using namespace std::string_literals;
+
 namespace {
 StateVector loadStateVector(const rapidjson::Value &value)
 {
@@ -47,16 +49,26 @@ bool TechGraph::load(const std::string &jsonPath)
         auto &unit = units[i];
         unit->name = unitSettings["name"].GetString();
         unit->description = unitSettings["description"].GetString();
+        unit->type = [type = unitSettings["type"].GetString()] {
+            return type == "Booster"s ? Unit::Type::Booster : Unit::Type::Generator;
+        }();
         const auto &positionArray = unitSettings["position"];
         assert(positionArray.IsArray());
         unit->position = glm::vec2(positionArray[0].GetDouble(), positionArray[1].GetDouble());
         unit->cost = loadStateVector(unitSettings["cost"]);
         unit->yield = loadStateVector(unitSettings["yield"]);
+        unit->boost = [this, &unitSettings] {
+            const rapidjson::Value &boost = unitSettings["boost"];
+            const auto factor = boost["factor"].GetDouble();
+            const auto targetIndex = boost["target"].GetInt();
+            const Unit *target = targetIndex >= 0 && targetIndex < units.size() ? units[targetIndex].get() : nullptr;
+            return Boost { factor, target };
+        }();
         const auto &dependenciesArray = unitSettings["dependencies"];
         assert(dependenciesArray.IsArray());
         for (const auto& value : dependenciesArray.GetArray()) {
             const auto index = value.GetInt();
-            assert(index >= 0 && index < unitsCount);
+            assert(index >= 0 && index < units.size());
             unit->dependencies.push_back(units[index].get());
         }
     }
