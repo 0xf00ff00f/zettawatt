@@ -44,7 +44,7 @@ public:
     void drawTextBox(const GX::BoxF &box, const glm::vec4 &color, int depth, const std::string &text);
 
     template<typename StringT>
-    float horizontalAdvance(const StringT &text);
+    float horizontalAdvance(const StringT &text) const;
 
     void drawCircle(const glm::vec2 &center, float radius, const glm::vec4 &color, int depth);
     void drawRoundedRect(const GX::BoxF &box, float radius, const glm::vec4 &color, int depth);
@@ -91,7 +91,7 @@ private:
         std::string_view text;
         float width;
     };
-    std::vector<TextRow> breakTextLines(const std::string &text, float lineWidth);
+    std::vector<TextRow> breakTextLines(const std::string &text, float lineWidth) const;
 
     struct FontHasher {
         std::size_t operator()(const Font &font) const;

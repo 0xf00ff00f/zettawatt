@@ -105,7 +105,7 @@ template void UIPainter::drawText(const glm::vec2 &pos, const glm::vec4 &color, 
 template void UIPainter::drawText(const glm::vec2 &pos, const glm::vec4 &color, int depth, const std::string &text);
 
 template<typename StringT>
-float UIPainter::horizontalAdvance(const StringT &text)
+float UIPainter::horizontalAdvance(const StringT &text) const
 {
     return std::accumulate(text.begin(), text.end(), 0.0f, [this](float advance, auto ch) {
         const auto *g = m_font->getGlyph(ch);
@@ -113,8 +113,8 @@ float UIPainter::horizontalAdvance(const StringT &text)
     });
 }
 
-template float UIPainter::horizontalAdvance(const std::u32string &text);
-template float UIPainter::horizontalAdvance(const std::string &text);
+template float UIPainter::horizontalAdvance(const std::u32string &text) const;
+template float UIPainter::horizontalAdvance(const std::string &text) const;
 
 void UIPainter::drawTextBox(const GX::BoxF &box, const glm::vec4 &color, int depth, const std::string &text)
 {
@@ -312,7 +312,7 @@ void UIPainter::restoreTransform()
     m_transformStack.pop_back();
 }
 
-std::vector<UIPainter::TextRow> UIPainter::breakTextLines(const std::string &text, float maxWidth)
+std::vector<UIPainter::TextRow> UIPainter::breakTextLines(const std::string &text, float maxWidth) const
 {
     assert(m_font);
 
