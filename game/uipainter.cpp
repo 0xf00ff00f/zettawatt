@@ -116,18 +116,18 @@ float UIPainter::horizontalAdvance(const StringT &text) const
 template float UIPainter::horizontalAdvance(const std::u32string &text) const;
 template float UIPainter::horizontalAdvance(const std::string &text) const;
 
-void UIPainter::drawTextBox(const GX::BoxF &box, const glm::vec4 &color, int depth, const std::string &text)
+glm::vec2 UIPainter::drawTextBox(const GX::BoxF &box, const glm::vec4 &color, int depth, const std::string &text)
 {
     if (!m_font) {
         spdlog::warn("No font set lol");
-        return;
+        return {};
     }
 
     const auto rows = breakTextLines(text, box.width());
 
-    auto y = [this, &box, rowCount = rows.size()] {
-        const auto textHeight = rowCount * (m_font->ascent() - m_font->descent()) + (rowCount - 1) * m_font->lineGap();
-
+    const auto rowCount = rows.size();
+    const auto textHeight = rowCount * (m_font->ascent() - m_font->descent()) + (rowCount - 1) * m_font->lineGap();
+    auto y = [this, &box, textHeight] {
         switch (m_verticalAlign) {
         case VerticalAlign::Top:
             return box.min.y + m_font->ascent();
@@ -139,8 +139,10 @@ void UIPainter::drawTextBox(const GX::BoxF &box, const glm::vec4 &color, int dep
         }
     }();
     const auto lineHeight = m_font->ascent() - m_font->descent() + m_font->lineGap();
+    float textWidth = 0.0f;
     for (const auto &row : rows) {
         assert(std::abs(horizontalAdvance(row.text) - row.width) < 1e-3);
+        textWidth = std::max(textWidth, row.width);
         const float x = [this, &box, rowWidth = row.width] {
             switch (m_horizontalAlign) {
             case HorizontalAlign::Left:
@@ -155,6 +157,8 @@ void UIPainter::drawTextBox(const GX::BoxF &box, const glm::vec4 &color, int dep
         drawText(glm::vec2(x, y), color, depth, row.text);
         y += lineHeight;
     }
+
+    return glm::vec2(textWidth, textHeight);
 }
 
 void UIPainter::drawCircle(const glm::vec2 &center, float radius, const glm::vec4 &color, int depth)

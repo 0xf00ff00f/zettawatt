@@ -41,7 +41,7 @@ public:
     template<typename StringT>
     void drawText(const glm::vec2 &pos, const glm::vec4 &color, int depth, const StringT &text);
 
-    void drawTextBox(const GX::BoxF &box, const glm::vec4 &color, int depth, const std::string &text);
+    glm::vec2 drawTextBox(const GX::BoxF &box, const glm::vec4 &color, int depth, const std::string &text);
 
     template<typename StringT>
     float horizontalAdvance(const StringT &text) const;

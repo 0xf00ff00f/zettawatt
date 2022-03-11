@@ -167,17 +167,26 @@ float UnitItem::radius() const
 
 void UnitItem::paint(UIPainter *painter) const
 {
-    constexpr auto FontSize = 30;
+    constexpr auto FontSize = 25;
     static const auto LabelFont = UIPainter::Font { FontName, FontSize };
     painter->setFont(LabelFont);
 
-    const auto p = position();
+    auto p = position();
     painter->drawCircle(p, radius(), GraphColor, -1);
 
-    const auto textBox = GX::BoxF { p + glm::vec2(-2.0 * Radius, Radius), p + glm::vec2(2.0 * Radius, 2.0 + Radius) };
+    constexpr auto Margin = 10.0f;
+    p += glm::vec2(0, Radius + Margin);
+
+    constexpr auto TextWidth = 80.0f;
+    constexpr auto TextHeight = 80.0f;
+    const auto textBox = GX::BoxF { p - glm::vec2(0.5f * TextWidth, 0), p + glm::vec2(0.5f * TextWidth, TextHeight) };
     painter->setVerticalAlign(UIPainter::VerticalAlign::Top);
     painter->setHorizontalAlign(UIPainter::HorizontalAlign::Center);
-    painter->drawTextBox(textBox, glm::vec4(1), 0, m_unit->name);
+    auto textSize = painter->drawTextBox(textBox, glm::vec4(1), 2, m_unit->name);
+
+    auto outerBox = GX::BoxF { p - glm::vec2(0.5f * textSize.x + Margin, Margin), p + glm::vec2(0.5f * textSize.x + Margin, textSize.y + Margin) };
+    constexpr auto BoxRadius = 5.0f;
+    painter->drawRoundedRect(outerBox, BoxRadius, glm::vec4(1, 1, 1, 0.5), 1);
 }
 
 bool UnitItem::contains(const glm::vec2 &pos) const
@@ -278,12 +287,14 @@ void World::paintGraph(UIPainter *painter) const
 
 void World::paintState(UIPainter *painter) const
 {
+    constexpr auto TextDepth = 4;
+
     constexpr auto CounterWidth = 320.0f;
     constexpr auto CounterHeight = 160.0f;
 
     auto paintCounter = [painter](float centerX, float centerY, const std::u32string &label, const std::string &unit, double value, double delta) {
         const auto box = GX::BoxF { glm::vec2(centerX - 0.5 * CounterWidth, centerY - 0.5 * CounterHeight), glm::vec2(centerX + 0.5 * CounterWidth, centerY + 0.5 * CounterHeight) };
-        painter->drawRoundedRect(box, 20, glm::vec4(1, 1, 1, 0.25), -1);
+        painter->drawRoundedRect(box, 20, glm::vec4(1, 1, 1, 0.5), TextDepth - 1);
 
         static const auto LabelFont = UIPainter::Font { FontName, 40 };
         static const auto CounterFontBig = UIPainter::Font { FontName, 80 };
@@ -295,7 +306,7 @@ void World::paintState(UIPainter *painter) const
         // label
         {
             painter->setFont(LabelFont);
-            paintCentered(painter, centerX, y, glm::vec4(1), 0, label);
+            paintCentered(painter, centerX, y, glm::vec4(1), TextDepth, label);
         }
         y += 60;
 
@@ -319,15 +330,15 @@ void World::paintState(UIPainter *painter) const
                 const auto left = centerX - 0.5f * totalAdvance;
 
                 painter->setFont(CounterFontBig);
-                painter->drawText(glm::vec2(left, y), glm::vec4(1), 0, bigText);
-                painter->drawText(glm::vec2(left + bigAdvance + smallAdvance, y), glm::vec4(1), 0, unitText);
+                painter->drawText(glm::vec2(left, y), glm::vec4(1), TextDepth, bigText);
+                painter->drawText(glm::vec2(left + bigAdvance + smallAdvance, y), glm::vec4(1), TextDepth, unitText);
 
                 painter->setFont(CounterFontSmall);
-                painter->drawText(glm::vec2(left + bigAdvance, y), glm::vec4(1), 0, smallText);
+                painter->drawText(glm::vec2(left + bigAdvance, y), glm::vec4(1), TextDepth, smallText);
             } else {
                 const auto text = fmt::format("{}{}", big, unit);
                 painter->setFont(CounterFontBig);
-                paintCentered(painter, centerX, y, glm::vec4(1), 0, text);
+                paintCentered(painter, centerX, y, glm::vec4(1), TextDepth, text);
             }
         }
         y += 40;
@@ -343,7 +354,7 @@ void World::paintState(UIPainter *painter) const
                 }
             }();
             painter->setFont(DeltaFont);
-            paintCentered(painter, centerX, y, glm::vec4(1), 0, text);
+            paintCentered(painter, centerX, y, glm::vec4(1), TextDepth, text);
         }
     };
 
