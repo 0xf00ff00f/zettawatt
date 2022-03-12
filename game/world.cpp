@@ -131,22 +131,26 @@ public:
     void paint(UIPainter *painter) const override;
     bool contains(const glm::vec2 &pos) const override;
     glm::vec4 color() const override;
-
     bool handleMousePress() override;
 
 private:
+    float labelAlpha() const;
+
     enum class State {
+        Hidden,
+        FadeIn,
         Inactive,
         Activating,
         Active,
     };
-    State m_state = State::Inactive;
+    State m_state = State::Hidden;
     Unit *m_unit;
     Wobble m_wobble;
     float m_stateTime = 0.0f;
 
     static constexpr auto Radius = 25.0f;
     static constexpr auto ActivationTime = 2.0f;
+    static constexpr auto FadeInTime = 2.0f;
 };
 
 UnitItem::UnitItem(Unit *unit, World *world)
@@ -168,14 +172,36 @@ void UnitItem::update(double elapsed)
         m_stateTime = 0.0f;
     };
     switch (m_state) {
-    case State::Inactive:
+    case State::Hidden: {
+        const auto shouldDisplay = [this] {
+            if (m_unit->count > 0)
+                return true;
+            const auto &dependencies = m_unit->dependencies;
+            if (dependencies.empty())
+                return true;
+            return std::all_of(dependencies.begin(), dependencies.end(), [](const Unit *unit) {
+                return unit->count > 0;
+            });
+        }();
+        if (shouldDisplay)
+            setState(State::FadeIn);
+        break;
+    }
+    case State::FadeIn: {
+        if (m_stateTime >= FadeInTime)
+            setState(State::Inactive);
+        break;
+    }
+    case State::Inactive: {
         if (m_unit->count > 0)
             setState(State::Activating);
         break;
-    case State::Activating:
+    }
+    case State::Activating: {
         if (m_stateTime >= ActivationTime)
             setState(State::Active);
         break;
+    }
     case State::Active:
         break;
     }
@@ -187,6 +213,8 @@ glm::vec2 UnitItem::position() const
     const auto wobbleWeight = [this] {
         switch (m_state) {
         case State::Inactive:
+        case State::FadeIn:
+        case State::Hidden:
             return 1.0f;
         case State::Activating:
             return 1.0f - m_stateTime / ActivationTime;
@@ -205,9 +233,14 @@ float UnitItem::radius() const
 
 glm::vec4 UnitItem::color() const
 {
+    constexpr const auto HiddenColor = glm::vec4(0);
     constexpr const auto ActiveColor = glm::vec4(1, 0, 0, 1);
     constexpr const auto InactiveColor = glm::vec4(0.25, 0.25, 0.25, 1);
     switch (m_state) {
+    case State::Hidden:
+        return HiddenColor;
+    case State::FadeIn:
+        return glm::mix(HiddenColor, InactiveColor, m_stateTime / FadeInTime);
     case State::Inactive:
         return InactiveColor;
     case State::Activating:
@@ -217,17 +250,42 @@ glm::vec4 UnitItem::color() const
     }
 }
 
+float UnitItem::labelAlpha() const
+{
+    constexpr const auto InactiveAlpha = 0.5f;
+    constexpr const auto ActiveAlpha = 1.0f;
+    switch (m_state) {
+    case State::Hidden:
+        return 0.0f;
+    case State::FadeIn:
+        return glm::mix(0.0f, InactiveAlpha, m_stateTime / FadeInTime);
+    case State::Inactive:
+        return InactiveAlpha;
+    case State::Activating:
+        return glm::mix(InactiveAlpha, ActiveAlpha, m_stateTime / ActivationTime);
+    default:
+        return ActiveAlpha;
+    }
+}
+
 void UnitItem::paint(UIPainter *painter) const
 {
+    if (m_state == State::Hidden)
+        return;
+
     constexpr auto FontSize = 25;
     static const auto LabelFont = UIPainter::Font { FontName, FontSize };
     painter->setFont(LabelFont);
 
+    const auto color = this->color();
+
     auto p = position();
-    painter->drawCircle(p, radius(), glm::vec4(0), color(), 6.0f, -1);
+    painter->drawCircle(p, radius(), glm::vec4(0), color, 6.0f, -1);
 
     if (m_world->canAcquire(m_unit))
         painter->drawGlowCircle(p, radius(), glm::vec4(0, 1, 1, 1), -2);
+
+    const auto labelAlpha = this->labelAlpha();
 
     constexpr auto Margin = 10.0f;
     p += glm::vec2(0, Radius + Margin);
@@ -237,11 +295,11 @@ void UnitItem::paint(UIPainter *painter) const
     const auto textBox = GX::BoxF { p - glm::vec2(0.5f * TextWidth, 0), p + glm::vec2(0.5f * TextWidth, TextHeight) };
     painter->setVerticalAlign(UIPainter::VerticalAlign::Top);
     painter->setHorizontalAlign(UIPainter::HorizontalAlign::Center);
-    auto textSize = painter->drawTextBox(textBox, glm::vec4(1), 2, m_unit->name);
+    auto textSize = painter->drawTextBox(textBox, glm::vec4(1, 1, 1, labelAlpha), 2, m_unit->name);
 
     auto outerBox = GX::BoxF { p - glm::vec2(0.5f * textSize.x + Margin, Margin), p + glm::vec2(0.5f * textSize.x + Margin, textSize.y + Margin) };
     constexpr auto BoxRadius = 8.0f;
-    painter->drawRoundedRect(outerBox, BoxRadius, glm::vec4(0, 0, 0, 0.75), glm::vec4(1, 1, 1, 1), 3.0f, 1);
+    painter->drawRoundedRect(outerBox, BoxRadius, glm::vec4(0, 0, 0, 0.75 * labelAlpha), glm::vec4(glm::vec3(color), labelAlpha), 3.0f, 1);
 }
 
 bool UnitItem::contains(const glm::vec2 &pos) const
