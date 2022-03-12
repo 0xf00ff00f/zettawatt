@@ -412,6 +412,16 @@ bool World::unitClicked(Unit *unit)
 
 bool World::canAcquire(const Unit *unit) const
 {
+    auto hasDependencies = [unit] {
+        const auto &dependencies = unit->dependencies;
+        if (dependencies.empty())
+            return true;
+        return std::all_of(dependencies.begin(), dependencies.end(), [](const Unit *unit) {
+            return unit->count > 0;
+        });
+    }();
+    if (!hasDependencies)
+        return false;
     const auto &cost = unit->cost;
     return cost.extropy <= m_state.extropy && cost.energy <= m_state.energy && cost.material <= m_state.material;
 }
