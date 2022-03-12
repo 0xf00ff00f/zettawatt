@@ -274,10 +274,6 @@ void UnitItem::paint(UIPainter *painter) const
     if (m_state == State::Hidden)
         return;
 
-    constexpr auto FontSize = 25;
-    static const auto LabelFont = UIPainter::Font { FontName, FontSize };
-    painter->setFont(LabelFont);
-
     const auto color = this->color();
 
     auto p = position();
@@ -296,11 +292,26 @@ void UnitItem::paint(UIPainter *painter) const
     const auto textBox = GX::BoxF { p - glm::vec2(0.5f * TextWidth, 0), p + glm::vec2(0.5f * TextWidth, TextHeight) };
     painter->setVerticalAlign(UIPainter::VerticalAlign::Top);
     painter->setHorizontalAlign(UIPainter::HorizontalAlign::Center);
+    painter->setFont(UIPainter::Font { FontName, 25 });
     auto textSize = painter->drawTextBox(textBox, glm::vec4(1, 1, 1, labelAlpha), 2, m_unit->name);
 
     auto outerBox = GX::BoxF { p - glm::vec2(0.5f * textSize.x + Margin, Margin), p + glm::vec2(0.5f * textSize.x + Margin, textSize.y + Margin) };
     constexpr auto BoxRadius = 8.0f;
     painter->drawRoundedRect(outerBox, BoxRadius, glm::vec4(0, 0, 0, 0.75 * labelAlpha), glm::vec4(glm::vec3(color), labelAlpha), 3.0f, 1);
+
+    const auto count = m_unit->count;
+    if (count > 1) {
+        const auto center = glm::vec2(outerBox.max.x, outerBox.min.y);
+        constexpr const auto CounterRadius = 22.0f;
+
+        painter->drawCircle(center, CounterRadius, glm::vec4(0, 0, 0, 0.75 * labelAlpha), glm::vec4(1, 1, 1, labelAlpha), 3.0f, 3);
+
+        const auto counterBox = GX::BoxF { center - 0.5f * glm::vec2(CounterRadius), center + 0.5f * glm::vec2(CounterRadius) };
+        painter->setVerticalAlign(UIPainter::VerticalAlign::Middle);
+        painter->setHorizontalAlign(UIPainter::HorizontalAlign::Center);
+        painter->setFont(UIPainter::Font { FontName, 20 });
+        painter->drawTextBox(counterBox, glm::vec4(1, 1, 1, labelAlpha), 4, fmt::format("x{}", count));
+    }
 }
 
 bool UnitItem::contains(const glm::vec2 &pos) const
