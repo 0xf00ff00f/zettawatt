@@ -66,7 +66,7 @@ bool TechGraph::load(const std::string &jsonPath)
         }();
         const auto &dependenciesArray = unitSettings["dependencies"];
         assert(dependenciesArray.IsArray());
-        for (const auto& value : dependenciesArray.GetArray()) {
+        for (const auto &value : dependenciesArray.GetArray()) {
             const auto index = value.GetInt();
             assert(index >= 0 && index < units.size());
             unit->dependencies.push_back(units[index].get());

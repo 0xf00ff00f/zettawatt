@@ -278,9 +278,8 @@ void World::paintGraph(UIPainter *painter) const
         painter->drawThickLine(fromPosition, toPosition, 5, GraphColor, -1);
     }
 
-    for (auto &item : m_graphItems) {
+    for (auto &item : m_graphItems)
         item->paint(painter);
-    }
 
     painter->restoreTransform();
 }
