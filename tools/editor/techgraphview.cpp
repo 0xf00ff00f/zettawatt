@@ -280,7 +280,7 @@ TechGraphView::TechGraphView(TechGraph *graph, QWidget *parent)
     , m_graph(graph)
 {
     setFocusPolicy(Qt::StrongFocus);
-    setScene(new QGraphicsScene(QRectF(QPointF(-500, -500), QPointF(500, 500)), this));
+    setScene(new QGraphicsScene(QRectF(QPointF(-5000, -5000), QPointF(5000, 5000)), this));
 
     connect(scene(), &QGraphicsScene::selectionChanged, this, &TechGraphView::selectionChanged);
 
