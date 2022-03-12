@@ -26,6 +26,7 @@ public:
     virtual void paint(UIPainter *painter) const = 0;
     virtual bool contains(const glm::vec2 &pos) const = 0;
     virtual glm::vec4 color() const = 0;
+    virtual bool isVisible() const = 0;
 
     bool mousePressEvent(const glm::vec2 &pos);
     void mouseReleaseEvent(const glm::vec2 &pos);
@@ -45,6 +46,7 @@ public:
     World();
     ~World();
 
+    void setViewportSize(const glm::vec2 &viewportSize);
     void initialize(TechGraph *techGraph);
     void reset();
 
@@ -77,4 +79,5 @@ private:
     glm::vec2 m_lastMousePosition;
     bool m_panningView = false;
     glm::vec2 m_viewOffset;
+    glm::vec2 m_viewportSize;
 };

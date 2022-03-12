@@ -132,6 +132,7 @@ public:
     bool contains(const glm::vec2 &pos) const override;
     glm::vec4 color() const override;
     bool handleMousePress() override;
+    bool isVisible() const override;
 
 private:
     float labelAlpha() const;
@@ -313,8 +314,18 @@ bool UnitItem::handleMousePress()
     return true;
 }
 
+bool UnitItem::isVisible() const
+{
+    return m_state != State::Hidden;
+}
+
 World::World() = default;
 World::~World() = default;
+
+void World::setViewportSize(const glm::vec2 &viewportSize)
+{
+    m_viewportSize = viewportSize;
+}
 
 void World::initialize(TechGraph *techGraph)
 {
@@ -504,6 +515,20 @@ void World::mouseMoveEvent(const glm::vec2 &pos)
 {
     if (m_panningView) {
         m_viewOffset += pos - m_lastMousePosition;
+        auto [min, max] = [this] {
+            auto min = glm::vec2(std::numeric_limits<float>::max());
+            auto max = glm::vec2(std::numeric_limits<float>::lowest());
+            for (const auto &unit : m_graphItems) {
+                if (unit->isVisible()) {
+                    const auto p = unit->position();
+                    min = glm::min(min, p);
+                    max = glm::max(max, p);
+                }
+            }
+            return std::pair(min, max);
+        }();
+        m_viewOffset = glm::max(m_viewOffset, -max - 0.5f * m_viewportSize);
+        m_viewOffset = glm::min(m_viewOffset, -min + 0.5f * m_viewportSize);
     } else {
         for (auto &item : m_graphItems)
             item->mouseMoveEvent(pos - m_viewOffset);

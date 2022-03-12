@@ -45,6 +45,7 @@ void GameWindow::initializeGL()
     m_painter = std::make_unique<UIPainter>(m_shaderManager.get());
     m_painter->resize(width(), height());
 
+    m_world.setViewportSize(glm::vec2(width(), height()));
     m_world.initialize(m_techGraph.get());
 }
 
