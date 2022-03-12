@@ -271,6 +271,23 @@ void UIPainter::drawThickLine(const glm::vec2 &from, const glm::vec2 &to, float 
             { p1, { 0.0f, 1.0f } }, color, { 2.0f * thickness, 0, 0, 0 }, depth);
 }
 
+void UIPainter::drawGlowCircle(const glm::vec2 &center, float radius, const glm::vec4 &color, int depth)
+{
+    const auto outerRadius = 3.0f * radius;
+
+    const auto &p0 = center - glm::vec2(outerRadius, outerRadius);
+    const auto &p1 = center + glm::vec2(outerRadius, outerRadius);
+
+    const auto bgColor = glm::vec4(2.0f * outerRadius, radius, 0, 0);
+
+    m_spriteBatcher->setBatchProgram(GX::ShaderManager::Program::GlowCircle);
+    addQuad({ { p0.x, p0.y }, { 0.0f, 0.0f } },
+            { { p1.x, p0.y }, { 1.0f, 0.0f } },
+            { { p1.x, p1.y }, { 1.0f, 1.0f } },
+            { { p0.x, p1.y }, { 0.0f, 1.0f } },
+            color, bgColor, depth);
+}
+
 void UIPainter::updateSceneBox(int width, int height)
 {
     static constexpr auto PreferredSceneSize = glm::vec2(1280, 720);

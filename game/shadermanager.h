@@ -20,6 +20,7 @@ public:
         Text,
         Circle,
         ThickLine,
+        GlowCircle,
         NumPrograms
     };
     void useProgram(Program program);
