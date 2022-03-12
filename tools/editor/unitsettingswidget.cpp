@@ -89,6 +89,7 @@ void UnitSettingsWidget::setUnit(const Unit *unit)
         m_name->setText(unit->name);
         m_description->setText(unit->description);
         m_cost->setValue(unit->cost);
+        m_yield->setValue(unit->yield);
         m_boost->setValue(unit->boost);
         m_type->setCurrentIndex(m_type->findData(QVariant::fromValue(unit->type)));
     }
