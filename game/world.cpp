@@ -383,10 +383,14 @@ void World::updateStateDelta()
 {
     StateVector delta;
     for (const auto &unit : m_techGraph->units) {
-        if (!unit->count)
+        if (!unit->count || unit->type != Unit::Type::Generator)
             continue;
-        StateVector yield = unit->yield;
-        delta += unit->count * yield;
+        float boost = 1.0f;
+        for (const auto &other : m_techGraph->units) {
+            if (other->type == Unit::Type::Booster && other->count > 0 && other->boost.target == unit.get())
+                boost *= other->boost.factor;
+        }
+        delta += unit->count * boost * unit->yield;
     }
     m_stateDelta = delta;
 }
