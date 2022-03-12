@@ -25,6 +25,7 @@ public:
     virtual void update(double elapsed) = 0;
     virtual void paint(UIPainter *painter) const = 0;
     virtual bool contains(const glm::vec2 &pos) const = 0;
+    virtual glm::vec4 color() const = 0;
 
     bool mousePressEvent(const glm::vec2 &pos);
     void mouseReleaseEvent(const glm::vec2 &pos);

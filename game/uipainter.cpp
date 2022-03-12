@@ -252,7 +252,7 @@ void UIPainter::drawRoundedRect(const GX::BoxF &box, float radius, const glm::ve
     drawPatch(glm::vec2(x2, y2), glm::vec2(x3, y3), glm::vec2(0.5, 0.5), glm::vec2(1.0, 1.0));
 }
 
-void UIPainter::drawThickLine(const glm::vec2 &from, const glm::vec2 &to, float thickness, const glm::vec4 &color, int depth)
+void UIPainter::drawThickLine(const glm::vec2 &from, const glm::vec2 &to, float thickness, const glm::vec4 &fromColor, const glm::vec4 &toColor, int depth)
 {
     m_spriteBatcher->setBatchProgram(GX::ShaderManager::Program::ThickLine);
 
@@ -265,10 +265,16 @@ void UIPainter::drawThickLine(const glm::vec2 &from, const glm::vec2 &to, float 
     const auto p2 = to - 0.5f * thickness * tangent;
     const auto p3 = to + 0.5f * thickness * tangent;
 
+    const auto size = glm::vec2(2.0f * thickness, 0);
+
     addQuad({ p0, { 0.0f, 0.0f } },
             { p2, { 1.0f, 0.0f } },
             { p3, { 1.0f, 1.0f } },
-            { p1, { 0.0f, 1.0f } }, color, { 2.0f * thickness, 0, 0, 0 }, depth);
+            { p1, { 0.0f, 1.0f } },
+            fromColor,
+            toColor,
+            size,
+            depth);
 }
 
 void UIPainter::drawGlowCircle(const glm::vec2 &center, float radius, const glm::vec4 &color, int depth)

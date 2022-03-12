@@ -29,8 +29,6 @@ std::tuple<int, int, char32_t> formattedValue(double value)
 
 constexpr const char *FontName = "Lato-Regular.ttf";
 
-constexpr const auto GraphColor = glm::vec4(1, 0, 0, 1);
-
 template<typename StringT>
 void paintCentered(UIPainter *painter, float x, float y, const glm::vec4 &color, int depth, const StringT &s)
 {
@@ -132,6 +130,7 @@ public:
     void update(double elapsed) override;
     void paint(UIPainter *painter) const override;
     bool contains(const glm::vec2 &pos) const override;
+    glm::vec4 color() const override;
 
     bool handleMousePress() override;
 
@@ -157,12 +156,22 @@ void UnitItem::update(double elapsed)
 
 glm::vec2 UnitItem::position() const
 {
-    return m_unit->position + m_wobble.offset();
+    auto p = m_unit->position;
+    if (m_unit->count == 0)
+        p += m_wobble.offset();
+    return p;
 }
 
 float UnitItem::radius() const
 {
     return m_hovered ? 1.2f * Radius : Radius;
+}
+
+glm::vec4 UnitItem::color() const
+{
+    constexpr const auto ActiveColor = glm::vec4(1, 0, 0, 1);
+    constexpr const auto InactiveColor = glm::vec4(0.25, 0.25, 0.25, 1);
+    return m_unit->count > 0 ? ActiveColor : InactiveColor;
 }
 
 void UnitItem::paint(UIPainter *painter) const
@@ -172,10 +181,12 @@ void UnitItem::paint(UIPainter *painter) const
     painter->setFont(LabelFont);
 
     auto p = position();
-    painter->drawCircle(p, radius(), glm::vec4(0), GraphColor, 6.0f, -1);
+    painter->drawCircle(p, radius(), glm::vec4(0), color(), 6.0f, -1);
 
+#if 0
     if (m_world->canAcquire(m_unit))
         painter->drawGlowCircle(p, radius(), glm::vec4(0, 1, 1, 1), -2);
+#endif
 
     constexpr auto Margin = 10.0f;
     p += glm::vec2(0, Radius + Margin);
@@ -278,7 +289,7 @@ void World::paintGraph(UIPainter *painter) const
         const auto d = glm::normalize(fromPosition - toPosition);
         fromPosition -= (from->radius() - NodeBorder) * d;
         toPosition += (to->radius() - NodeBorder) * d;
-        painter->drawThickLine(fromPosition, toPosition, 5, GraphColor, -1);
+        painter->drawThickLine(fromPosition, toPosition, 5, from->color(), to->color(), -1);
     }
 
     for (auto &item : m_graphItems)
