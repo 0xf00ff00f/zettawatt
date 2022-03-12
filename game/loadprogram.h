@@ -8,6 +8,6 @@ namespace GL {
 class ShaderProgram;
 }
 
-std::unique_ptr<GL::ShaderProgram> loadProgram(const char *vertexShader, const char *geometryShader, const char *fragmentShader);
+std::unique_ptr<GL::ShaderProgram> loadProgram(const char *vertexShader, const char *fragmentShader);
 
 } // namespace GX

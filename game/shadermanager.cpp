@@ -20,19 +20,18 @@ loadProgram(ShaderManager::Program id)
 {
     struct ProgramSource {
         const char *vertexShader;
-        const char *geometryShader;
         const char *fragmentShader;
     };
     static const ProgramSource programSources[] = {
-        { "text.vert", nullptr, "text.frag" }, // Text
-        { "circle.vert", nullptr, "circle.frag" }, // Circle
-        { "thickline.vert", nullptr, "thickline.frag" }, // ThickLine
-        { "glowcircle.vert", nullptr, "glowcircle.frag" }, // GlowCircle
+        { "text.vert", "text.frag" }, // Text
+        { "circle.vert", "circle.frag" }, // Circle
+        { "thickline.vert", "thickline.frag" }, // ThickLine
+        { "glowcircle.vert", "glowcircle.frag" }, // GlowCircle
     };
     static_assert(std::extent_v<decltype(programSources)> == ShaderManager::NumPrograms, "expected number of programs to match");
 
     const auto &sources = programSources[id];
-    return GX::loadProgram(sources.vertexShader, sources.geometryShader, sources.fragmentShader);
+    return GX::loadProgram(sources.vertexShader, sources.fragmentShader);
 }
 
 } // namespace
