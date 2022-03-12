@@ -56,12 +56,12 @@ public:
 
     bool unitClicked(Unit *unit);
 
+    bool canAcquire(const Unit *unit) const;
+
 private:
     void paintState(UIPainter *painter) const;
     void paintGraph(UIPainter *painter) const;
     void updateStateDelta();
-
-    bool canAcquire(const Unit *unit) const;
 
     StateVector m_state;
     StateVector m_stateDelta;

@@ -174,7 +174,8 @@ void UnitItem::paint(UIPainter *painter) const
     auto p = position();
     painter->drawCircle(p, radius(), glm::vec4(0), GraphColor, 6.0f, -1);
 
-    painter->drawGlowCircle(p, radius(), glm::vec4(0, 1, 1, 1), -2);
+    if (m_world->canAcquire(m_unit))
+        painter->drawGlowCircle(p, radius(), glm::vec4(0, 1, 1, 1), -2);
 
     constexpr auto Margin = 10.0f;
     p += glm::vec2(0, Radius + Margin);
@@ -414,6 +415,8 @@ bool World::unitClicked(Unit *unit)
 
 bool World::canAcquire(const Unit *unit) const
 {
+    if (unit->type == Unit::Type::Booster && unit->count > 0)
+        return false;
     auto hasDependencies = [unit] {
         const auto &dependencies = unit->dependencies;
         if (dependencies.empty())
