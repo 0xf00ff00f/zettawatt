@@ -138,7 +138,7 @@ public:
 private:
     Unit *m_unit;
     Wobble m_wobble;
-    static constexpr auto Radius = 20.0f;
+    static constexpr auto Radius = 25.0f;
 };
 
 UnitItem::UnitItem(Unit *unit, World *world)
@@ -172,7 +172,7 @@ void UnitItem::paint(UIPainter *painter) const
     painter->setFont(LabelFont);
 
     auto p = position();
-    painter->drawCircle(p, radius(), GraphColor, -1);
+    painter->drawCircle(p, radius(), glm::vec4(0), GraphColor, 6.0f, -1);
 
     constexpr auto Margin = 10.0f;
     p += glm::vec2(0, Radius + Margin);
@@ -185,8 +185,8 @@ void UnitItem::paint(UIPainter *painter) const
     auto textSize = painter->drawTextBox(textBox, glm::vec4(1), 2, m_unit->name);
 
     auto outerBox = GX::BoxF { p - glm::vec2(0.5f * textSize.x + Margin, Margin), p + glm::vec2(0.5f * textSize.x + Margin, textSize.y + Margin) };
-    constexpr auto BoxRadius = 5.0f;
-    painter->drawRoundedRect(outerBox, BoxRadius, glm::vec4(1, 1, 1, 0.5), 1);
+    constexpr auto BoxRadius = 8.0f;
+    painter->drawRoundedRect(outerBox, BoxRadius, glm::vec4(0, 0, 0, 0.75), glm::vec4(1, 1, 1, 1), 3.0f, 1);
 }
 
 bool UnitItem::contains(const glm::vec2 &pos) const
@@ -293,7 +293,7 @@ void World::paintState(UIPainter *painter) const
 
     auto paintCounter = [painter](float centerX, float centerY, const std::u32string &label, const std::string &unit, double value, double delta) {
         const auto box = GX::BoxF { glm::vec2(centerX - 0.5 * CounterWidth, centerY - 0.5 * CounterHeight), glm::vec2(centerX + 0.5 * CounterWidth, centerY + 0.5 * CounterHeight) };
-        painter->drawRoundedRect(box, 20, glm::vec4(1, 1, 1, 0.5), TextDepth - 1);
+        painter->drawRoundedRect(box, 20, glm::vec4(0, 0, 0, 0.75), glm::vec4(1, 1, 1, 1), 4.0f, TextDepth - 1);
 
         static const auto LabelFont = UIPainter::Font { FontName, 40 };
         static const auto CounterFontBig = UIPainter::Font { FontName, 80 };

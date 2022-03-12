@@ -46,6 +46,25 @@ void SpriteBatcher::startBatch()
     m_quadCount = 0;
 }
 
+void SpriteBatcher::addSprite(const PackedPixmap &pixmap, const glm::vec2 &topLeft, const glm::vec2 &bottomRight, const glm::vec4 &fgColor, const glm::vec4 &bgColor, const glm::vec2 &size, int depth)
+{
+    const auto &p0 = topLeft;
+    const auto &p1 = bottomRight;
+
+    const auto &textureCoords = pixmap.textureCoords;
+    const auto &t0 = textureCoords.min;
+    const auto &t1 = textureCoords.max;
+
+    const auto verts = QuadVerts {
+        { { { p0.x, p0.y }, { t0.x, t0.y }, fgColor, bgColor, size },
+          { { p1.x, p0.y }, { t1.x, t0.y }, fgColor, bgColor, size },
+          { { p1.x, p1.y }, { t1.x, t1.y }, fgColor, bgColor, size },
+          { { p0.x, p1.y }, { t0.x, t1.y }, fgColor, bgColor, size } }
+    };
+
+    addSprite(pixmap.texture, verts, depth);
+}
+
 void SpriteBatcher::addSprite(const PackedPixmap &pixmap, const glm::vec2 &topLeft, const glm::vec2 &bottomRight, const glm::vec4 &fgColor, const glm::vec4 &bgColor, int depth)
 {
     const auto &p0 = topLeft;
@@ -56,10 +75,10 @@ void SpriteBatcher::addSprite(const PackedPixmap &pixmap, const glm::vec2 &topLe
     const auto &t1 = textureCoords.max;
 
     const auto verts = QuadVerts {
-        { { { p0.x, p0.y }, { t0.x, t0.y }, fgColor, bgColor },
-          { { p1.x, p0.y }, { t1.x, t0.y }, fgColor, bgColor },
-          { { p1.x, p1.y }, { t1.x, t1.y }, fgColor, bgColor },
-          { { p0.x, p1.y }, { t0.x, t1.y }, fgColor, bgColor } }
+        { { { p0.x, p0.y }, { t0.x, t0.y }, fgColor, bgColor, { 0, 0 } },
+          { { p1.x, p0.y }, { t1.x, t0.y }, fgColor, bgColor, { 0, 0 } },
+          { { p1.x, p1.y }, { t1.x, t1.y }, fgColor, bgColor, { 0, 0 } },
+          { { p0.x, p1.y }, { t0.x, t1.y }, fgColor, bgColor, { 0, 0 } } }
     };
 
     addSprite(pixmap.texture, verts, depth);
@@ -75,10 +94,10 @@ void SpriteBatcher::addSprite(const PackedPixmap &pixmap, const glm::vec2 &topLe
     const auto &t1 = textureCoords.max;
 
     const auto verts = QuadVerts {
-        { { { p0.x, p0.y }, { t0.x, t0.y }, color, { 0, 0, 0, 0 } },
-          { { p1.x, p0.y }, { t1.x, t0.y }, color, { 0, 0, 0, 0 } },
-          { { p1.x, p1.y }, { t1.x, t1.y }, color, { 0, 0, 0, 0 } },
-          { { p0.x, p1.y }, { t0.x, t1.y }, color, { 0, 0, 0, 0 } } }
+        { { { p0.x, p0.y }, { t0.x, t0.y }, color, { 0, 0, 0, 0 }, { 0, 0 } },
+          { { p1.x, p0.y }, { t1.x, t0.y }, color, { 0, 0, 0, 0 }, { 0, 0 } },
+          { { p1.x, p1.y }, { t1.x, t1.y }, color, { 0, 0, 0, 0 }, { 0, 0 } },
+          { { p0.x, p1.y }, { t0.x, t1.y }, color, { 0, 0, 0, 0 }, { 0, 0 } } }
     };
 
     addSprite(pixmap.texture, verts, depth);
@@ -163,6 +182,9 @@ void SpriteBatcher::renderBatch() const
                 *data++ = v.bgColor.y;
                 *data++ = v.bgColor.z;
                 *data++ = v.bgColor.w;
+
+                *data++ = v.size.x;
+                *data++ = v.size.y;
             };
 
             emitVertex(0);
@@ -208,24 +230,24 @@ void SpriteBatcher::initializeResources()
     glBindVertexArray(m_vao);
 
     // position
-
     glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), reinterpret_cast<GLvoid *>(0));
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), reinterpret_cast<GLvoid *>(offsetof(Vertex, position)));
 
     // textureCoords
-
     glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), reinterpret_cast<GLvoid *>(2 * sizeof(GLfloat)));
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), reinterpret_cast<GLvoid *>(offsetof(Vertex, textureCoords)));
 
     // fgColor
-
     glEnableVertexAttribArray(2);
-    glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), reinterpret_cast<GLvoid *>(4 * sizeof(GLfloat)));
+    glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), reinterpret_cast<GLvoid *>(offsetof(Vertex, fgColor)));
 
     // bgColor
-
     glEnableVertexAttribArray(3);
-    glVertexAttribPointer(3, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), reinterpret_cast<GLvoid *>(8 * sizeof(GLfloat)));
+    glVertexAttribPointer(3, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), reinterpret_cast<GLvoid *>(offsetof(Vertex, bgColor)));
+
+    // size
+    glEnableVertexAttribArray(4);
+    glVertexAttribPointer(4, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), reinterpret_cast<GLvoid *>(offsetof(Vertex, size)));
 
     glBindVertexArray(0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);

@@ -46,8 +46,8 @@ public:
     template<typename StringT>
     float horizontalAdvance(const StringT &text) const;
 
-    void drawCircle(const glm::vec2 &center, float radius, const glm::vec4 &color, int depth);
-    void drawRoundedRect(const GX::BoxF &box, float radius, const glm::vec4 &color, int depth);
+    void drawCircle(const glm::vec2 &center, float radius, const glm::vec4 &fillColor, const glm::vec4 &outlineColor, float outlineSize, int depth);
+    void drawRoundedRect(const GX::BoxF &box, float radius, const glm::vec4 &fillColor, const glm::vec4 &outlineColor, float outlineSize, int depth);
     void drawThickLine(const glm::vec2 &from, const glm::vec2 &to, float thickness, const glm::vec4 &color, int depth);
 
     void resetTransform();
@@ -83,7 +83,12 @@ private:
         glm::vec2 position;
         glm::vec2 textureCoords;
     };
+    void addQuad(const GX::AbstractTexture *texture, const Vertex &v0, const Vertex &v1, const Vertex &v2, const Vertex &v3, const glm::vec4 &color, int depth);
     void addQuad(const GX::AbstractTexture *texture, const Vertex &v0, const Vertex &v1, const Vertex &v2, const Vertex &v3, const glm::vec4 &fgColor, const glm::vec4 &bgColor, int depth);
+    void addQuad(const GX::AbstractTexture *texture, const Vertex &v0, const Vertex &v1, const Vertex &v2, const Vertex &v3, const glm::vec4 &fgColor, const glm::vec4 &bgColor, const glm::vec2 &size, int depth);
+    void addQuad(const Vertex &v0, const Vertex &v1, const Vertex &v2, const Vertex &v3, const glm::vec4 &color, int depth);
+    void addQuad(const Vertex &v0, const Vertex &v1, const Vertex &v2, const Vertex &v3, const glm::vec4 &fgColor, const glm::vec4 &bgColor, int depth);
+    void addQuad(const Vertex &v0, const Vertex &v1, const Vertex &v2, const Vertex &v3, const glm::vec4 &fgColor, const glm::vec4 &bgColor, const glm::vec2 &size, int depth);
 
     void updateSceneBox(int width, int height);
 
