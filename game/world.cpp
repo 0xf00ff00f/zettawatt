@@ -135,9 +135,18 @@ public:
     bool handleMousePress() override;
 
 private:
+    enum class State {
+        Inactive,
+        Activating,
+        Active,
+    };
+    State m_state = State::Inactive;
     Unit *m_unit;
     Wobble m_wobble;
+    float m_stateTime = 0.0f;
+
     static constexpr auto Radius = 25.0f;
+    static constexpr auto ActivationTime = 2.0f;
 };
 
 UnitItem::UnitItem(Unit *unit, World *world)
@@ -151,14 +160,41 @@ UnitItem::~UnitItem() = default;
 
 void UnitItem::update(double elapsed)
 {
+    m_stateTime += elapsed;
     m_wobble.update(elapsed);
+
+    const auto setState = [this](State state) {
+        m_state = state;
+        m_stateTime = 0.0f;
+    };
+    switch (m_state) {
+    case State::Inactive:
+        if (m_unit->count > 0)
+            setState(State::Activating);
+        break;
+    case State::Activating:
+        if (m_stateTime >= ActivationTime)
+            setState(State::Active);
+        break;
+    case State::Active:
+        break;
+    }
 }
 
 glm::vec2 UnitItem::position() const
 {
     auto p = m_unit->position;
-    if (m_unit->count == 0)
-        p += m_wobble.offset();
+    const auto wobbleWeight = [this] {
+        switch (m_state) {
+        case State::Inactive:
+            return 1.0f;
+        case State::Activating:
+            return 1.0f - m_stateTime / ActivationTime;
+        default:
+            return 0.0f;
+        }
+    }();
+    p += wobbleWeight * m_wobble.offset();
     return p;
 }
 
@@ -171,7 +207,14 @@ glm::vec4 UnitItem::color() const
 {
     constexpr const auto ActiveColor = glm::vec4(1, 0, 0, 1);
     constexpr const auto InactiveColor = glm::vec4(0.25, 0.25, 0.25, 1);
-    return m_unit->count > 0 ? ActiveColor : InactiveColor;
+    switch (m_state) {
+    case State::Inactive:
+        return InactiveColor;
+    case State::Activating:
+        return glm::mix(InactiveColor, ActiveColor, m_stateTime / ActivationTime);
+    default:
+        return ActiveColor;
+    }
 }
 
 void UnitItem::paint(UIPainter *painter) const
@@ -183,10 +226,8 @@ void UnitItem::paint(UIPainter *painter) const
     auto p = position();
     painter->drawCircle(p, radius(), glm::vec4(0), color(), 6.0f, -1);
 
-#if 0
     if (m_world->canAcquire(m_unit))
         painter->drawGlowCircle(p, radius(), glm::vec4(0, 1, 1, 1), -2);
-#endif
 
     constexpr auto Margin = 10.0f;
     p += glm::vec2(0, Radius + Margin);
