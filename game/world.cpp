@@ -27,7 +27,7 @@ std::tuple<int, int, char32_t> formattedValue(double value)
     return { static_cast<int>(value), static_cast<int>(value * 1000) % 1000, units[unit] };
 }
 
-constexpr const char *FontName = "IBMPlexSans-Regular.ttf";
+constexpr const char *FontName = "Lato-Regular.ttf";
 
 constexpr const auto GraphColor = glm::vec4(1, 0, 0, 1);
 
@@ -180,7 +180,7 @@ void UnitItem::paint(UIPainter *painter) const
     constexpr auto Margin = 10.0f;
     p += glm::vec2(0, Radius + Margin);
 
-    constexpr auto TextWidth = 80.0f;
+    constexpr auto TextWidth = 120.0f;
     constexpr auto TextHeight = 80.0f;
     const auto textBox = GX::BoxF { p - glm::vec2(0.5f * TextWidth, 0), p + glm::vec2(0.5f * TextWidth, TextHeight) };
     painter->setVerticalAlign(UIPainter::VerticalAlign::Top);
