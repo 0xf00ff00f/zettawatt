@@ -561,8 +561,8 @@ bool World::unitClicked(Unit *unit)
     if (!canAcquire(unit))
         return false;
 
-    ++unit->count;
     m_state -= actualCost(unit);
+    ++unit->count;
     updateStateDelta();
 
     return true;
