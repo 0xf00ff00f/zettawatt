@@ -2,6 +2,7 @@
 
 #include "techgraph.h"
 
+#include <textureatlas.h>
 #include <util.h>
 
 #include <memory>
@@ -81,4 +82,8 @@ private:
     glm::vec2 m_lastMousePosition;
     bool m_panningView = false;
     glm::vec2 m_viewOffset;
+    GX::PackedPixmap m_extropyIcon;
+    GX::PackedPixmap m_energyIcon;
+    GX::PackedPixmap m_materialIcon;
+    GX::PackedPixmap m_carbonIcon;
 };

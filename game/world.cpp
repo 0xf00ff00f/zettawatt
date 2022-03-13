@@ -5,6 +5,7 @@
 #include <fontcache.h>
 
 #include <fmt/format.h>
+#include <spdlog/spdlog.h>
 
 #include <glm/gtc/constants.hpp>
 #include <glm/gtc/random.hpp>
@@ -16,6 +17,11 @@
 using namespace std::string_literals;
 
 namespace {
+std::string iconPath(std::string_view basename)
+{
+    return std::string("assets/images/") + std::string(basename);
+}
+
 std::tuple<int, int, char32_t> formattedValue(double value)
 {
     static const char32_t *units = U" kMGTPEZY";
@@ -355,6 +361,11 @@ void World::initialize(UIPainter *painter, TechGraph *techGraph)
     }
 
     reset();
+
+    m_extropyIcon = m_painter->getPixmap("extropy.png");
+    m_energyIcon = m_painter->getPixmap("energy.png");
+    m_materialIcon = m_painter->getPixmap("material.png");
+    m_carbonIcon = m_painter->getPixmap("carbon.png");
 }
 
 void World::reset()
@@ -426,12 +437,12 @@ void World::paintState() const
     constexpr auto CounterWidth = 320.0f;
     constexpr auto CounterHeight = 160.0f;
 
-    auto paintCounter = [this](float centerX, float centerY, const std::u32string &label, const std::string &unit, double value, double delta) {
+    auto paintCounter = [this](float centerX, float centerY, const std::u32string &label, const std::string &unit, const GX::PackedPixmap &icon, double value, double delta) {
         const auto box = GX::BoxF { glm::vec2(centerX - 0.5 * CounterWidth, centerY - 0.5 * CounterHeight), glm::vec2(centerX + 0.5 * CounterWidth, centerY + 0.5 * CounterHeight) };
         m_painter->drawRoundedRect(box, 20, glm::vec4(0, 0, 0, 0.75), glm::vec4(1, 1, 1, 1), 4.0f, TextDepth - 1);
 
         static const auto LabelFont = UIPainter::Font { FontName, 40 };
-        static const auto CounterFontBig = UIPainter::Font { FontName, 80 };
+        static const auto CounterFontBig = UIPainter::Font { FontName, 70 };
         static const auto CounterFontSmall = UIPainter::Font { FontName, 40 };
         static const auto DeltaFont = UIPainter::Font { FontName, 40 };
 
@@ -440,7 +451,13 @@ void World::paintState() const
         // label
         {
             m_painter->setFont(LabelFont);
-            paintCentered(m_painter, centerX, y, glm::vec4(1), TextDepth, label);
+            const auto advance = m_painter->horizontalAdvance(label) + icon.width;
+            auto x = centerX - 0.5f * advance;
+            const auto textHeight = m_painter->font()->ascent() + m_painter->font()->descent();
+            // is this even right lol
+            m_painter->drawPixmap(glm::vec2(x, y - 0.5f * (textHeight + icon.height)), icon, TextDepth);
+            x += icon.width;
+            m_painter->drawText(glm::vec2(x, y), glm::vec4(1), TextDepth, label);
         }
         y += 60;
 
@@ -495,10 +512,10 @@ void World::paintState() const
     const GX::BoxF sceneBox = m_painter->sceneBox();
     const float y = sceneBox.min.y + 0.5 * CounterHeight;
 
-    paintCounter(-1.5f * CounterWidth, y, U"EXTROPY"s, ""s, m_state.extropy, m_stateDelta.extropy);
-    paintCounter(-0.5f * CounterWidth, y, U"ENERGY"s, "Wh"s, m_state.energy, m_stateDelta.energy);
-    paintCounter(0.5f * CounterWidth, y, U"MATERIALS"s, "t"s, m_state.material, m_stateDelta.material);
-    paintCounter(1.5f * CounterWidth, y, U"CO\U00002082"s, "t"s, m_state.carbon, m_stateDelta.carbon);
+    paintCounter(-1.5f * CounterWidth, y, U"EXTROPY"s, ""s, m_extropyIcon, m_state.extropy, m_stateDelta.extropy);
+    paintCounter(-0.5f * CounterWidth, y, U"ENERGY"s, "Wh"s, m_energyIcon, m_state.energy, m_stateDelta.energy);
+    paintCounter(0.5f * CounterWidth, y, U"MATERIALS"s, "t"s, m_materialIcon, m_state.material, m_stateDelta.material);
+    paintCounter(1.5f * CounterWidth, y, U"CO\U00002082"s, "t"s, m_carbonIcon, m_state.carbon, m_stateDelta.carbon);
 }
 
 void World::mousePressEvent(const glm::vec2 &pos)

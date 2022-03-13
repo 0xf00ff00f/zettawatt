@@ -13,10 +13,10 @@ namespace GX {
 struct Pixmap;
 
 struct PackedPixmap {
-    int width;
-    int height;
+    int width = 0;
+    int height = 0;
     BoxF textureCoords;
-    const AbstractTexture *texture;
+    const AbstractTexture *texture = nullptr;
 };
 
 class TextureAtlas

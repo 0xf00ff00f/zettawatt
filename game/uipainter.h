@@ -2,6 +2,7 @@
 
 #include <noncopyable.h>
 #include <shaderprogram.h>
+#include <textureatlas.h>
 #include <util.h>
 
 #include <memory>
@@ -10,7 +11,6 @@
 #include <vector>
 
 namespace GX {
-class TextureAtlas;
 class FontCache;
 class SpriteBatcher;
 class ShaderManager;
@@ -38,6 +38,8 @@ public:
     };
     void setFont(const Font &font);
 
+    GX::PackedPixmap getPixmap(const std::string &name);
+
     template<typename StringT>
     void drawText(const glm::vec2 &pos, const glm::vec4 &color, int depth, const StringT &text);
 
@@ -50,6 +52,7 @@ public:
     void drawRoundedRect(const GX::BoxF &box, float radius, const glm::vec4 &fillColor, const glm::vec4 &outlineColor, float outlineSize, int depth);
     void drawThickLine(const glm::vec2 &from, const glm::vec2 &to, float thickness, const glm::vec4 &fromColor, const glm::vec4 &toColor, int depth);
     void drawGlowCircle(const glm::vec2 &center, float radius, const glm::vec4 &color, int depth);
+    void drawPixmap(const glm::vec2 &pos, const GX::PackedPixmap &pixmap, int depth);
 
     void resetTransform();
     void scale(const glm::vec2 &s);
@@ -84,9 +87,11 @@ private:
         glm::vec2 position;
         glm::vec2 textureCoords;
     };
+    void addQuad(const GX::AbstractTexture *texture, const Vertex &v0, const Vertex &v1, const Vertex &v2, const Vertex &v3, int depth);
     void addQuad(const GX::AbstractTexture *texture, const Vertex &v0, const Vertex &v1, const Vertex &v2, const Vertex &v3, const glm::vec4 &color, int depth);
     void addQuad(const GX::AbstractTexture *texture, const Vertex &v0, const Vertex &v1, const Vertex &v2, const Vertex &v3, const glm::vec4 &fgColor, const glm::vec4 &bgColor, int depth);
     void addQuad(const GX::AbstractTexture *texture, const Vertex &v0, const Vertex &v1, const Vertex &v2, const Vertex &v3, const glm::vec4 &fgColor, const glm::vec4 &bgColor, const glm::vec2 &size, int depth);
+    void addQuad(const Vertex &v0, const Vertex &v1, const Vertex &v2, const Vertex &v3, int depth);
     void addQuad(const Vertex &v0, const Vertex &v1, const Vertex &v2, const Vertex &v3, const glm::vec4 &color, int depth);
     void addQuad(const Vertex &v0, const Vertex &v1, const Vertex &v2, const Vertex &v3, const glm::vec4 &fgColor, const glm::vec4 &bgColor, int depth);
     void addQuad(const Vertex &v0, const Vertex &v1, const Vertex &v2, const Vertex &v3, const glm::vec4 &fgColor, const glm::vec4 &bgColor, const glm::vec2 &size, int depth);
@@ -103,8 +108,10 @@ private:
         std::size_t operator()(const Font &font) const;
     };
     std::unordered_map<Font, std::unique_ptr<GX::FontCache>, FontHasher> m_fonts;
+    std::unordered_map<std::string, GX::PackedPixmap> m_pixmaps;
     std::unique_ptr<GX::SpriteBatcher> m_spriteBatcher;
-    std::unique_ptr<GX::TextureAtlas> m_textureAtlas;
+    std::unique_ptr<GX::TextureAtlas> m_grayscaleTextureAtlas;
+    std::unique_ptr<GX::TextureAtlas> m_rgbaTextureAtlas;
     GX::BoxF m_sceneBox = {};
     GX::FontCache *m_font = nullptr;
     glm::mat4 m_transform;

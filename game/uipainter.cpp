@@ -20,11 +20,17 @@ std::string fontPath(std::string_view basename)
 {
     return std::string("assets/fonts/") + std::string(basename);
 }
+
+std::string pixmapPath(std::string_view basename)
+{
+    return std::string("assets/images/") + std::string(basename);
+}
 } // namespace
 
 UIPainter::UIPainter(GX::ShaderManager *shaderManager)
     : m_spriteBatcher(new GX::SpriteBatcher(shaderManager))
-    , m_textureAtlas(new GX::TextureAtlas(TextureAtlasPageSize, TextureAtlasPageSize, GX::PixelType::Grayscale))
+    , m_grayscaleTextureAtlas(new GX::TextureAtlas(TextureAtlasPageSize, TextureAtlasPageSize, GX::PixelType::Grayscale))
+    , m_rgbaTextureAtlas(new GX::TextureAtlas(TextureAtlasPageSize, TextureAtlasPageSize, GX::PixelType::RGBA))
 {
 }
 
@@ -55,7 +61,7 @@ void UIPainter::setFont(const Font &font)
 {
     auto it = m_fonts.find(font);
     if (it == m_fonts.end()) {
-        auto fontCache = std::make_unique<GX::FontCache>(m_textureAtlas.get());
+        auto fontCache = std::make_unique<GX::FontCache>(m_grayscaleTextureAtlas.get());
         const auto path = fontPath(font.name);
         if (!fontCache->load(path, font.pixelHeight)) {
             spdlog::error("Failed to load font {}", path);
@@ -63,6 +69,32 @@ void UIPainter::setFont(const Font &font)
         it = m_fonts.emplace(font, std::move(fontCache)).first;
     }
     m_font = it->second.get();
+}
+
+GX::PackedPixmap UIPainter::getPixmap(const std::string &name)
+{
+    auto it = m_pixmaps.find(name);
+    if (it == m_pixmaps.end()) {
+        auto pm = GX::loadPixmap(pixmapPath(name));
+        if (!pm) {
+            spdlog::warn("Failed to load pixmap {}", name);
+            return {};
+        }
+        auto packed = [this, &pm]() -> std::optional<GX::PackedPixmap> {
+            switch (pm.pixelType) {
+            case GX::PixelType::Grayscale:
+                return m_grayscaleTextureAtlas->addPixmap(pm);
+            case GX::PixelType::RGBA:
+                return m_rgbaTextureAtlas->addPixmap(pm);
+            default:
+                return {};
+            }
+        }();
+        if (!packed)
+            return {};
+        it = m_pixmaps.emplace(name, std::move(*packed)).first;
+    }
+    return it->second;
 }
 
 template<typename StringT>
@@ -163,8 +195,8 @@ glm::vec2 UIPainter::drawTextBox(const GX::BoxF &box, const glm::vec4 &color, in
 
 void UIPainter::drawCircle(const glm::vec2 &center, float radius, const glm::vec4 &fillColor, const glm::vec4 &outlineColor, float outlineSize, int depth)
 {
-    const auto &p0 = center - glm::vec2(radius, radius);
-    const auto &p1 = center + glm::vec2(radius, radius);
+    const auto p0 = center - glm::vec2(radius, radius);
+    const auto p1 = center + glm::vec2(radius, radius);
 
     const auto size = glm::vec2(2.0f * radius, outlineSize);
 
@@ -197,6 +229,11 @@ void UIPainter::addQuad(const GX::AbstractTexture *texture, const Vertex &v0, co
     addQuad(texture, v0, v1, v2, v3, color, glm::vec4(0), glm::vec2(0), depth);
 }
 
+void UIPainter::addQuad(const GX::AbstractTexture *texture, const Vertex &v0, const Vertex &v1, const Vertex &v2, const Vertex &v3, int depth)
+{
+    addQuad(texture, v0, v1, v2, v3, glm::vec4(0), glm::vec4(0), glm::vec2(0), depth);
+}
+
 void UIPainter::addQuad(const Vertex &v0, const Vertex &v1, const Vertex &v2, const Vertex &v3, const glm::vec4 &fgColor, const glm::vec4 &bgColor, const glm::vec2 &size, int depth)
 {
     addQuad(nullptr, v0, v1, v2, v3, fgColor, bgColor, size, depth);
@@ -210,6 +247,11 @@ void UIPainter::addQuad(const Vertex &v0, const Vertex &v1, const Vertex &v2, co
 void UIPainter::addQuad(const Vertex &v0, const Vertex &v1, const Vertex &v2, const Vertex &v3, const glm::vec4 &color, int depth)
 {
     addQuad(nullptr, v0, v1, v2, v3, color, glm::vec4(0), glm::vec2(0), depth);
+}
+
+void UIPainter::addQuad(const Vertex &v0, const Vertex &v1, const Vertex &v2, const Vertex &v3, int depth)
+{
+    addQuad(nullptr, v0, v1, v2, v3, glm::vec4(0), glm::vec4(0), glm::vec2(0), depth);
 }
 
 void UIPainter::drawRoundedRect(const GX::BoxF &box, float radius, const glm::vec4 &fillColor, const glm::vec4 &outlineColor, float outlineSize, int depth)
@@ -292,6 +334,25 @@ void UIPainter::drawGlowCircle(const glm::vec2 &center, float radius, const glm:
             { { p1.x, p1.y }, { 1.0f, 1.0f } },
             { { p0.x, p1.y }, { 0.0f, 1.0f } },
             color, bgColor, depth);
+}
+
+void UIPainter::drawPixmap(const glm::vec2 &pos, const GX::PackedPixmap &pixmap, int depth)
+{
+    m_spriteBatcher->setBatchProgram(GX::ShaderManager::Program::Decal);
+
+    const auto &p0 = pos;
+    const auto p1 = p0 + glm::vec2(pixmap.width, pixmap.height);
+
+    const auto &textureCoords = pixmap.textureCoords;
+    const auto &t0 = textureCoords.min;
+    const auto &t1 = textureCoords.max;
+
+    addQuad(pixmap.texture,
+            { { p0.x, p0.y }, { t0.x, t0.y } },
+            { { p1.x, p0.y }, { t1.x, t0.y } },
+            { { p1.x, p1.y }, { t1.x, t1.y } },
+            { { p0.x, p1.y }, { t0.x, t1.y } },
+            depth);
 }
 
 void UIPainter::updateSceneBox(int width, int height)
