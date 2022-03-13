@@ -23,16 +23,17 @@ bool TechGraph::load(const std::string &jsonPath)
 {
     units.clear();
 
-    const auto json = GX::Util::readFile(jsonPath);
+    auto json = GX::Util::readFile(jsonPath);
     if (!json) {
         spdlog::warn("Failed to read graph file {}", jsonPath);
         return false;
     }
+    json->push_back('\0');
 
     rapidjson::Document document;
-    document.Parse(reinterpret_cast<const char *>(json->data()));
-    if (document.HasParseError()) {
-        spdlog::warn("Failed to parse graph file {}", jsonPath);
+    rapidjson::ParseResult ok = document.Parse(reinterpret_cast<const char *>(json->data()));
+    if (!ok) {
+        spdlog::warn("Failed to parse graph file {}, error: {}, offset: {}", jsonPath, ok.Code(), ok.Offset());
         return false;
     }
 
