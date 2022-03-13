@@ -65,6 +65,7 @@ private:
     void paintState(UIPainter *painter) const;
     void paintGraph(UIPainter *painter) const;
     void updateStateDelta();
+    StateVector actualCost(const Unit *unit) const;
 
     StateVector m_state;
     StateVector m_stateDelta;

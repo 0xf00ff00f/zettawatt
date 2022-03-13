@@ -551,13 +551,18 @@ void World::mouseMoveEvent(const glm::vec2 &pos)
     m_lastMousePosition = pos;
 }
 
+StateVector World::actualCost(const Unit *unit) const
+{
+    return unit->cost * powf(1.2f, unit->count);
+}
+
 bool World::unitClicked(Unit *unit)
 {
     if (!canAcquire(unit))
         return false;
 
     ++unit->count;
-    m_state -= unit->cost;
+    m_state -= actualCost(unit);
     updateStateDelta();
 
     return true;
@@ -577,6 +582,6 @@ bool World::canAcquire(const Unit *unit) const
     }();
     if (!hasDependencies)
         return false;
-    const auto &cost = unit->cost;
+    const auto cost = actualCost(unit);
     return cost.extropy <= m_state.extropy && cost.energy <= m_state.energy && cost.material <= m_state.material;
 }
