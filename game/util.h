@@ -20,6 +20,11 @@ struct Box {
         return max.y - min.y;
     }
 
+    Point size() const
+    {
+        return Point(width(), height());
+    }
+
     Point center() const { return 0.5f * (min + max); }
 
     void moveMin(const Point &p)

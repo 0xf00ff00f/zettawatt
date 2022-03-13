@@ -47,11 +47,11 @@ public:
     ~World();
 
     void setViewportSize(const glm::vec2 &viewportSize);
-    void initialize(TechGraph *techGraph);
+    void initialize(UIPainter *painter, TechGraph *techGraph);
     void reset();
 
     void update(double elapsed);
-    void paint(UIPainter *painter) const;
+    void paint() const;
 
     void mousePressEvent(const glm::vec2 &pos);
     void mouseReleaseEvent(const glm::vec2 &pos);
@@ -62,11 +62,12 @@ public:
     bool canAcquire(const Unit *unit) const;
 
 private:
-    void paintState(UIPainter *painter) const;
-    void paintGraph(UIPainter *painter) const;
+    void paintState() const;
+    void paintGraph() const;
     void updateStateDelta();
     StateVector actualCost(const Unit *unit) const;
 
+    UIPainter *m_painter = nullptr;
     StateVector m_state;
     StateVector m_stateDelta;
     TechGraph *m_techGraph;
@@ -80,5 +81,4 @@ private:
     glm::vec2 m_lastMousePosition;
     bool m_panningView = false;
     glm::vec2 m_viewOffset;
-    glm::vec2 m_viewportSize;
 };

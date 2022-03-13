@@ -45,8 +45,7 @@ void GameWindow::initializeGL()
     m_painter = std::make_unique<UIPainter>(m_shaderManager.get());
     m_painter->resize(width(), height());
 
-    m_world.setViewportSize(glm::vec2(width(), height()));
-    m_world.initialize(m_techGraph.get());
+    m_world.initialize(m_painter.get(), m_techGraph.get());
 }
 
 void GameWindow::paintGL()
@@ -60,7 +59,7 @@ void GameWindow::paintGL()
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     m_painter->startPainting();
-    m_world.paint(m_painter.get());
+    m_world.paint();
     m_painter->donePainting();
 }
 

@@ -333,13 +333,9 @@ bool UnitItem::isVisible() const
 World::World() = default;
 World::~World() = default;
 
-void World::setViewportSize(const glm::vec2 &viewportSize)
+void World::initialize(UIPainter *painter, TechGraph *techGraph)
 {
-    m_viewportSize = viewportSize;
-}
-
-void World::initialize(TechGraph *techGraph)
-{
+    m_painter = painter;
     m_techGraph = techGraph;
 
     m_graphItems.clear();
@@ -395,16 +391,16 @@ void World::updateStateDelta()
     m_stateDelta = delta;
 }
 
-void World::paint(UIPainter *painter) const
+void World::paint() const
 {
-    paintGraph(painter);
-    paintState(painter);
+    paintGraph();
+    paintState();
 }
 
-void World::paintGraph(UIPainter *painter) const
+void World::paintGraph() const
 {
-    painter->saveTransform();
-    painter->translate(m_viewOffset);
+    m_painter->saveTransform();
+    m_painter->translate(m_viewOffset);
 
     for (auto [from, to] : m_edges) {
         constexpr auto NodeBorder = 4.0f;
@@ -414,25 +410,25 @@ void World::paintGraph(UIPainter *painter) const
         const auto d = glm::normalize(fromPosition - toPosition);
         fromPosition -= (from->radius() - NodeBorder) * d;
         toPosition += (to->radius() - NodeBorder) * d;
-        painter->drawThickLine(fromPosition, toPosition, 5, from->color(), to->color(), -1);
+        m_painter->drawThickLine(fromPosition, toPosition, 5, from->color(), to->color(), -1);
     }
 
     for (auto &item : m_graphItems)
-        item->paint(painter);
+        item->paint(m_painter);
 
-    painter->restoreTransform();
+    m_painter->restoreTransform();
 }
 
-void World::paintState(UIPainter *painter) const
+void World::paintState() const
 {
     constexpr auto TextDepth = 4;
 
     constexpr auto CounterWidth = 320.0f;
     constexpr auto CounterHeight = 160.0f;
 
-    auto paintCounter = [painter](float centerX, float centerY, const std::u32string &label, const std::string &unit, double value, double delta) {
+    auto paintCounter = [this](float centerX, float centerY, const std::u32string &label, const std::string &unit, double value, double delta) {
         const auto box = GX::BoxF { glm::vec2(centerX - 0.5 * CounterWidth, centerY - 0.5 * CounterHeight), glm::vec2(centerX + 0.5 * CounterWidth, centerY + 0.5 * CounterHeight) };
-        painter->drawRoundedRect(box, 20, glm::vec4(0, 0, 0, 0.75), glm::vec4(1, 1, 1, 1), 4.0f, TextDepth - 1);
+        m_painter->drawRoundedRect(box, 20, glm::vec4(0, 0, 0, 0.75), glm::vec4(1, 1, 1, 1), 4.0f, TextDepth - 1);
 
         static const auto LabelFont = UIPainter::Font { FontName, 40 };
         static const auto CounterFontBig = UIPainter::Font { FontName, 80 };
@@ -443,8 +439,8 @@ void World::paintState(UIPainter *painter) const
 
         // label
         {
-            painter->setFont(LabelFont);
-            paintCentered(painter, centerX, y, glm::vec4(1), TextDepth, label);
+            m_painter->setFont(LabelFont);
+            paintCentered(m_painter, centerX, y, glm::vec4(1), TextDepth, label);
         }
         y += 60;
 
@@ -456,27 +452,27 @@ void World::paintState(UIPainter *painter) const
                 const auto smallText = fmt::format(".{:03d}", small);
                 const auto unitText = fmt::format("{}{}", static_cast<char>(power), unit);
 
-                painter->setFont(CounterFontBig);
-                const auto bigAdvance = painter->horizontalAdvance(bigText);
-                const auto unitAdvance = painter->horizontalAdvance(unitText);
+                m_painter->setFont(CounterFontBig);
+                const auto bigAdvance = m_painter->horizontalAdvance(bigText);
+                const auto unitAdvance = m_painter->horizontalAdvance(unitText);
 
-                painter->setFont(CounterFontSmall);
-                const auto smallAdvance = painter->horizontalAdvance(smallText);
+                m_painter->setFont(CounterFontSmall);
+                const auto smallAdvance = m_painter->horizontalAdvance(smallText);
 
                 const auto totalAdvance = bigAdvance + smallAdvance + unitAdvance;
 
                 const auto left = centerX - 0.5f * totalAdvance;
 
-                painter->setFont(CounterFontBig);
-                painter->drawText(glm::vec2(left, y), glm::vec4(1), TextDepth, bigText);
-                painter->drawText(glm::vec2(left + bigAdvance + smallAdvance, y), glm::vec4(1), TextDepth, unitText);
+                m_painter->setFont(CounterFontBig);
+                m_painter->drawText(glm::vec2(left, y), glm::vec4(1), TextDepth, bigText);
+                m_painter->drawText(glm::vec2(left + bigAdvance + smallAdvance, y), glm::vec4(1), TextDepth, unitText);
 
-                painter->setFont(CounterFontSmall);
-                painter->drawText(glm::vec2(left + bigAdvance, y), glm::vec4(1), TextDepth, smallText);
+                m_painter->setFont(CounterFontSmall);
+                m_painter->drawText(glm::vec2(left + bigAdvance, y), glm::vec4(1), TextDepth, smallText);
             } else {
                 const auto text = fmt::format("{}{}", big, unit);
-                painter->setFont(CounterFontBig);
-                paintCentered(painter, centerX, y, glm::vec4(1), TextDepth, text);
+                m_painter->setFont(CounterFontBig);
+                paintCentered(m_painter, centerX, y, glm::vec4(1), TextDepth, text);
             }
         }
         y += 40;
@@ -491,12 +487,12 @@ void World::paintState(UIPainter *painter) const
                     return fmt::format("{}.{:03d}{}{}/s", big, small, static_cast<char>(power), unit);
                 }
             }();
-            painter->setFont(DeltaFont);
-            paintCentered(painter, centerX, y, glm::vec4(1), TextDepth, text);
+            m_painter->setFont(DeltaFont);
+            paintCentered(m_painter, centerX, y, glm::vec4(1), TextDepth, text);
         }
     };
 
-    const GX::BoxF sceneBox = painter->sceneBox();
+    const GX::BoxF sceneBox = m_painter->sceneBox();
     const float y = sceneBox.min.y + 0.5 * CounterHeight;
 
     paintCounter(-1.5f * CounterWidth, y, U"EXTROPY"s, ""s, m_state.extropy, m_stateDelta.extropy);
@@ -542,8 +538,9 @@ void World::mouseMoveEvent(const glm::vec2 &pos)
             }
             return std::pair(min, max);
         }();
-        m_viewOffset = glm::max(m_viewOffset, -max - 0.5f * m_viewportSize);
-        m_viewOffset = glm::min(m_viewOffset, -min + 0.5f * m_viewportSize);
+        const auto viewportSize = m_painter->sceneBox().size();
+        m_viewOffset = glm::max(m_viewOffset, -max - 0.5f * viewportSize);
+        m_viewOffset = glm::min(m_viewOffset, -min + 0.5f * viewportSize);
     } else {
         for (auto &item : m_graphItems)
             item->mouseMoveEvent(pos - m_viewOffset);
