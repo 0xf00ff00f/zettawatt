@@ -432,7 +432,7 @@ void World::paintGraph() const
 
 void World::paintState() const
 {
-    constexpr auto TextDepth = 4;
+    constexpr auto TextDepth = 20;
 
     constexpr auto CounterWidth = 320.0f;
     constexpr auto CounterHeight = 160.0f;
