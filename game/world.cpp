@@ -512,10 +512,10 @@ void World::paintState() const
     const GX::BoxF sceneBox = m_painter->sceneBox();
     const float y = sceneBox.min.y + 0.5 * CounterHeight;
 
-    paintCounter(-1.5f * CounterWidth, y, U"EXTROPY"s, ""s, m_extropyIcon, m_state.extropy, m_stateDelta.extropy);
-    paintCounter(-0.5f * CounterWidth, y, U"ENERGY"s, "Wh"s, m_energyIcon, m_state.energy, m_stateDelta.energy);
-    paintCounter(0.5f * CounterWidth, y, U"MATERIALS"s, "t"s, m_materialIcon, m_state.material, m_stateDelta.material);
-    paintCounter(1.5f * CounterWidth, y, U"CO\U00002082"s, "t"s, m_carbonIcon, m_state.carbon, m_stateDelta.carbon);
+    paintCounter(-1.5f * CounterWidth, y, U"ENERGY"s, "Wh"s, m_energyIcon, m_state.energy, m_stateDelta.energy);
+    paintCounter(-.5f * CounterWidth, y, U"MATERIALS"s, "t"s, m_materialIcon, m_state.material, m_stateDelta.material);
+    paintCounter(.5f * CounterWidth, y, U"CO\U00002082"s, "t"s, m_carbonIcon, m_state.carbon, m_stateDelta.carbon);
+    paintCounter(1.5f * CounterWidth, y, U"EXTROPY"s, ""s, m_extropyIcon, m_state.extropy, m_stateDelta.extropy);
 }
 
 void World::mousePressEvent(const glm::vec2 &pos)
