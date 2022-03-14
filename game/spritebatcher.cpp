@@ -46,7 +46,7 @@ void SpriteBatcher::startBatch()
     m_quadCount = 0;
 }
 
-void SpriteBatcher::addSprite(const PackedPixmap &pixmap, const glm::vec2 &topLeft, const glm::vec2 &bottomRight, const glm::vec4 &fgColor, const glm::vec4 &bgColor, const glm::vec2 &size, int depth)
+void SpriteBatcher::addSprite(const PackedPixmap &pixmap, const glm::vec2 &topLeft, const glm::vec2 &bottomRight, const glm::vec4 &fgColor, const glm::vec4 &bgColor, const glm::vec4 &size, int depth)
 {
     const auto &p0 = topLeft;
     const auto &p1 = bottomRight;
@@ -75,10 +75,10 @@ void SpriteBatcher::addSprite(const PackedPixmap &pixmap, const glm::vec2 &topLe
     const auto &t1 = textureCoords.max;
 
     const auto verts = QuadVerts {
-        { { { p0.x, p0.y }, { t0.x, t0.y }, fgColor, bgColor, { 0, 0 } },
-          { { p1.x, p0.y }, { t1.x, t0.y }, fgColor, bgColor, { 0, 0 } },
-          { { p1.x, p1.y }, { t1.x, t1.y }, fgColor, bgColor, { 0, 0 } },
-          { { p0.x, p1.y }, { t0.x, t1.y }, fgColor, bgColor, { 0, 0 } } }
+        { { { p0.x, p0.y }, { t0.x, t0.y }, fgColor, bgColor, { 0, 0, 0, 0 } },
+          { { p1.x, p0.y }, { t1.x, t0.y }, fgColor, bgColor, { 0, 0, 0, 0 } },
+          { { p1.x, p1.y }, { t1.x, t1.y }, fgColor, bgColor, { 0, 0, 0, 0 } },
+          { { p0.x, p1.y }, { t0.x, t1.y }, fgColor, bgColor, { 0, 0, 0, 0 } } }
     };
 
     addSprite(pixmap.texture, verts, depth);
@@ -94,10 +94,10 @@ void SpriteBatcher::addSprite(const PackedPixmap &pixmap, const glm::vec2 &topLe
     const auto &t1 = textureCoords.max;
 
     const auto verts = QuadVerts {
-        { { { p0.x, p0.y }, { t0.x, t0.y }, color, { 0, 0, 0, 0 }, { 0, 0 } },
-          { { p1.x, p0.y }, { t1.x, t0.y }, color, { 0, 0, 0, 0 }, { 0, 0 } },
-          { { p1.x, p1.y }, { t1.x, t1.y }, color, { 0, 0, 0, 0 }, { 0, 0 } },
-          { { p0.x, p1.y }, { t0.x, t1.y }, color, { 0, 0, 0, 0 }, { 0, 0 } } }
+        { { { p0.x, p0.y }, { t0.x, t0.y }, color, { 0, 0, 0, 0 }, { 0, 0, 0, 0 } },
+          { { p1.x, p0.y }, { t1.x, t0.y }, color, { 0, 0, 0, 0 }, { 0, 0, 0, 0 } },
+          { { p1.x, p1.y }, { t1.x, t1.y }, color, { 0, 0, 0, 0 }, { 0, 0, 0, 0 } },
+          { { p0.x, p1.y }, { t0.x, t1.y }, color, { 0, 0, 0, 0 }, { 0, 0, 0, 0 } } }
     };
 
     addSprite(pixmap.texture, verts, depth);
@@ -185,6 +185,8 @@ void SpriteBatcher::renderBatch() const
 
                 *data++ = v.size.x;
                 *data++ = v.size.y;
+                *data++ = v.size.z;
+                *data++ = v.size.w;
             };
 
             emitVertex(0);
@@ -247,7 +249,7 @@ void SpriteBatcher::initializeResources()
 
     // size
     glEnableVertexAttribArray(4);
-    glVertexAttribPointer(4, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), reinterpret_cast<GLvoid *>(offsetof(Vertex, size)));
+    glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), reinterpret_cast<GLvoid *>(offsetof(Vertex, size)));
 
     glBindVertexArray(0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);

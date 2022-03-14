@@ -198,7 +198,7 @@ void UIPainter::drawCircle(const glm::vec2 &center, float radius, const glm::vec
     const auto p0 = center - glm::vec2(radius, radius);
     const auto p1 = center + glm::vec2(radius, radius);
 
-    const auto size = glm::vec2(2.0f * radius, outlineSize);
+    const auto size = glm::vec4(2.0f * radius, outlineSize, 0, 0);
 
     m_spriteBatcher->setBatchProgram(GX::ShaderManager::Program::Circle);
     addQuad({ { p0.x, p0.y }, { 0.0f, 0.0f } },
@@ -208,7 +208,7 @@ void UIPainter::drawCircle(const glm::vec2 &center, float radius, const glm::vec
             fillColor, outlineColor, size, depth);
 }
 
-void UIPainter::addQuad(const GX::AbstractTexture *texture, const Vertex &v0, const Vertex &v1, const Vertex &v2, const Vertex &v3, const glm::vec4 &fgColor, const glm::vec4 &bgColor, const glm::vec2 &size, int depth)
+void UIPainter::addQuad(const GX::AbstractTexture *texture, const Vertex &v0, const Vertex &v1, const Vertex &v2, const Vertex &v3, const glm::vec4 &fgColor, const glm::vec4 &bgColor, const glm::vec4 &size, int depth)
 {
     const auto quad = GX::SpriteBatcher::QuadVerts {
         { { glm::vec2(m_transform * glm::vec4(v0.position, 0, 1)), v0.textureCoords, fgColor, bgColor, size },
@@ -221,44 +221,44 @@ void UIPainter::addQuad(const GX::AbstractTexture *texture, const Vertex &v0, co
 
 void UIPainter::addQuad(const GX::AbstractTexture *texture, const Vertex &v0, const Vertex &v1, const Vertex &v2, const Vertex &v3, const glm::vec4 &fgColor, const glm::vec4 &bgColor, int depth)
 {
-    addQuad(texture, v0, v1, v2, v3, fgColor, bgColor, glm::vec2(0), depth);
+    addQuad(texture, v0, v1, v2, v3, fgColor, bgColor, glm::vec4(0), depth);
 }
 
 void UIPainter::addQuad(const GX::AbstractTexture *texture, const Vertex &v0, const Vertex &v1, const Vertex &v2, const Vertex &v3, const glm::vec4 &color, int depth)
 {
-    addQuad(texture, v0, v1, v2, v3, color, glm::vec4(0), glm::vec2(0), depth);
+    addQuad(texture, v0, v1, v2, v3, color, glm::vec4(0), glm::vec4(0), depth);
 }
 
 void UIPainter::addQuad(const GX::AbstractTexture *texture, const Vertex &v0, const Vertex &v1, const Vertex &v2, const Vertex &v3, int depth)
 {
-    addQuad(texture, v0, v1, v2, v3, glm::vec4(0), glm::vec4(0), glm::vec2(0), depth);
+    addQuad(texture, v0, v1, v2, v3, glm::vec4(0), glm::vec4(0), glm::vec4(0), depth);
 }
 
-void UIPainter::addQuad(const Vertex &v0, const Vertex &v1, const Vertex &v2, const Vertex &v3, const glm::vec4 &fgColor, const glm::vec4 &bgColor, const glm::vec2 &size, int depth)
+void UIPainter::addQuad(const Vertex &v0, const Vertex &v1, const Vertex &v2, const Vertex &v3, const glm::vec4 &fgColor, const glm::vec4 &bgColor, const glm::vec4 &size, int depth)
 {
     addQuad(nullptr, v0, v1, v2, v3, fgColor, bgColor, size, depth);
 }
 
 void UIPainter::addQuad(const Vertex &v0, const Vertex &v1, const Vertex &v2, const Vertex &v3, const glm::vec4 &fgColor, const glm::vec4 &bgColor, int depth)
 {
-    addQuad(nullptr, v0, v1, v2, v3, fgColor, bgColor, glm::vec2(0), depth);
+    addQuad(nullptr, v0, v1, v2, v3, fgColor, bgColor, glm::vec4(0), depth);
 }
 
 void UIPainter::addQuad(const Vertex &v0, const Vertex &v1, const Vertex &v2, const Vertex &v3, const glm::vec4 &color, int depth)
 {
-    addQuad(nullptr, v0, v1, v2, v3, color, glm::vec4(0), glm::vec2(0), depth);
+    addQuad(nullptr, v0, v1, v2, v3, color, glm::vec4(0), glm::vec4(0), depth);
 }
 
 void UIPainter::addQuad(const Vertex &v0, const Vertex &v1, const Vertex &v2, const Vertex &v3, int depth)
 {
-    addQuad(nullptr, v0, v1, v2, v3, glm::vec4(0), glm::vec4(0), glm::vec2(0), depth);
+    addQuad(nullptr, v0, v1, v2, v3, glm::vec4(0), glm::vec4(0), glm::vec4(0), depth);
 }
 
 void UIPainter::drawRoundedRect(const GX::BoxF &box, float radius, const glm::vec4 &fillColor, const glm::vec4 &outlineColor, float outlineSize, int depth)
 {
     m_spriteBatcher->setBatchProgram(GX::ShaderManager::Program::Circle);
 
-    const auto size = glm::vec2(2.0f * radius, outlineSize);
+    const auto size = glm::vec4(2.0f * radius, outlineSize, 0, 0);
 
     const auto drawPatch = [this, &fillColor, &outlineColor, size, depth](const glm::vec2 &p0, const glm::vec2 &p1, const glm::vec2 &t0, const glm::vec2 &t1) {
         addQuad({ { p0.x, p0.y }, { t0.x, t0.y } },
@@ -307,7 +307,7 @@ void UIPainter::drawThickLine(const glm::vec2 &from, const glm::vec2 &to, float 
     const auto p2 = to - 0.5f * thickness * tangent;
     const auto p3 = to + 0.5f * thickness * tangent;
 
-    const auto size = glm::vec2(2.0f * thickness, 0);
+    const auto size = glm::vec4(2.0f * thickness, 0, 0, 0);
 
     addQuad({ p0, { 0.0f, 0.0f } },
             { p2, { 1.0f, 0.0f } },

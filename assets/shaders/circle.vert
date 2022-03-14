@@ -4,7 +4,7 @@ layout(location=0) in vec2 position;
 layout(location=1) in vec2 texcoord;
 layout(location=2) in vec4 fgColor;
 layout(location=3) in vec4 bgColor;
-layout(location=4) in vec2 size;
+layout(location=4) in vec4 size;
 
 uniform mat4 modelViewProjection;
 

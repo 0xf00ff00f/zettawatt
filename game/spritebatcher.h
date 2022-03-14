@@ -31,7 +31,7 @@ public:
         glm::vec2 textureCoords;
         glm::vec4 fgColor;
         glm::vec4 bgColor;
-        glm::vec2 size;
+        glm::vec4 size;
     };
 
     using QuadVerts = std::array<Vertex, 4>;
@@ -39,7 +39,7 @@ public:
     void startBatch();
     void addSprite(const PackedPixmap &pixmap, const glm::vec2 &topLeft, const glm::vec2 &bottomRight, const glm::vec4 &color, int depth);
     void addSprite(const PackedPixmap &pixmap, const glm::vec2 &topLeft, const glm::vec2 &bottomRight, const glm::vec4 &fgColor, const glm::vec4 &bgColor, int depth);
-    void addSprite(const PackedPixmap &pixmap, const glm::vec2 &topLeft, const glm::vec2 &bottomRight, const glm::vec4 &fgColor, const glm::vec4 &bgColor, const glm::vec2 &size, int depth);
+    void addSprite(const PackedPixmap &pixmap, const glm::vec2 &topLeft, const glm::vec2 &bottomRight, const glm::vec4 &fgColor, const glm::vec4 &bgColor, const glm::vec4 &size, int depth);
     void addSprite(const AbstractTexture *texture, const QuadVerts &verts, int depth);
     void renderBatch() const;
 

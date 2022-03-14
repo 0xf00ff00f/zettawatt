@@ -33,7 +33,7 @@ std::tuple<int, int, char32_t> formattedValue(double value)
     return { static_cast<int>(value), static_cast<int>(value * 1000) % 1000, units[unit] };
 }
 
-constexpr const char *FontName = "Lato-Regular.ttf";
+constexpr const char *FontName = "static/Arimo-Regular.ttf";
 
 template<typename StringT>
 void paintCentered(UIPainter *painter, float x, float y, const glm::vec4 &color, int depth, const StringT &s)
