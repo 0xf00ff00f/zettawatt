@@ -9,9 +9,9 @@ TODO
   * editor
     v add booster/generator settings
   * game
-    * load booster settings
+    v load booster settings
+    v don't display units that can't be activated
+    v show generator count
     * display booster as square, generator as larger circle
-    * don't display units that can't be activated
-    * show generator count
     * show unit description on selection
     * show list of units that can be acquired
