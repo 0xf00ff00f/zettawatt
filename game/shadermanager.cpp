@@ -28,6 +28,7 @@ loadProgram(ShaderManager::Program id)
         { "thickline.vert", "thickline.frag" }, // ThickLine
         { "glowcircle.vert", "glowcircle.frag" }, // GlowCircle
         { "decal.vert", "decal.frag" }, // Decal
+        { "circlegauge.vert", "circlegauge.frag" }, // CircleGauge
     };
     static_assert(std::extent_v<decltype(programSources)> == ShaderManager::NumPrograms, "expected number of programs to match");
 

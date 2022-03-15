@@ -22,6 +22,7 @@ public:
         ThickLine,
         GlowCircle,
         Decal,
+        CircleGauge,
         NumPrograms
     };
     void useProgram(Program program);

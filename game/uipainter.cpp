@@ -355,6 +355,21 @@ void UIPainter::drawPixmap(const glm::vec2 &pos, const GX::PackedPixmap &pixmap,
             depth);
 }
 
+void UIPainter::drawCircleGauge(const glm::vec2 &center, float radius, const glm::vec4 &startColor, const glm::vec4 &endColor, float startAngle, float endAngle, float currentAngle, int depth)
+{
+    const auto p0 = center - glm::vec2(radius, radius);
+    const auto p1 = center + glm::vec2(radius, radius);
+
+    const auto size = glm::vec4(2.0f * radius, startAngle, endAngle, currentAngle);
+
+    m_spriteBatcher->setBatchProgram(GX::ShaderManager::Program::CircleGauge);
+    addQuad({ { p0.x, p0.y }, { 0.0f, 0.0f } },
+            { { p1.x, p0.y }, { 1.0f, 0.0f } },
+            { { p1.x, p1.y }, { 1.0f, 1.0f } },
+            { { p0.x, p1.y }, { 0.0f, 1.0f } },
+            startColor, endColor, size, depth);
+}
+
 void UIPainter::updateSceneBox(int width, int height)
 {
     static constexpr auto PreferredSceneSize = glm::vec2(1280, 720);

@@ -285,8 +285,39 @@ void UnitItem::paint(UIPainter *painter) const
     auto p = position();
     painter->drawCircle(p, radius(), glm::vec4(0), color, 6.0f, -1);
 
-    if (m_world->canAcquire(m_unit))
+    if (m_world->canAcquire(m_unit)) {
         painter->drawGlowCircle(p, radius(), glm::vec4(0, 1, 1, 1), -2);
+    } else {
+        const auto acquirable = [this] {
+            if (m_unit->type == Unit::Type::Generator)
+                return true;
+            return m_unit->count == 0;
+        }();
+        if (acquirable) {
+            constexpr auto RadiusDelta = 8;
+            constexpr auto EnergyColor = glm::vec4(1, 0.65, 0, 1);
+            constexpr auto MaterialColor = glm::vec4(0, 1, 1, 1);
+            constexpr auto ExtropyColor = glm::vec4(1, 0, 2, 1);
+            const auto addCircleGauge = [&p, painter](float radius, const glm::vec4 &color, float value) {
+                constexpr auto StartAngle = 0;
+                constexpr auto EndAngle = 1.5f * M_PI;
+                float angle = StartAngle + value * (EndAngle - StartAngle);
+                painter->drawCircleGauge(p, radius, 0.25f * color, color, StartAngle, EndAngle, angle, -2);
+            };
+            float r = radius() + RadiusDelta;
+            if (m_unit->cost.energy > 0) {
+                addCircleGauge(r, EnergyColor, std::min(static_cast<float>(m_world->state().energy / m_unit->cost.energy), 1.0f));
+                r += RadiusDelta;
+            }
+            if (m_unit->cost.material > 0) {
+                addCircleGauge(r, MaterialColor, std::min(static_cast<float>(m_world->state().material / m_unit->cost.material), 1.0f));
+                r += RadiusDelta;
+            }
+            if (m_unit->cost.extropy > 0) {
+                addCircleGauge(r, ExtropyColor, std::min(static_cast<float>(m_world->state().extropy / m_unit->cost.extropy), 1.0f));
+            }
+        }
+    }
 
     const auto labelAlpha = this->labelAlpha();
 

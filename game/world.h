@@ -62,6 +62,8 @@ public:
 
     bool canAcquire(const Unit *unit) const;
 
+    StateVector state() const { return m_state; }
+
 private:
     void paintState() const;
     void paintGraph() const;

@@ -53,6 +53,7 @@ public:
     void drawThickLine(const glm::vec2 &from, const glm::vec2 &to, float thickness, const glm::vec4 &fromColor, const glm::vec4 &toColor, int depth);
     void drawGlowCircle(const glm::vec2 &center, float radius, const glm::vec4 &color, int depth);
     void drawPixmap(const glm::vec2 &pos, const GX::PackedPixmap &pixmap, int depth);
+    void drawCircleGauge(const glm::vec2 &center, float radius, const glm::vec4 &startColor, const glm::vec4 &endColor, float startAngle, float endAngle, float currentAngle, int depth);
 
     void resetTransform();
     void scale(const glm::vec2 &s);
