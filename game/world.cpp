@@ -1,5 +1,6 @@
 #include "world.h"
 
+#include "tween.h"
 #include "uipainter.h"
 
 #include <fontcache.h>
@@ -154,10 +155,12 @@ private:
     Unit *m_unit;
     Wobble m_wobble;
     float m_stateTime = 0.0f;
+    float m_acquireTime = 0.0f;
 
     static constexpr auto Radius = 25.0f;
     static constexpr auto ActivationTime = 2.0f;
     static constexpr auto FadeInTime = 2.0f;
+    static constexpr auto AcquireAnimationTime = 1.0f;
 };
 
 UnitItem::UnitItem(Unit *unit, World *world)
@@ -173,7 +176,8 @@ void UnitItem::update(double elapsed)
 {
     m_stateTime += elapsed;
     m_wobble.update(elapsed);
-
+    if (m_acquireTime > 0.0f)
+        m_acquireTime = std::max(static_cast<float>(m_acquireTime - elapsed), 0.0f);
     const auto setState = [this](State state) {
         m_state = state;
         m_stateTime = 0.0f;
@@ -235,7 +239,11 @@ glm::vec2 UnitItem::position() const
 
 float UnitItem::radius() const
 {
-    return m_hovered ? 1.2f * Radius : Radius;
+    if (m_acquireTime > 0.0f) {
+        float t = m_acquireTime / AcquireAnimationTime;
+        return tween<Tweeners::InQuadratic<float>>(Radius, static_cast<float>(1.5f * Radius), t);
+    }
+    return Radius;
 }
 
 glm::vec4 UnitItem::color() const
@@ -358,7 +366,8 @@ bool UnitItem::contains(const glm::vec2 &pos) const
 
 bool UnitItem::handleMousePress()
 {
-    m_world->unitClicked(m_unit);
+    if (m_world->unitClicked(m_unit))
+        m_acquireTime = AcquireAnimationTime;
     return true;
 }
 
