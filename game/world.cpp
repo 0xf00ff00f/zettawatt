@@ -446,6 +446,7 @@ void World::paint() const
 {
     paintGraph();
     paintState();
+    paintCurrentUnitDescription();
 }
 
 void World::paintGraph() const
@@ -558,6 +559,47 @@ void World::paintState() const
     paintCounter(1.5f * CounterWidth, y, U"EXTROPY"s, ""s, m_extropyIcon, m_state.extropy, m_stateDelta.extropy);
 }
 
+void World::paintCurrentUnitDescription() const
+{
+    if (!m_currentUnit)
+        return;
+
+    static const auto TitleFont = UIPainter::Font { FontName, 25 };
+    static const auto DescriptionFont = UIPainter::Font { FontName, 20 };
+
+    constexpr auto MaxWidth = 400.0f;
+    constexpr auto Margin = 10.0f;
+    constexpr auto BoxRadius = 8.0f;
+
+    m_painter->setFont(TitleFont);
+    const auto titleSize = m_painter->textBoxSize(MaxWidth, m_currentUnit->name);
+
+    m_painter->setFont(DescriptionFont);
+    const auto descriptionSize = m_painter->textBoxSize(MaxWidth, m_currentUnit->description);
+
+    m_painter->setVerticalAlign(UIPainter::VerticalAlign::Top);
+    m_painter->setHorizontalAlign(UIPainter::HorizontalAlign::Left);
+    m_painter->setFont(TitleFont);
+
+    const auto textWidth = std::max(titleSize.x, descriptionSize.x) + 1.0f;
+    const auto textHeight = titleSize.y + descriptionSize.y;
+
+    const auto topLeft = m_painter->sceneBox().max - glm::vec2(textWidth + 2 * Margin, textHeight + 2 * Margin);
+
+    {
+        glm::vec2 p = topLeft;
+        m_painter->setFont(TitleFont);
+        m_painter->drawTextBox(GX::BoxF { p, p + glm::vec2(textWidth, titleSize.y) }, glm::vec4(1), 20, m_currentUnit->name);
+
+        p += glm::vec2(0, titleSize.y);
+        m_painter->setFont(DescriptionFont);
+        m_painter->drawTextBox(GX::BoxF { p, p + glm::vec2(textWidth, descriptionSize.y) }, glm::vec4(1), 20, m_currentUnit->description);
+    }
+
+    const auto outerBox = GX::BoxF { topLeft - glm::vec2(Margin, Margin), topLeft + glm::vec2(textWidth + Margin, textHeight + Margin) };
+    m_painter->drawRoundedRect(outerBox, BoxRadius, glm::vec4(0, 0, 0, 0.75), glm::vec4(1), 3.0f, 19);
+}
+
 void World::mousePressEvent(const glm::vec2 &pos)
 {
     bool accepted = false;
@@ -612,6 +654,8 @@ StateVector World::actualCost(const Unit *unit) const
 
 bool World::unitClicked(Unit *unit)
 {
+    m_currentUnit = unit;
+
     if (!canAcquire(unit))
         return false;
 

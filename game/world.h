@@ -67,6 +67,7 @@ public:
 private:
     void paintState() const;
     void paintGraph() const;
+    void paintCurrentUnitDescription() const;
     void updateStateDelta();
     StateVector actualCost(const Unit *unit) const;
 
@@ -88,4 +89,5 @@ private:
     GX::PackedPixmap m_energyIcon;
     GX::PackedPixmap m_materialIcon;
     GX::PackedPixmap m_carbonIcon;
+    Unit *m_currentUnit = nullptr;
 };

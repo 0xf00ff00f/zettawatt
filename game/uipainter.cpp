@@ -148,6 +148,25 @@ float UIPainter::horizontalAdvance(const StringT &text) const
 template float UIPainter::horizontalAdvance(const std::u32string &text) const;
 template float UIPainter::horizontalAdvance(const std::string &text) const;
 
+glm::vec2 UIPainter::textBoxSize(float maxWidth, const std::string &text) const
+{
+    if (!m_font) {
+        spdlog::warn("No font set lol");
+        return {};
+    }
+
+    const auto rows = breakTextLines(text, maxWidth);
+    const auto rowCount = rows.size();
+    const auto textHeight = rowCount > 0 ? rowCount * (m_font->ascent() - m_font->descent()) + (rowCount - 1) * m_font->lineGap() : 0.0f;
+    float textWidth = 0.0f;
+    for (const auto &row : rows) {
+        assert(std::abs(horizontalAdvance(row.text) - row.width) < 1e-3);
+        textWidth = std::max(textWidth, row.width);
+    }
+
+    return glm::vec2(textWidth, textHeight);
+}
+
 glm::vec2 UIPainter::drawTextBox(const GX::BoxF &box, const glm::vec4 &color, int depth, const std::string &text)
 {
     if (!m_font) {
