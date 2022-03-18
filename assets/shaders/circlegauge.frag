@@ -18,7 +18,7 @@ void main(void)
     const float Thickness = 8.0; // /in pixels
     const float InnerRadius = 0.5 - Thickness / vs_size; // in uv coords
     const float Feather = 2.0 / vs_size;
-    const vec4 InactiveColor = vec4(0.25, 0.25, 0.25, 1);
+    const vec4 InactiveColor = vec4(0.25, 0.25, 0.25, vs_endColor.w);
 
     vec2 p = vs_texcoord - vec2(.5);
     float angle = atan(p.y, p.x) + PI;
