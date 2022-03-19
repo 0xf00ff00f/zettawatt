@@ -6,6 +6,7 @@
 #include <fontcache.h>
 
 #include <fmt/format.h>
+#include <fmt/xchar.h>
 #include <spdlog/spdlog.h>
 
 #include <glm/gtc/constants.hpp>
@@ -355,7 +356,7 @@ void UnitItem::paint(UIPainter *painter) const
         painter->setVerticalAlign(UIPainter::VerticalAlign::Middle);
         painter->setHorizontalAlign(UIPainter::HorizontalAlign::Center);
         painter->setFont(UIPainter::Font { FontName, 20 });
-        painter->drawTextBox(counterBox, glm::vec4(1, 1, 1, labelAlpha), 4, fmt::format("x{}", count));
+        painter->drawTextBox(counterBox, glm::vec4(1, 1, 1, labelAlpha), 4, fmt::format(U"x{}", count));
     }
 }
 

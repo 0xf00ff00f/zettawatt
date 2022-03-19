@@ -148,7 +148,7 @@ float UIPainter::horizontalAdvance(const StringT &text) const
 template float UIPainter::horizontalAdvance(const std::u32string &text) const;
 template float UIPainter::horizontalAdvance(const std::string &text) const;
 
-glm::vec2 UIPainter::textBoxSize(float maxWidth, const std::string &text) const
+glm::vec2 UIPainter::textBoxSize(float maxWidth, const std::u32string &text) const
 {
     if (!m_font) {
         spdlog::warn("No font set lol");
@@ -167,7 +167,7 @@ glm::vec2 UIPainter::textBoxSize(float maxWidth, const std::string &text) const
     return glm::vec2(textWidth, textHeight);
 }
 
-glm::vec2 UIPainter::drawTextBox(const GX::BoxF &box, const glm::vec4 &color, int depth, const std::string &text)
+glm::vec2 UIPainter::drawTextBox(const GX::BoxF &box, const glm::vec4 &color, int depth, const std::u32string &text)
 {
     if (!m_font) {
         spdlog::warn("No font set lol");
@@ -462,13 +462,13 @@ void UIPainter::restoreTransform()
     m_transformStack.pop_back();
 }
 
-std::vector<UIPainter::TextRow> UIPainter::breakTextLines(const std::string &text, float maxWidth) const
+std::vector<UIPainter::TextRow> UIPainter::breakTextLines(const std::u32string &text, float maxWidth) const
 {
     assert(m_font);
 
     std::vector<TextRow> rows;
 
-    using Position = std::pair<std::string::const_iterator, float>;
+    using Position = std::pair<std::u32string::const_iterator, float>;
 
     Position rowStart = { text.begin(), 0.0f };
     std::optional<Position> lastBreak;
@@ -476,7 +476,7 @@ std::vector<UIPainter::TextRow> UIPainter::breakTextLines(const std::string &tex
     const auto spaceWidth = m_font->getGlyph(' ')->advanceWidth;
 
     const auto makeRow = [](auto start, float xStart, auto end, float xEnd) {
-        return TextRow { std::string_view(&*start, std::distance(start, end)), xEnd - xStart };
+        return TextRow { std::u32string_view(&*start, std::distance(start, end)), xEnd - xStart };
     };
 
     float lineWidth = 0.0f;

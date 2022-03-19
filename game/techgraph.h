@@ -89,8 +89,8 @@ struct Unit {
         Booster
     };
 
-    std::string name;
-    std::string description;
+    std::u32string name;
+    std::u32string description;
     Type type = Type::Generator;
 
     glm::vec2 position;

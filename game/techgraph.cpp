@@ -1,6 +1,8 @@
 #include "techgraph.h"
 
+#include <codecvt>
 #include <ioutil.h>
+#include <locale>
 
 #include <rapidjson/document.h>
 #include <spdlog/spdlog.h>
@@ -8,6 +10,12 @@
 using namespace std::string_literals;
 
 namespace {
+std::u32string utf8ToUtf32(const std::string &s)
+{
+    static std::wstring_convert<std::codecvt_utf8<char32_t>, char32_t> cv;
+    return cv.from_bytes(s.data());
+}
+
 StateVector loadStateVector(const rapidjson::Value &value)
 {
     return {
@@ -48,8 +56,8 @@ bool TechGraph::load(const std::string &jsonPath)
     for (size_t i = 0; i < unitsCount; ++i) {
         const auto &unitSettings = unitsArray[i];
         auto &unit = units[i];
-        unit->name = unitSettings["name"].GetString();
-        unit->description = unitSettings["description"].GetString();
+        unit->name = utf8ToUtf32(unitSettings["name"].GetString());
+        unit->description = utf8ToUtf32(unitSettings["description"].GetString());
         unit->type = [type = unitSettings["type"].GetString()] {
             return type == "Booster"s ? Unit::Type::Booster : Unit::Type::Generator;
         }();

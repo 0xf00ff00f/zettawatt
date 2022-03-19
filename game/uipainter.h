@@ -43,8 +43,8 @@ public:
     template<typename StringT>
     void drawText(const glm::vec2 &pos, const glm::vec4 &color, int depth, const StringT &text);
 
-    glm::vec2 drawTextBox(const GX::BoxF &box, const glm::vec4 &color, int depth, const std::string &text);
-    glm::vec2 textBoxSize(float maxWidth, const std::string &text) const;
+    glm::vec2 drawTextBox(const GX::BoxF &box, const glm::vec4 &color, int depth, const std::u32string &text);
+    glm::vec2 textBoxSize(float maxWidth, const std::u32string &text) const;
 
     template<typename StringT>
     float horizontalAdvance(const StringT &text) const;
@@ -101,10 +101,10 @@ private:
     void updateSceneBox(int width, int height);
 
     struct TextRow {
-        std::string_view text;
+        std::u32string_view text;
         float width;
     };
-    std::vector<TextRow> breakTextLines(const std::string &text, float lineWidth) const;
+    std::vector<TextRow> breakTextLines(const std::u32string &text, float lineWidth) const;
 
     struct FontHasher {
         std::size_t operator()(const Font &font) const;

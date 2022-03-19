@@ -66,7 +66,7 @@ void TestWindow::paintGL()
     const auto textBox = GX::BoxF { glm::vec2(left, -0.5f * boxHeight), glm::vec2(left + boxWidth, 0.5f * boxHeight) };
     const auto outerBox = GX::BoxF { textBox.min - glm::vec2(radius), textBox.max + glm::vec2(radius) };
 
-    const auto text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam imperdiet nisi nulla. Integer dictum arcu a felis lobortis semper. Sphinx of black quartz, judge my vow."s;
+    const auto text = U"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam imperdiet nisi nulla. Integer dictum arcu a felis lobortis semper. Sphinx of black quartz, judge my vow."s;
 
     m_painter->drawRoundedRect(outerBox, radius, glm::vec4(0.5, 0.5, 0.5, 1), glm::vec4(0, 1, 1, 1), 5.0f, -1);
     m_painter->drawTextBox(textBox, glm::vec4(1), 0, text);
