@@ -59,6 +59,16 @@ struct Box {
     {
         return p.x >= min.x && p.x < max.x && p.y >= min.y && p.y < max.y;
     }
+
+    bool contains(const Box &other) const
+    {
+        return !(other.max.x < min.x || other.min.x > max.x || other.max.y < min.y || other.min.y > max.y);
+    }
+
+    operator bool() const
+    {
+        return min != Point(0) || max != Point(0);
+    }
 };
 
 template<typename Point>

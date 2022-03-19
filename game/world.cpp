@@ -128,6 +128,8 @@ void GraphItem::handleMouseRelease()
 {
 }
 
+static const auto UnitLabelFont = UIPainter::Font { FontName, 25 };
+
 class UnitItem : public GraphItem
 {
 public:
@@ -144,6 +146,7 @@ public:
     bool isVisible() const override;
 
 private:
+    void initializeBoundingBox(UIPainter *painter) const;
     float labelAlpha() const;
 
     enum class State {
@@ -158,8 +161,11 @@ private:
     Wobble m_wobble;
     float m_stateTime = 0.0f;
     float m_acquireTime = 0.0f;
+    mutable GX::BoxF m_boundingBox;
 
     static constexpr auto Radius = 25.0f;
+    static constexpr auto LabelTextWidth = 120.0f;
+    static constexpr auto LabelMargin = 10.0f;
     static constexpr auto ActivationTime = 2.0f;
     static constexpr auto FadeInTime = 2.0f;
     static constexpr auto AcquireAnimationTime = 1.0f;
@@ -285,14 +291,45 @@ float UnitItem::labelAlpha() const
     }
 }
 
+void UnitItem::initializeBoundingBox(UIPainter *painter) const
+{
+    // circle
+    const GX::BoxF circleBox { glm::vec2(-Radius), glm::vec2(Radius) };
+
+    // label
+    painter->setFont(UnitLabelFont);
+    const auto textSize = painter->textBoxSize(LabelTextWidth, m_unit->name);
+    const auto p = glm::vec2(0, Radius + LabelMargin);
+    const GX::BoxF labelBox {
+        p - glm::vec2(0.5f * textSize.x + LabelMargin, LabelMargin),
+        p + glm::vec2(0.5f * textSize.x + LabelMargin, textSize.y + LabelMargin)
+    };
+
+    m_boundingBox = circleBox | labelBox;
+}
+
 void UnitItem::paint(UIPainter *painter) const
 {
     if (m_state == State::Hidden)
         return;
 
-    const auto color = this->color();
+    if (!m_boundingBox)
+        initializeBoundingBox(painter);
 
     auto p = position();
+
+    // only correct if painter transform is translation
+    const auto boundingBox = GX::BoxF {
+        painter->transformed(m_boundingBox.min + p),
+        painter->transformed(m_boundingBox.max + p)
+    };
+    const auto sceneBox = painter->sceneBox();
+    if (!sceneBox.contains(boundingBox))
+        return;
+
+    // painter->drawRoundedRect(m_boundingBox + p, 8.0f, glm::vec4(0), glm::vec4(0, 1, 0, 1), 3.0f, -100);
+
+    const auto color = this->color();
     painter->drawCircle(p, radius(), glm::vec4(0), color, 6.0f, -1);
 
     const auto labelAlpha = this->labelAlpha();
@@ -332,18 +369,16 @@ void UnitItem::paint(UIPainter *painter) const
         }
     }
 
-    constexpr auto Margin = 10.0f;
-    p += glm::vec2(0, Radius + Margin);
+    p += glm::vec2(0, Radius + LabelMargin);
 
-    constexpr auto TextWidth = 120.0f;
     constexpr auto TextHeight = 80.0f;
-    const auto textBox = GX::BoxF { p - glm::vec2(0.5f * TextWidth, 0), p + glm::vec2(0.5f * TextWidth, TextHeight) };
+    const auto textBox = GX::BoxF { p - glm::vec2(0.5f * LabelTextWidth, 0), p + glm::vec2(0.5f * LabelTextWidth, TextHeight) };
     painter->setVerticalAlign(UIPainter::VerticalAlign::Top);
     painter->setHorizontalAlign(UIPainter::HorizontalAlign::Center);
-    painter->setFont(UIPainter::Font { FontName, 25 });
+    painter->setFont(UnitLabelFont);
     auto textSize = painter->drawTextBox(textBox, glm::vec4(1, 1, 1, labelAlpha), 2, m_unit->name);
 
-    auto outerBox = GX::BoxF { p - glm::vec2(0.5f * textSize.x + Margin, Margin), p + glm::vec2(0.5f * textSize.x + Margin, textSize.y + Margin) };
+    auto outerBox = GX::BoxF { p - glm::vec2(0.5f * textSize.x + LabelMargin, LabelMargin), p + glm::vec2(0.5f * textSize.x + LabelMargin, textSize.y + LabelMargin) };
     constexpr auto BoxRadius = 8.0f;
     painter->drawRoundedRect(outerBox, BoxRadius, glm::vec4(0, 0, 0, 0.75 * labelAlpha), glm::vec4(glm::vec3(color), labelAlpha), 3.0f, 1);
 
