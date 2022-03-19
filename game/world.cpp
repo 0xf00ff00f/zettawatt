@@ -464,6 +464,9 @@ void World::paintGraph() const
     m_painter->translate(m_viewOffset);
 
     for (auto [from, to] : m_edges) {
+        if (!from->isVisible() && !to->isVisible())
+            continue;
+
         constexpr auto NodeBorder = 4.0f;
 
         auto fromPosition = from->position();
