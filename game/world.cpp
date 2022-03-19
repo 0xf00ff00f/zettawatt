@@ -153,7 +153,7 @@ private:
         Activating,
         Active,
     };
-    State m_state = State::Hidden;
+    State m_state = State::Inactive; // State::Hidden;
     Unit *m_unit;
     Wobble m_wobble;
     float m_stateTime = 0.0f;
@@ -309,7 +309,7 @@ void UnitItem::paint(UIPainter *painter) const
             constexpr auto RadiusDelta = 8;
             constexpr auto EnergyColor = glm::vec3(1, 0.65, 0);
             constexpr auto MaterialColor = glm::vec3(0, 1, 1);
-            constexpr auto ExtropyColor = glm::vec3(1, 0, 2);
+            constexpr auto ExtropyColor = glm::vec3(1, 0, 1);
             const auto addCircleGauge = [&p, painter](float radius, const glm::vec4 &color, float value) {
                 constexpr auto StartAngle = 0;
                 constexpr auto EndAngle = 1.5f * M_PI;
@@ -575,33 +575,42 @@ void World::paintCurrentUnitDescription() const
     constexpr auto Margin = 10.0f;
     constexpr auto BoxRadius = 8.0f;
 
+    float textWidth = 0.0f, textHeight = 0.0f;
+
+    // title
     m_painter->setFont(TitleFont);
     const auto titleSize = m_painter->textBoxSize(MaxWidth, m_currentUnit->name);
+    textWidth = std::max(textWidth, titleSize.x);
+    textHeight += titleSize.y;
 
+    // description
     m_painter->setFont(DescriptionFont);
     const auto descriptionSize = m_painter->textBoxSize(MaxWidth, m_currentUnit->description);
+    textWidth = std::max(textWidth, descriptionSize.x);
+    textHeight += descriptionSize.y;
 
+    // boost
     std::u32string boostDescription;
     if (m_currentUnit->type == Unit::Type::Booster) {
         const auto factor = m_currentUnit->boost.factor;
         if (factor > 1.0)
-            boostDescription = fmt::format(U"Increases {} efficiency by {}%", m_currentUnit->boost.target->name, static_cast<int>((factor - 1) * 100 + 0.5f));
+            boostDescription = fmt::format(U"{} {}% more efficient", m_currentUnit->boost.target->name, static_cast<int>((factor - 1) * 100 + 0.5f));
         else
-            boostDescription = fmt::format(U"Decreases {} efficiency by {}%", m_currentUnit->boost.target->name, static_cast<int>((1 - factor) * 100 + 0.5f));
+            boostDescription = fmt::format(U"{} {}% less efficient", m_currentUnit->boost.target->name, static_cast<int>((1 - factor) * 100 + 0.5f));
+    }
+    auto boostSize = glm::vec2(0, 0);
+    if (!boostDescription.empty()) {
+        boostSize = m_painter->textBoxSize(MaxWidth, boostDescription);
+        textWidth = std::max(textWidth, boostSize.x);
+        textHeight += boostSize.y;
     }
 
-    auto boostSize = glm::vec2(0, 0);
-    if (!boostDescription.empty())
-        boostSize = m_painter->textBoxSize(MaxWidth, boostDescription);
+    textWidth += 1.0f;
+
+    const auto topLeft = m_painter->sceneBox().max - glm::vec2(textWidth + 2 * Margin, textHeight + 2 * Margin);
 
     m_painter->setVerticalAlign(UIPainter::VerticalAlign::Top);
     m_painter->setHorizontalAlign(UIPainter::HorizontalAlign::Left);
-    m_painter->setFont(TitleFont);
-
-    const auto textWidth = std::max(std::max(titleSize.x, descriptionSize.x), boostSize.x) + 1.0f;
-    const auto textHeight = titleSize.y + descriptionSize.y + boostSize.y;
-
-    const auto topLeft = m_painter->sceneBox().max - glm::vec2(textWidth + 2 * Margin, textHeight + 2 * Margin);
 
     {
         glm::vec2 p = topLeft;
@@ -613,7 +622,7 @@ void World::paintCurrentUnitDescription() const
         m_painter->drawTextBox(GX::BoxF { p, p + glm::vec2(textWidth, descriptionSize.y) }, glm::vec4(1), 20, m_currentUnit->description);
 
         p += glm::vec2(0, descriptionSize.y);
-        m_painter->drawTextBox(GX::BoxF { p, p + glm::vec2(textWidth, boostSize.y) }, glm::vec4(1), 20, boostDescription);
+        m_painter->drawTextBox(GX::BoxF { p, p + glm::vec2(textWidth, boostSize.y) }, glm::vec4(1, 1, 0, 1), 20, boostDescription);
     }
 
     const auto outerBox = GX::BoxF { topLeft - glm::vec2(Margin, Margin), topLeft + glm::vec2(textWidth + Margin, textHeight + Margin) };
