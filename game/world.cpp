@@ -363,6 +363,8 @@ void UnitItem::paint(UIPainter *painter) const
 
 bool UnitItem::contains(const glm::vec2 &pos) const
 {
+    if (m_state == UnitItem::State::Hidden)
+        return false;
     return glm::distance(pos, position()) < radius();
 }
 
