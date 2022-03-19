@@ -36,6 +36,7 @@ std::tuple<int, int, char32_t> formattedValue(double value)
 }
 
 constexpr const char *FontName = "static/Arimo-Regular.ttf";
+constexpr const char *BoldFontName = "static/Arimo-Bold.ttf";
 
 template<typename StringT>
 void paintCentered(UIPainter *painter, float x, float y, const glm::vec4 &color, int depth, const StringT &s)
@@ -565,7 +566,7 @@ void World::paintCurrentUnitDescription() const
     if (!m_currentUnit)
         return;
 
-    static const auto TitleFont = UIPainter::Font { FontName, 25 };
+    static const auto TitleFont = UIPainter::Font { BoldFontName, 25 };
     static const auto DescriptionFont = UIPainter::Font { FontName, 20 };
 
     constexpr auto MaxWidth = 400.0f;
@@ -578,12 +579,25 @@ void World::paintCurrentUnitDescription() const
     m_painter->setFont(DescriptionFont);
     const auto descriptionSize = m_painter->textBoxSize(MaxWidth, m_currentUnit->description);
 
+    std::u32string boostDescription;
+    if (m_currentUnit->type == Unit::Type::Booster) {
+        const auto factor = m_currentUnit->boost.factor;
+        if (factor > 1.0)
+            boostDescription = fmt::format(U"Increases {} efficiency by {}%", m_currentUnit->boost.target->name, static_cast<int>((factor - 1) * 100 + 0.5f));
+        else
+            boostDescription = fmt::format(U"Decreases {} efficiency by {}%", m_currentUnit->boost.target->name, static_cast<int>((1 - factor) * 100 + 0.5f));
+    }
+
+    auto boostSize = glm::vec2(0, 0);
+    if (!boostDescription.empty())
+        boostSize = m_painter->textBoxSize(MaxWidth, boostDescription);
+
     m_painter->setVerticalAlign(UIPainter::VerticalAlign::Top);
     m_painter->setHorizontalAlign(UIPainter::HorizontalAlign::Left);
     m_painter->setFont(TitleFont);
 
-    const auto textWidth = std::max(titleSize.x, descriptionSize.x) + 1.0f;
-    const auto textHeight = titleSize.y + descriptionSize.y;
+    const auto textWidth = std::max(std::max(titleSize.x, descriptionSize.x), boostSize.x) + 1.0f;
+    const auto textHeight = titleSize.y + descriptionSize.y + boostSize.y;
 
     const auto topLeft = m_painter->sceneBox().max - glm::vec2(textWidth + 2 * Margin, textHeight + 2 * Margin);
 
@@ -595,6 +609,9 @@ void World::paintCurrentUnitDescription() const
         p += glm::vec2(0, titleSize.y);
         m_painter->setFont(DescriptionFont);
         m_painter->drawTextBox(GX::BoxF { p, p + glm::vec2(textWidth, descriptionSize.y) }, glm::vec4(1), 20, m_currentUnit->description);
+
+        p += glm::vec2(0, descriptionSize.y);
+        m_painter->drawTextBox(GX::BoxF { p, p + glm::vec2(textWidth, boostSize.y) }, glm::vec4(1), 20, boostDescription);
     }
 
     const auto outerBox = GX::BoxF { topLeft - glm::vec2(Margin, Margin), topLeft + glm::vec2(textWidth + Margin, textHeight + Margin) };
