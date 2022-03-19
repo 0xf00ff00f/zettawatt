@@ -317,16 +317,17 @@ void UnitItem::paint(UIPainter *painter) const
                 painter->drawCircleGauge(p, radius, 0.25f * color, color, StartAngle, EndAngle, angle, -2);
             };
             float r = radius() + RadiusDelta;
+            const auto cost = m_world->actualCost(m_unit);
             if (m_unit->cost.energy > 0) {
-                addCircleGauge(r, glm::vec4(EnergyColor, labelAlpha), std::min(static_cast<float>(m_world->state().energy / m_unit->cost.energy), 1.0f));
+                addCircleGauge(r, glm::vec4(EnergyColor, labelAlpha), std::min(static_cast<float>(m_world->state().energy / cost.energy), 1.0f));
                 r += RadiusDelta;
             }
             if (m_unit->cost.material > 0) {
-                addCircleGauge(r, glm::vec4(MaterialColor, labelAlpha), std::min(static_cast<float>(m_world->state().material / m_unit->cost.material), 1.0f));
+                addCircleGauge(r, glm::vec4(MaterialColor, labelAlpha), std::min(static_cast<float>(m_world->state().material / cost.material), 1.0f));
                 r += RadiusDelta;
             }
             if (m_unit->cost.extropy > 0) {
-                addCircleGauge(r, glm::vec4(ExtropyColor, labelAlpha), std::min(static_cast<float>(m_world->state().extropy / m_unit->cost.extropy), 1.0f));
+                addCircleGauge(r, glm::vec4(ExtropyColor, labelAlpha), std::min(static_cast<float>(m_world->state().extropy / cost.extropy), 1.0f));
             }
         }
     }

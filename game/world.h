@@ -64,12 +64,13 @@ public:
 
     StateVector state() const { return m_state; }
 
+    StateVector actualCost(const Unit *unit) const;
+
 private:
     void paintState() const;
     void paintGraph() const;
     void paintCurrentUnitDescription() const;
     void updateStateDelta();
-    StateVector actualCost(const Unit *unit) const;
 
     UIPainter *m_painter = nullptr;
     StateVector m_state;
