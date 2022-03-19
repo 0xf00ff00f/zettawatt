@@ -86,8 +86,12 @@ private:
     bool m_panningView = false;
     glm::vec2 m_viewOffset;
     GX::PackedPixmap m_extropyIcon;
+    GX::PackedPixmap m_extropyIconSmall;
     GX::PackedPixmap m_energyIcon;
+    GX::PackedPixmap m_energyIconSmall;
     GX::PackedPixmap m_materialIcon;
+    GX::PackedPixmap m_materialIconSmall;
     GX::PackedPixmap m_carbonIcon;
+    GX::PackedPixmap m_carbonIconSmall;
     Unit *m_currentUnit = nullptr;
 };

@@ -153,7 +153,7 @@ private:
         Activating,
         Active,
     };
-    State m_state = State::Inactive; // State::Hidden;
+    State m_state = State::Hidden;
     Unit *m_unit;
     Wobble m_wobble;
     float m_stateTime = 0.0f;
@@ -407,9 +407,13 @@ void World::initialize(UIPainter *painter, TechGraph *techGraph)
     reset();
 
     m_extropyIcon = m_painter->getPixmap("extropy.png");
+    m_extropyIconSmall = m_painter->getPixmap("extropy-sm.png");
     m_energyIcon = m_painter->getPixmap("energy.png");
+    m_energyIconSmall = m_painter->getPixmap("energy-sm.png");
     m_materialIcon = m_painter->getPixmap("material.png");
+    m_materialIconSmall = m_painter->getPixmap("material-sm.png");
     m_carbonIcon = m_painter->getPixmap("carbon.png");
+    m_carbonIconSmall = m_painter->getPixmap("carbon-sm.png");
 }
 
 void World::reset()
@@ -512,7 +516,7 @@ void World::paintState() const
             if (power != ' ') {
                 const auto bigText = fmt::format("{}", big);
                 const auto smallText = fmt::format(".{:03d}", small);
-                const auto unitText = fmt::format("{}{}", static_cast<char>(power), unit);
+                const auto unitText = power != ' ' ? fmt::format("{}{}", static_cast<char>(power), unit) : unit;
 
                 m_painter->setFont(CounterFontBig);
                 const auto bigAdvance = m_painter->horizontalAdvance(bigText);
@@ -568,25 +572,50 @@ void World::paintCurrentUnitDescription() const
     if (!m_currentUnit)
         return;
 
+    // cost
+    const auto formatCost = [](double value, const std::u32string &unit) -> std::u32string {
+        if (value == 0.0)
+            return {};
+        static const char32_t *factors = U" kMGTPEZY";
+        size_t factor = 0;
+        while (value >= 1000) {
+            value /= 1000;
+            ++factor;
+        }
+        if (factor > 0)
+            return fmt::format(U"{:.1f}{}{}", value, factors[factor], unit);
+        else
+            return fmt::format(U"{:.1f}{}", value, unit);
+    };
+    const auto cost = actualCost(m_currentUnit);
+    const std::u32string energyCost = formatCost(cost.energy, U"Wh"s);
+    const std::u32string materialCost = formatCost(cost.material, U"t"s);
+    const std::u32string extropyCost = formatCost(cost.extropy, U""s);
+
     static const auto TitleFont = UIPainter::Font { BoldFontName, 25 };
     static const auto DescriptionFont = UIPainter::Font { FontName, 20 };
 
-    constexpr auto MaxWidth = 400.0f;
+    constexpr auto MaxWidth = 420.0f;
+    constexpr auto TitleMaxWidth = MaxWidth - 120.0f;
     constexpr auto Margin = 10.0f;
     constexpr auto BoxRadius = 8.0f;
 
-    float textWidth = 0.0f, textHeight = 0.0f;
+    float textHeight = 0.0f;
+
+    // cost
+    m_painter->setFont(DescriptionFont);
+    const auto costLines = !energyCost.empty() + !materialCost.empty() + !extropyCost.empty();
+    const auto costHeight = costLines * m_painter->font()->pixelHeight();
 
     // title
     m_painter->setFont(TitleFont);
-    const auto titleSize = m_painter->textBoxSize(MaxWidth, m_currentUnit->name);
-    textWidth = std::max(textWidth, titleSize.x);
+    auto titleSize = m_painter->textBoxSize(TitleMaxWidth, m_currentUnit->name);
+    titleSize.y = std::max(titleSize.y, static_cast<float>(costHeight));
     textHeight += titleSize.y;
 
     // description
     m_painter->setFont(DescriptionFont);
     const auto descriptionSize = m_painter->textBoxSize(MaxWidth, m_currentUnit->description);
-    textWidth = std::max(textWidth, descriptionSize.x);
     textHeight += descriptionSize.y;
 
     // boost
@@ -601,31 +630,52 @@ void World::paintCurrentUnitDescription() const
     auto boostSize = glm::vec2(0, 0);
     if (!boostDescription.empty()) {
         boostSize = m_painter->textBoxSize(MaxWidth, boostDescription);
-        textWidth = std::max(textWidth, boostSize.x);
         textHeight += boostSize.y;
     }
 
-    textWidth += 1.0f;
+    constexpr auto TitleTextWidth = TitleMaxWidth + 1.0f;
+    constexpr auto TextWidth = MaxWidth + 1.0f;
 
-    const auto topLeft = m_painter->sceneBox().max - glm::vec2(textWidth + 2 * Margin, textHeight + 2 * Margin);
+    const auto topLeft = m_painter->sceneBox().max - glm::vec2(TextWidth + Margin, textHeight + Margin);
 
     m_painter->setVerticalAlign(UIPainter::VerticalAlign::Top);
     m_painter->setHorizontalAlign(UIPainter::HorizontalAlign::Left);
 
+    // paint text
     {
         glm::vec2 p = topLeft;
         m_painter->setFont(TitleFont);
-        m_painter->drawTextBox(GX::BoxF { p, p + glm::vec2(textWidth, titleSize.y) }, glm::vec4(1), 20, m_currentUnit->name);
+        m_painter->drawTextBox(GX::BoxF { p, p + glm::vec2(TitleTextWidth, titleSize.y) }, glm::vec4(1), 20, m_currentUnit->name);
 
         p += glm::vec2(0, titleSize.y);
         m_painter->setFont(DescriptionFont);
-        m_painter->drawTextBox(GX::BoxF { p, p + glm::vec2(textWidth, descriptionSize.y) }, glm::vec4(1), 20, m_currentUnit->description);
+        m_painter->drawTextBox(GX::BoxF { p, p + glm::vec2(TextWidth, descriptionSize.y) }, glm::vec4(1), 20, m_currentUnit->description);
 
         p += glm::vec2(0, descriptionSize.y);
-        m_painter->drawTextBox(GX::BoxF { p, p + glm::vec2(textWidth, boostSize.y) }, glm::vec4(1, 1, 0, 1), 20, boostDescription);
+        m_painter->drawTextBox(GX::BoxF { p, p + glm::vec2(TextWidth, boostSize.y) }, glm::vec4(1, 1, 0, 1), 20, boostDescription);
     }
 
-    const auto outerBox = GX::BoxF { topLeft - glm::vec2(Margin, Margin), topLeft + glm::vec2(textWidth + Margin, textHeight + Margin) };
+    // paint cost
+    {
+        glm::vec2 p = topLeft + glm::vec2(TextWidth, m_painter->font()->ascent());
+
+        const auto drawCost = [this, &p](const std::u32string &text, const GX::PackedPixmap &icon) {
+            if (text.empty())
+                return;
+            const auto advance = m_painter->horizontalAdvance(text) + icon.width;
+            const auto textHeight = m_painter->font()->ascent() + m_painter->font()->descent();
+            auto x = p.x - advance;
+            m_painter->drawPixmap(glm::vec2(x, p.y - 0.5f * (textHeight + icon.height)), icon, 20);
+            x += icon.width;
+            m_painter->drawText(glm::vec2(x, p.y), glm::vec4(1), 20, text);
+            p.y += m_painter->font()->pixelHeight();
+        };
+        drawCost(energyCost, m_energyIconSmall);
+        drawCost(materialCost, m_materialIconSmall);
+        drawCost(extropyCost, m_extropyIconSmall);
+    }
+
+    const auto outerBox = GX::BoxF { topLeft - glm::vec2(Margin, Margin), topLeft + glm::vec2(TextWidth + Margin, textHeight + Margin) };
     m_painter->drawRoundedRect(outerBox, BoxRadius, glm::vec4(0, 0, 0, 0.75), glm::vec4(1), 3.0f, 19);
 }
 
