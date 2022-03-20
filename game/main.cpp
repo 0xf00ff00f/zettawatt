@@ -1,100 +1,203 @@
-#include <glwindow.h>
+#ifdef __EMSCRIPTEN__
+#include <emscripten.h>
+#include <emscripten/html5.h>
+#endif
 
-#include <shadermanager.h>
+#include <GL/glew.h>
+#include <SDL/SDL.h>
+#include <spdlog/spdlog.h>
 
-#include <GLFW/glfw3.h>
+#include <algorithm>
 
-#include "techgraph.h"
-#include "uipainter.h"
-#include "world.h"
+#include "gamewindow.h"
 
 using namespace std::string_literals;
 
-class GameWindow : public GX::GLWindow
+namespace {
+inline void panic(const char *fmt)
 {
-public:
-    GameWindow();
-    ~GameWindow() override = default;
-
-private:
-    void initializeGL() override;
-    void paintGL() override;
-    void update(double elapsed) override;
-
-    void mousePressEvent(int button, const glm::vec2 &pos) override;
-    void mouseReleaseEvent(int button, const glm::vec2 &pos) override;
-    void mouseMoveEvent(const glm::vec2 &pos) override;
-
-    glm::vec2 mapToScene(const glm::vec2 &windowPos) const;
-
-    std::unique_ptr<TechGraph> m_techGraph;
-    std::unique_ptr<GX::ShaderManager> m_shaderManager;
-    std::unique_ptr<UIPainter> m_painter;
-    World m_world;
-};
-
-GameWindow::GameWindow()
-    : m_techGraph(std::make_unique<TechGraph>())
-{
-    m_techGraph->load("assets/data/techgraph.json");
+    std::printf("%s", fmt);
+    std::abort();
 }
 
-void GameWindow::initializeGL()
+template<typename... Args>
+inline void panic(const char *fmt, const Args &...args)
 {
-    m_shaderManager = std::make_unique<GX::ShaderManager>();
-    m_painter = std::make_unique<UIPainter>(m_shaderManager.get());
-    m_painter->resize(width(), height());
-
-    m_world.initialize(m_painter.get(), m_techGraph.get());
+    std::printf(fmt, args...);
+    std::abort();
 }
 
-void GameWindow::paintGL()
+#ifndef __EMSCRIPTEN__
+const char *glDebugSource(GLenum source)
 {
-    glClearColor(0, 0, 0, 0);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-    glDisable(GL_CULL_FACE);
-    glDisable(GL_DEPTH_TEST);
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-    m_painter->startPainting();
-    m_world.paint();
-    m_painter->donePainting();
+    switch (source) {
+    case GL_DEBUG_SOURCE_API:
+        return "API";
+    case GL_DEBUG_SOURCE_WINDOW_SYSTEM:
+        return "WINDOW_SYSTEM";
+    case GL_DEBUG_SOURCE_SHADER_COMPILER:
+        return "SHADER_COMPILER";
+    case GL_DEBUG_SOURCE_THIRD_PARTY:
+        return "THIRD_PARTY";
+    case GL_DEBUG_SOURCE_APPLICATION:
+        return "APPLICATION";
+    case GL_DEBUG_SOURCE_OTHER:
+        return "OTHER";
+    default:
+        return "?";
+    }
 }
 
-void GameWindow::update(double elapsed)
+const char *glDebugType(GLenum type)
 {
-    m_world.update(elapsed);
+    switch (type) {
+    case GL_DEBUG_TYPE_ERROR:
+        return "ERROR";
+    case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR:
+        return "DEPRECATED_BEHAVIOR";
+    case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR:
+        return "UNDEFINED_BEHAVIOR";
+    case GL_DEBUG_TYPE_PORTABILITY:
+        return "PORTABILITY";
+    case GL_DEBUG_TYPE_PERFORMANCE:
+        return "PERFORMANCE";
+    case GL_DEBUG_TYPE_MARKER:
+        return "MARKER";
+    case GL_DEBUG_TYPE_PUSH_GROUP:
+        return "PUSH_GROUP";
+    case GL_DEBUG_TYPE_POP_GROUP:
+        return "POP_GROUP";
+    case GL_DEBUG_TYPE_OTHER:
+        return "OTHER";
+    default:
+        return "?";
+    }
 }
 
-void GameWindow::mousePressEvent(int button, const glm::vec2 &pos)
+const char *glDebugSeverity(GLenum severity)
 {
-    if (button == GLFW_MOUSE_BUTTON_LEFT)
-        m_world.mousePressEvent(mapToScene(pos));
+    switch (severity) {
+    case GL_DEBUG_SEVERITY_LOW:
+        return "LOW";
+    case GL_DEBUG_SEVERITY_MEDIUM:
+        return "MEDIUM";
+    case GL_DEBUG_SEVERITY_HIGH:
+        return "HIGH";
+    case GL_DEBUG_SEVERITY_NOTIFICATION:
+        return "NOTIFICATION";
+    default:
+        return "?";
+    }
 }
+#endif
 
-void GameWindow::mouseReleaseEvent(int button, const glm::vec2 &pos)
-{
-    if (button == GLFW_MOUSE_BUTTON_LEFT)
-        m_world.mouseReleaseEvent(mapToScene(pos));
-}
+static std::unique_ptr<GameWindow> gameWindow;
+} // namespace
 
-void GameWindow::mouseMoveEvent(const glm::vec2 &pos)
+static bool processEvents()
 {
-    m_world.mouseMoveEvent(mapToScene(pos));
-}
-
-glm::vec2 GameWindow::mapToScene(const glm::vec2 &windowPos) const
-{
-    const GX::BoxF sceneBox = m_painter->sceneBox();
-    const glm::vec2 p = windowPos / glm::vec2(width(), height());
-    return sceneBox.min + p * (sceneBox.max - sceneBox.min);
+    SDL_Event event;
+    while (SDL_PollEvent(&event)) {
+        switch (event.type) {
+        case SDL_MOUSEBUTTONDOWN:
+            if (event.button.button == SDL_BUTTON_LEFT)
+                gameWindow->mousePressEvent(glm::vec2(event.button.x, event.button.y));
+            break;
+        case SDL_MOUSEBUTTONUP:
+            if (event.button.button == SDL_BUTTON_LEFT)
+                gameWindow->mouseReleaseEvent(glm::vec2(event.button.x, event.button.y));
+            break;
+        case SDL_MOUSEMOTION:
+            gameWindow->mouseMoveEvent(glm::vec2(event.motion.x, event.motion.y));
+            break;
+        case SDL_QUIT:
+            return false;
+        }
+    }
+    return true;
 }
 
 int main()
 {
-    GameWindow w;
-    w.initialize(1280, 720, "game");
-    w.renderLoop();
+    if (SDL_Init(SDL_INIT_VIDEO) < 0) {
+        panic("Video initialization failed: %s", SDL_GetError());
+        return 1;
+    }
+
+    const SDL_VideoInfo *info = SDL_GetVideoInfo();
+    if (!info) {
+        panic("Video query failed: %s\n", SDL_GetError());
+        return 1;
+    }
+
+    const int width = 1280;
+    const int height = 720;
+    const int bpp = info->vfmt->BitsPerPixel;
+    const Uint32 flags = SDL_OPENGL;
+
+    SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 5);
+    SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 5);
+    SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 5);
+    SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 16);
+    SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+    if (!SDL_SetVideoMode(width, height, bpp, flags)) {
+        panic("Video mode set failed: %s\n", SDL_GetError());
+        return 1;
+    }
+
+    auto error = glewInit();
+    if (error != GLEW_OK) {
+        panic("Failed to initialize GLEW: %s\n", glewGetErrorString(error));
+        return 1;
+    }
+
+#ifndef __EMSCRIPTEN__
+    glEnable(GL_DEBUG_OUTPUT);
+    glDebugMessageCallback(
+            [](GLenum source, GLenum type, GLuint /* id */, GLenum severity, GLsizei length, const GLchar *message,
+               const void *user) {
+                if (severity != GL_DEBUG_SEVERITY_NOTIFICATION)
+                    spdlog::info("OpenGL [source: {}, type: {}, severity: {}]: {}",
+                                 glDebugSource(source), glDebugType(type), glDebugSeverity(severity), message);
+            },
+            nullptr);
+#endif
+
+    gameWindow.reset(new GameWindow(width, height));
+
+#ifdef __EMSCRIPTEN__
+    emscripten_request_animation_frame_loop(
+            [](double now, void *) -> EM_BOOL {
+                const auto rv = processEvents();
+                if (!rv)
+                    return EM_FALSE;
+                const auto elapsed = [now] {
+                    static double last = 0;
+                    const auto elapsed = last != 0 ? now - last : 0;
+                    last = now;
+                    return elapsed / 1000.0;
+                }();
+                gameWindow->update(elapsed);
+                gameWindow->paintGL();
+                return EM_TRUE;
+            },
+            nullptr);
+#else
+    while (processEvents()) {
+        const auto elapsed = [] {
+            static Uint32 last = 0;
+            const Uint32 now = SDL_GetTicks();
+            const Uint32 elapsed = last != 0 ? now - last : 0;
+            last = now;
+            return static_cast<double>(elapsed) / 1000.0;
+        }();
+        gameWindow->update(elapsed);
+        gameWindow->paintGL();
+        SDL_GL_SwapBuffers();
+    }
+
+    gameWindow.reset();
+
+    SDL_Quit();
+#endif
 }

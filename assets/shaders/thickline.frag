@@ -1,4 +1,6 @@
-#version 420 core
+#version 300 es
+
+precision highp float;
 
 in vec2 vs_texcoord;
 in vec4 vs_fromColor;
@@ -10,7 +12,7 @@ out vec4 fragColor;
 void main(void)
 {
     const float Radius = 0.5;
-    const float Feather = 2.0 / vs_size;
+    float Feather = 2.0 / vs_size;
 
     float d = abs(vs_texcoord.y - .5);
     float c = smoothstep(Radius, Radius - Feather, d);

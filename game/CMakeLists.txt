@@ -1,8 +1,11 @@
-find_package(OpenGL REQUIRED)
+if (NOT ${CMAKE_SYSTEM_NAME} MATCHES "Emscripten")
+    find_package(OpenGL REQUIRED)
+    find_package(SDL REQUIRED)
+    find_package(GLEW REQUIRED)
+endif()
 
 set(gx_SOURCES
     fontcache.cpp
-    glwindow.cpp
     ioutil.cpp
     lazytexture.cpp
     pixmap.cpp
@@ -14,7 +17,6 @@ set(gx_SOURCES
     loadprogram.cpp
     shadermanager.cpp
     fontcache.h
-    glwindow.h
     ioutil.h
     lazytexture.h
     pixmap.h
@@ -35,22 +37,28 @@ target_include_directories(gx PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
 target_link_libraries(gx
 PUBLIC
-    OpenGL::GL
-    glfw
     glm
     stb
     spdlog
-    glew
 )
 
-add_executable(tst_textrendering tst_textrendering.cpp)
-target_link_libraries(tst_textrendering gx)
+if (NOT ${CMAKE_SYSTEM_NAME} MATCHES "Emscripten")
+    target_link_libraries(gx
+    PUBLIC
+        GLEW::GLEW
+        OpenGL::GL
+        SDL::SDL
+    )
+endif()
 
-add_executable(tst_textbox
-    tst_textbox.cpp
-    uipainter.cpp
-)
-target_link_libraries(tst_textbox gx)
+# add_executable(tst_textrendering tst_textrendering.cpp)
+# target_link_libraries(tst_textrendering gx)
+# 
+# add_executable(tst_textbox
+#     tst_textbox.cpp
+#     uipainter.cpp
+# )
+# target_link_libraries(tst_textbox gx)
 
 set(game_SOURCES
     main.cpp
@@ -60,17 +68,26 @@ set(game_SOURCES
     uipainter.h
     techgraph.cpp
     techgraph.h
+    gamewindow.cpp
+    gamewindow.h
 )
+
 add_executable(game
     ${game_SOURCES}
 )
+
 target_link_libraries(game
     gx
     fmt
     rapidjson
 ) 
 
-if (NOT WIN32)
+if (${CMAKE_SYSTEM_NAME} MATCHES "Emscripten")
+    set(CMAKE_EXECUTABLE_SUFFIX ".html")
+    set_target_properties(game PROPERTIES LINK_FLAGS "-s FULL_ES3=1 --preload-file ${CMAKE_SOURCE_DIR}/assets@/assets")
+endif()
+
+if (NOT ${CMAKE_SYSTEM_NAME} MATCHES "Emscripten")
     add_custom_command(TARGET game
         POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E create_symlink "${PROJECT_SOURCE_DIR}/assets" "${CMAKE_CURRENT_BINARY_DIR}/assets"

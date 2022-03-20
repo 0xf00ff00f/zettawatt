@@ -10,6 +10,3 @@
 [submodule "3rdparty/rapidjson"]
 	path = 3rdparty/rapidjson
 	url = https://github.com/Tencent/rapidjson.git
-[submodule "3rdparty/glfw"]
-	path = 3rdparty/glfw
-	url = https://github.com/glfw/glfw.git

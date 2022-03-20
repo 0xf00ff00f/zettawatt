@@ -8,4 +8,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 add_subdirectory(3rdparty)
 add_subdirectory(game)
-add_subdirectory(tools)
+
+if (NOT ${CMAKE_SYSTEM_NAME} MATCHES "Emscripten")
+    add_subdirectory(tools)
+endif()

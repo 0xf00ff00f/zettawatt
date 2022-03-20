@@ -1,4 +1,6 @@
-#version 420 core
+#version 300 es
+
+precision highp float;
 
 in vec2 vs_texcoord;
 in vec4 vs_color;
@@ -9,7 +11,7 @@ out vec4 fragColor;
 
 void main(void)
 {
-    const float radius = vs_radius / vs_size; /// in uv coords
+    float radius = vs_radius / vs_size; /// in uv coords
     float x = abs(length(vs_texcoord - vec2(0.5)) - radius);
     float glow = 0.06 / pow(x, 0.6);
     fragColor = vs_color * glow;
