@@ -28,11 +28,30 @@ struct Cost {
         carbon += other.carbon;
         return *this;
     }
+
+    Cost &operator*=(double factor)
+    {
+        extropy *= factor;
+        energy *= factor;
+        material *= factor;
+        carbon *= factor;
+        return *this;
+    }
 };
 
 inline Cost operator+(const Cost &lhs, const Cost &rhs)
 {
-    return { lhs.extropy + rhs.extropy, lhs.energy + rhs.energy, lhs.material + rhs.material, lhs.carbon + rhs.carbon };
+    return Cost(lhs) += rhs;
+}
+
+inline Cost operator*(const Cost &lhs, double factor)
+{
+    return Cost(lhs) *= factor;
+}
+
+inline Cost operator*(double factor, const Cost &lhs)
+{
+    return Cost(lhs) *= factor;
 }
 
 struct Boost {

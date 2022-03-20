@@ -357,45 +357,14 @@ int childCount(const Unit *unit, std::unordered_map<const Unit *, int> &cache)
     return count;
 }
 
-void adjustCost(const Unit *unit, const Cost &leafCost, const Cost &leafYield, double secondsPerUnit, double bumpPerUnit, std::unordered_map<const Unit *, Cost> &accumulatedYield, TechGraph *techGraph)
+void topologicalSort(const Unit *unit, std::vector<const Unit *> &units, std::unordered_set<const Unit *> &visited)
 {
-    auto it = accumulatedYield.find(unit);
-    if (it != accumulatedYield.end()) {
-        // already visited, do nothing
+    if (visited.find(unit) != visited.end())
         return;
-    }
-
-    Cost expectedYield;
-    for (const auto *pred : unit->dependencies) {
-        adjustCost(pred, leafCost, leafYield, secondsPerUnit, bumpPerUnit, accumulatedYield, techGraph);
-        auto it = accumulatedYield.find(pred);
-        Q_ASSERT(it != accumulatedYield.end());
-        expectedYield += it->second;
-    }
-
-    Cost cost;
-    if (unit->cost.energy > 0.0)
-        cost.energy = expectedYield.energy > 0.0 ? secondsPerUnit * expectedYield.energy : leafCost.energy;
-    if (unit->cost.material > 0.0)
-        cost.material = expectedYield.material > 0.0 ? secondsPerUnit * expectedYield.material : leafCost.material;
-    if (unit->cost.extropy > 0.0)
-        cost.extropy = expectedYield.extropy > 0.0 ? secondsPerUnit * expectedYield.extropy : leafCost.extropy;
-
-    Cost yield;
-    if (unit->type == Unit::Type::Generator) {
-        if (unit->yield.energy > 0.0)
-            yield.energy = expectedYield.energy > 0.0 ? bumpPerUnit * expectedYield.energy : leafYield.energy;
-        if (unit->yield.material > 0.0)
-            yield.material = expectedYield.material > 0.0 ? bumpPerUnit * expectedYield.material : leafYield.material;
-        if (unit->yield.extropy > 0.0)
-            yield.extropy = expectedYield.extropy > 0.0 ? bumpPerUnit * expectedYield.extropy : leafYield.extropy;
-    }
-
-    techGraph->setUnitCost(unit, cost);
-    techGraph->setUnitYield(unit, yield);
-
-    expectedYield += unit->yield;
-    accumulatedYield.insert(it, { unit, expectedYield });
+    visited.insert(unit);
+    for (const auto *pred : unit->dependencies)
+        topologicalSort(pred, units, visited);
+    units.push_back(unit);
 }
 
 } // namespace
@@ -431,7 +400,44 @@ void TechGraph::autoAdjustCosts(const Cost &leafCost, const Cost &leafYield, dou
         return childCount(a) < childCount(b);
     });
 
-    std::unordered_map<const Unit *, Cost> yieldCache;
-    for (auto *unit : rootUnits)
-        adjustCost(unit, leafCost, leafYield, secondsPerUnit, bumpPerUnit, yieldCache, this);
+    std::vector<const Unit *> sortedUnits;
+    {
+        std::unordered_set<const Unit *> visited;
+        for (const auto *unit : rootUnits)
+            topologicalSort(unit, sortedUnits, visited);
+    }
+
+    Cost expectedYield;
+    for (const auto *unit : sortedUnits) {
+        qDebug() << unit->name << expectedYield.energy << expectedYield.material << expectedYield.extropy;
+
+        Cost cost;
+        if (unit->cost.energy > 0.0)
+            cost.energy = expectedYield.energy > 0.0 ? secondsPerUnit * expectedYield.energy : leafCost.energy;
+        if (unit->cost.material > 0.0)
+            cost.material = expectedYield.material > 0.0 ? secondsPerUnit * expectedYield.material : leafCost.material;
+        if (unit->cost.extropy > 0.0)
+            cost.extropy = expectedYield.extropy > 0.0 ? secondsPerUnit * expectedYield.extropy : leafCost.extropy;
+
+        Cost yield;
+        if (unit->type == Unit::Type::Generator) {
+            if (unit->yield.energy > 0.0)
+                yield.energy = expectedYield.energy > 0.0 ? bumpPerUnit * expectedYield.energy : leafYield.energy;
+            if (unit->yield.material > 0.0)
+                yield.material = expectedYield.material > 0.0 ? bumpPerUnit * expectedYield.material : leafYield.material;
+            if (unit->yield.extropy > 0.0)
+                yield.extropy = expectedYield.extropy > 0.0 ? bumpPerUnit * expectedYield.extropy : leafYield.extropy;
+        }
+
+        setUnitCost(unit, cost);
+        setUnitYield(unit, yield);
+
+        if (unit->type == Unit::Type::Generator) {
+            expectedYield += unit->yield;
+        } else {
+            const auto &boost = unit->boost;
+            if (boost.target)
+                expectedYield += (boost.factor - 1.0) * boost.target->yield;
+        }
+    }
 }
