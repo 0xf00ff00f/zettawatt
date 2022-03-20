@@ -144,6 +144,7 @@ public:
     glm::vec4 color() const override;
     bool handleMousePress() override;
     bool isVisible() const override;
+    GX::BoxF boundingBox(UIPainter *painter) const override;
 
 private:
     void initializeBoundingBox(UIPainter *painter) const;
@@ -308,24 +309,16 @@ void UnitItem::initializeBoundingBox(UIPainter *painter) const
     m_boundingBox = circleBox | labelBox;
 }
 
-void UnitItem::paint(UIPainter *painter) const
+GX::BoxF UnitItem::boundingBox(UIPainter *painter) const
 {
-    if (m_state == State::Hidden)
-        return;
-
     if (!m_boundingBox)
         initializeBoundingBox(painter);
+    return m_boundingBox + position();
+}
 
+void UnitItem::paint(UIPainter *painter) const
+{
     auto p = position();
-
-    // only correct if painter transform is translation
-    const auto boundingBox = GX::BoxF {
-        painter->transformed(m_boundingBox.min + p),
-        painter->transformed(m_boundingBox.max + p)
-    };
-    const auto sceneBox = painter->sceneBox();
-    if (!sceneBox.contains(boundingBox))
-        return;
 
     // painter->drawRoundedRect(m_boundingBox + p, 8.0f, glm::vec4(0), glm::vec4(0, 1, 0, 1), 3.0f, -100);
 
@@ -512,8 +505,14 @@ void World::paintGraph() const
         m_painter->drawThickLine(fromPosition, toPosition, 5, from->color(), to->color(), -1);
     }
 
-    for (auto &item : m_graphItems)
+    for (auto &item : m_graphItems) {
+        if (!item->isVisible())
+            continue;
+        const auto boundingBox = item->boundingBox(m_painter) + m_viewOffset;
+        if (!m_painter->sceneBox().contains(boundingBox))
+            continue;
         item->paint(m_painter);
+    }
 
     m_painter->restoreTransform();
 }

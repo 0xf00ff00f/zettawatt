@@ -28,6 +28,7 @@ public:
     virtual bool contains(const glm::vec2 &pos) const = 0;
     virtual glm::vec4 color() const = 0;
     virtual bool isVisible() const = 0;
+    virtual GX::BoxF boundingBox(UIPainter *painter) const = 0;
 
     bool mousePressEvent(const glm::vec2 &pos);
     void mouseReleaseEvent(const glm::vec2 &pos);

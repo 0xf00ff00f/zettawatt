@@ -66,11 +66,6 @@ public:
     void saveTransform();
     void restoreTransform();
 
-    glm::vec2 transformed(const glm::vec2 &p) const
-    {
-        return glm::vec2(m_transform * glm::vec4(p, 0, 1));
-    }
-
     GX::SpriteBatcher *spriteBatcher() const { return m_spriteBatcher.get(); }
     const GX::FontCache *font() const { return m_font; }
     GX::BoxF sceneBox() const { return m_sceneBox; }
