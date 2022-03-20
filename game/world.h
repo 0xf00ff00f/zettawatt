@@ -86,6 +86,7 @@ private:
     std::vector<Edge> m_edges;
     glm::vec2 m_lastMousePosition;
     bool m_panningView = false;
+    double m_elapsedSinceClick = 0.0;
     glm::vec2 m_viewOffset;
     GX::PackedPixmap m_extropyIcon;
     GX::PackedPixmap m_extropyIconSmall;

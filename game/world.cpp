@@ -453,8 +453,8 @@ void World::initialize(UIPainter *painter, TechGraph *techGraph)
 void World::reset()
 {
     m_state.extropy = 0;
-    m_state.energy = 2100;
-    m_state.material = 2000;
+    m_state.energy = 0;
+    m_state.material = 0;
     m_state.carbon = 0;
 
     m_viewOffset = glm::vec2(0);
@@ -466,6 +466,9 @@ void World::update(double elapsed)
 
     for (auto &item : m_graphItems)
         item->update(elapsed);
+
+    if (m_panningView)
+        m_elapsedSinceClick += elapsed;
 }
 
 void World::updateStateDelta()
@@ -757,6 +760,8 @@ void World::mousePressEvent(const glm::vec2 &pos)
 void World::mouseReleaseEvent(const glm::vec2 &pos)
 {
     if (m_panningView) {
+        if (m_elapsedSinceClick < 500.0)
+            m_state.energy += glm::linearRand(5, 8);
         m_panningView = false;
     } else {
         for (auto &item : m_graphItems)
