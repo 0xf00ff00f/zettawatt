@@ -337,7 +337,9 @@ void UnitItem::paint(UIPainter *painter) const
     const auto labelAlpha = isSelected ? 1.0f : this->labelAlpha();
 
     if (m_world->canAcquire(m_unit)) {
-        painter->drawGlowCircle(p, radius, glm::vec4(0, 1, 1, 1), -2);
+        const auto glowDistance = 0.06 + 0.02 * std::sin(m_stateTime * 5.0);
+        const auto glowStrength = 0.6;
+        painter->drawGlowCircle(p, radius, glm::vec4(0, 1, 1, 1), glowDistance, glowStrength, -2);
     } else {
         const auto acquirable = [this] {
             if (m_unit->type == Unit::Type::Generator)
@@ -353,7 +355,7 @@ void UnitItem::paint(UIPainter *painter) const
                 constexpr auto StartAngle = 0;
                 constexpr auto EndAngle = 1.5f * M_PI;
                 float angle = StartAngle + value * (EndAngle - StartAngle);
-                painter->drawCircleGauge(p, radius, 0.25f * color, color, StartAngle, EndAngle, angle, -2);
+                painter->drawCircleGauge(p, radius, 0.25f * color, color, StartAngle, EndAngle, angle, 2);
             };
             float r = radius + RadiusDelta;
             const auto cost = m_world->actualCost(m_unit);

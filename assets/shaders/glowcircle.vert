@@ -11,6 +11,8 @@ out vec2 vs_texcoord;
 out vec4 vs_color;
 out float vs_size;
 out float vs_radius;
+out float vs_glowDistance;
+out float vs_glowStrength;
 
 void main(void)
 {
@@ -18,5 +20,7 @@ void main(void)
     vs_color = fgColor;
     vs_size = bgColor.x;
     vs_radius = bgColor.y;
+    vs_glowDistance = bgColor.z;
+    vs_glowStrength = bgColor.w;
     gl_Position = modelViewProjection * vec4(position, 0, 1);
 }
