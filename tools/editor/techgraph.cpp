@@ -432,12 +432,13 @@ void TechGraph::autoAdjustCosts(const Cost &leafCost, const Cost &leafYield, dou
         setUnitCost(unit, cost);
         setUnitYield(unit, yield);
 
+        constexpr const auto MinUnitCount = 3.0;
         if (unit->type == Unit::Type::Generator) {
-            expectedYield += unit->yield;
+            expectedYield += MinUnitCount * unit->yield;
         } else {
             const auto &boost = unit->boost;
             if (boost.target)
-                expectedYield += (boost.factor - 1.0) * boost.target->yield;
+                expectedYield += (boost.factor - 1.0) * MinUnitCount * boost.target->yield;
         }
     }
 }
