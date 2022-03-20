@@ -21,6 +21,7 @@ public:
     explicit GraphItem(World *world);
     virtual ~GraphItem();
 
+    virtual void initialize(UIPainter *painter);
     virtual glm::vec2 position() const = 0;
     virtual float radius() const = 0;
     virtual void update(double elapsed) = 0;
@@ -28,7 +29,7 @@ public:
     virtual bool contains(const glm::vec2 &pos) const = 0;
     virtual glm::vec4 color() const = 0;
     virtual bool isVisible() const = 0;
-    virtual GX::BoxF boundingBox(UIPainter *painter) const = 0;
+    virtual GX::BoxF boundingBox() const = 0;
 
     bool mousePressEvent(const glm::vec2 &pos);
     void mouseReleaseEvent(const glm::vec2 &pos);

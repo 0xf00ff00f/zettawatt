@@ -101,6 +101,10 @@ GraphItem::GraphItem(World *world)
 
 GraphItem::~GraphItem() = default;
 
+void GraphItem::initialize(UIPainter *)
+{
+}
+
 bool GraphItem::mousePressEvent(const glm::vec2 &pos)
 {
     if (!contains(pos))
@@ -136,6 +140,7 @@ public:
     UnitItem(Unit *unit, World *world);
     ~UnitItem();
 
+    void initialize(UIPainter *painter) override;
     glm::vec2 position() const override;
     float radius() const override;
     void update(double elapsed) override;
@@ -144,10 +149,9 @@ public:
     glm::vec4 color() const override;
     bool handleMousePress() override;
     bool isVisible() const override;
-    GX::BoxF boundingBox(UIPainter *painter) const override;
+    GX::BoxF boundingBox() const override;
 
 private:
-    void initializeBoundingBox(UIPainter *painter) const;
     float labelAlpha() const;
     bool isSelected() const { return m_world->currentUnit() == m_unit; }
 
@@ -163,7 +167,8 @@ private:
     Wobble m_wobble;
     float m_stateTime = 0.0f;
     float m_acquireTime = 0.0f;
-    mutable GX::BoxF m_boundingBox;
+    GX::BoxF m_labelBox;
+    GX::BoxF m_boundingBox;
 
     static constexpr auto Radius = 25.0f;
     static constexpr auto LabelTextWidth = 120.0f;
@@ -298,7 +303,7 @@ float UnitItem::labelAlpha() const
     }
 }
 
-void UnitItem::initializeBoundingBox(UIPainter *painter) const
+void UnitItem::initialize(UIPainter *painter)
 {
     // circle
     const GX::BoxF circleBox { glm::vec2(-Radius), glm::vec2(Radius) };
@@ -307,18 +312,16 @@ void UnitItem::initializeBoundingBox(UIPainter *painter) const
     painter->setFont(UnitLabelFont);
     const auto textSize = painter->textBoxSize(LabelTextWidth, m_unit->name);
     const auto p = glm::vec2(0, Radius + LabelMargin);
-    const GX::BoxF labelBox {
+    m_labelBox = GX::BoxF {
         p - glm::vec2(0.5f * textSize.x + LabelMargin, LabelMargin),
         p + glm::vec2(0.5f * textSize.x + LabelMargin, textSize.y + LabelMargin)
     };
 
-    m_boundingBox = circleBox | labelBox;
+    m_boundingBox = circleBox | m_labelBox;
 }
 
-GX::BoxF UnitItem::boundingBox(UIPainter *painter) const
+GX::BoxF UnitItem::boundingBox() const
 {
-    if (!m_boundingBox)
-        initializeBoundingBox(painter);
     return m_boundingBox + position();
 }
 
@@ -408,7 +411,10 @@ bool UnitItem::contains(const glm::vec2 &pos) const
 {
     if (m_state == UnitItem::State::Hidden)
         return false;
-    return glm::distance(pos, position()) < radius();
+    const auto p = position();
+    if (glm::distance(pos, p) < radius())
+        return true;
+    return (m_labelBox + p).contains(pos);
 }
 
 bool UnitItem::handleMousePress()
@@ -434,6 +440,7 @@ void World::initialize(UIPainter *painter, TechGraph *techGraph)
     m_graphItems.clear();
     for (auto &unit : m_techGraph->units) {
         auto item = std::make_unique<UnitItem>(unit.get(), this);
+        item->initialize(painter);
         m_unitItems[unit.get()] = item.get();
         m_graphItems.emplace_back(std::move(item));
     }
@@ -525,7 +532,7 @@ void World::paintGraph() const
     for (auto &item : m_graphItems) {
         if (!item->isVisible())
             continue;
-        const auto boundingBox = item->boundingBox(m_painter) + m_viewOffset;
+        const auto boundingBox = item->boundingBox() + m_viewOffset;
         if (!m_painter->sceneBox().contains(boundingBox))
             continue;
         item->paint(m_painter);
@@ -542,6 +549,9 @@ void World::paintState() const
     constexpr auto CounterHeight = 160.0f;
 
     auto paintCounter = [this](float centerX, float centerY, const std::u32string &label, const std::string &unit, const GX::PackedPixmap &icon, double value, double delta) {
+        if (value == 0.0)
+            return;
+
         const auto box = GX::BoxF { glm::vec2(centerX - 0.5 * CounterWidth, centerY - 0.5 * CounterHeight), glm::vec2(centerX + 0.5 * CounterWidth, centerY + 0.5 * CounterHeight) };
         m_painter->drawRoundedRect(box, 20, glm::vec4(0, 0, 0, 0.75), glm::vec4(1, 1, 1, 1), 4.0f, TextDepth - 1);
 

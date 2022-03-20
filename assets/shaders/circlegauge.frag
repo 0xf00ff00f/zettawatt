@@ -33,7 +33,7 @@ void main(void)
 
     vec4 activeColor = mix(vs_startColor, vs_endColor, clamp((angle - vs_startAngle) / (vs_currentAngle - vs_startAngle), 0.0, 1.0));
     float AngleFeather = 0.05;
-    vec4 color = mix(activeColor, InactiveColor, smoothstep(vs_currentAngle - AngleFeather, vs_currentAngle + AngleFeather, angle));
+    vec4 color = mix(activeColor, InactiveColor, smoothstep(vs_currentAngle - AngleFeather, vs_currentAngle, angle));
 
     fragColor = vec4(color.xyz, alpha * color.w);
 }
