@@ -631,9 +631,6 @@ void World::paintCurrentUnitDescription() const
             return fmt::format(U"{:.1f}{}", value, unit);
     };
     const auto cost = actualCost(m_currentUnit);
-    const std::u32string energyCost = formatCost(cost.energy, U"Wh"s);
-    const std::u32string materialCost = formatCost(cost.material, U"t"s);
-    const std::u32string extropyCost = formatCost(cost.extropy, U""s);
 
     static const auto TitleFont = UIPainter::Font { BoldFontName, 25 };
     static const auto DescriptionFont = UIPainter::Font { FontName, 20 };
@@ -647,7 +644,7 @@ void World::paintCurrentUnitDescription() const
 
     // cost
     m_painter->setFont(DescriptionFont);
-    const auto costLines = !energyCost.empty() + !materialCost.empty() + !extropyCost.empty();
+    const auto costLines = (cost.energy > 0.0) + (cost.material > 0.0) + (cost.extropy > 0.0);
     const auto costHeight = costLines * m_painter->font()->pixelHeight();
 
     // title
@@ -662,16 +659,7 @@ void World::paintCurrentUnitDescription() const
     textHeight += descriptionSize.y;
 
     // boost
-    std::u32string boostDescription;
-    if (m_currentUnit->type == Unit::Type::Booster) {
-        const auto factor = m_currentUnit->boost.factor;
-        if (factor > 1.0)
-            boostDescription = fmt::format(U"{} {}% more efficient", m_currentUnit->boost.target->name, static_cast<int>((factor - 1) * 100 + 0.5f));
-        else
-            boostDescription = fmt::format(U"{} {}% less efficient", m_currentUnit->boost.target->name, static_cast<int>((1 - factor) * 100 + 0.5f));
-    }
-    if (!boostDescription.empty())
-        textHeight += m_painter->font()->pixelHeight();
+    textHeight += m_painter->font()->pixelHeight();
 
     constexpr auto TitleTextWidth = TitleMaxWidth + 1.0f;
     constexpr auto TextWidth = MaxWidth + 1.0f;
@@ -691,10 +679,40 @@ void World::paintCurrentUnitDescription() const
         m_painter->setFont(DescriptionFont);
         m_painter->drawTextBox(GX::BoxF { p, p + glm::vec2(TextWidth, descriptionSize.y) }, glm::vec4(1), 20, m_currentUnit->description);
 
-        if (!boostDescription.empty()) {
-            p += glm::vec2(0, descriptionSize.y);
-            const auto height = m_painter->font()->pixelHeight();
-            m_painter->drawTextBox(GX::BoxF { p, p + glm::vec2(TextWidth, height) }, glm::vec4(1, 1, 0, 1), 20, boostDescription);
+        p += glm::vec2(0, descriptionSize.y + m_painter->font()->ascent());
+        if (m_currentUnit->type == Unit::Type::Booster) {
+            std::u32string boostDescription;
+            if (m_currentUnit->type == Unit::Type::Booster) {
+                const auto factor = m_currentUnit->boost.factor;
+                if (factor > 1.0)
+                    boostDescription = fmt::format(U"{} {}% more efficient", m_currentUnit->boost.target->name, static_cast<int>((factor - 1) * 100 + 0.5f));
+                else
+                    boostDescription = fmt::format(U"{} {}% less efficient", m_currentUnit->boost.target->name, static_cast<int>((1 - factor) * 100 + 0.5f));
+            }
+
+            m_painter->drawText(p, glm::vec4(1, 1, 0, 1), 20, boostDescription);
+        } else {
+            static const auto prefix = "Produces "s;
+            m_painter->drawText(p, glm::vec4(1, 1, 0, 1), 20, prefix);
+            p += glm::vec2(m_painter->horizontalAdvance(prefix), 0);
+            const auto drawYield = [this, &p](const std::u32string &text, const GX::PackedPixmap &icon) {
+                if (text.empty())
+                    return;
+                const auto textHeight = m_painter->font()->ascent() + m_painter->font()->descent();
+                m_painter->drawPixmap(glm::vec2(p.x, p.y - 0.5f * (textHeight + icon.height)), icon, 20);
+                p.x += icon.width;
+                m_painter->drawText(p, glm::vec4(1, 1, 0, 1), 20, text);
+                p.x += m_painter->horizontalAdvance(text);
+            };
+            const auto &yield = m_currentUnit->yield;
+            if (yield.energy > 0.0)
+                drawYield(formatCost(yield.energy, U"Wh/s"), m_energyIconSmall);
+            if (yield.material > 0.0)
+                drawYield(formatCost(yield.material, U"t/s"), m_materialIconSmall);
+            if (yield.carbon > 0.0)
+                drawYield(formatCost(yield.carbon, U"t/s"), m_carbonIconSmall);
+            if (yield.extropy > 0.0)
+                drawYield(formatCost(yield.extropy, U"/s"), m_extropyIconSmall);
         }
     }
 
@@ -713,9 +731,12 @@ void World::paintCurrentUnitDescription() const
             m_painter->drawText(glm::vec2(x, p.y), glm::vec4(1), 20, text);
             p.y += m_painter->font()->pixelHeight();
         };
-        drawCost(energyCost, m_energyIconSmall);
-        drawCost(materialCost, m_materialIconSmall);
-        drawCost(extropyCost, m_extropyIconSmall);
+        if (cost.energy > 0.0)
+            drawCost(formatCost(cost.energy, U"Wh"s), m_energyIconSmall);
+        if (cost.material > 0.0)
+            drawCost(formatCost(cost.material, U"t"s), m_materialIconSmall);
+        if (cost.extropy > 0.0)
+            drawCost(formatCost(cost.extropy, U""s), m_extropyIconSmall);
     }
 
     const auto outerBox = GX::BoxF { topLeft - glm::vec2(Margin, Margin), topLeft + glm::vec2(TextWidth + Margin, textHeight + Margin) };
