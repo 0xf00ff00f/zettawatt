@@ -45,7 +45,7 @@ std::optional<PackedPixmap> TextureAtlas::addPixmap(const Pixmap &pm)
     LazyTexture *texture = nullptr;
 
     for (auto &entry : m_pages) {
-        if (textureCoords = entry->page.insert(pm)) {
+        if ((textureCoords = entry->page.insert(pm))) {
             entry->texture.markDirty();
             texture = &entry->texture;
             break;
