@@ -260,6 +260,7 @@ glm::vec4 UnitItem::color() const
     constexpr const auto HiddenColor = glm::vec4(0);
     constexpr const auto ActiveColor = glm::vec4(1, 0, 0, 1);
     constexpr const auto InactiveColor = glm::vec4(0.25, 0.25, 0.25, 1);
+    constexpr const auto AcquiredColor = glm::vec4(1);
     switch (m_state) {
     case State::Hidden:
         return HiddenColor;
@@ -270,6 +271,10 @@ glm::vec4 UnitItem::color() const
     case State::Activating:
         return glm::mix(InactiveColor, ActiveColor, m_stateTime / ActivationTime);
     default:
+        if (m_acquireTime > 0.0f) {
+            float t = m_acquireTime / AcquireAnimationTime;
+            return glm::mix(ActiveColor, AcquiredColor, t);
+        }
         return ActiveColor;
     }
 }
