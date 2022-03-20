@@ -149,6 +149,7 @@ public:
 private:
     void initializeBoundingBox(UIPainter *painter) const;
     float labelAlpha() const;
+    bool isSelected() const { return m_world->currentUnit() == m_unit; }
 
     enum class State {
         Hidden,
@@ -323,17 +324,20 @@ GX::BoxF UnitItem::boundingBox(UIPainter *painter) const
 
 void UnitItem::paint(UIPainter *painter) const
 {
+    const auto isSelected = this->isSelected();
+
     auto p = position();
 
     // painter->drawRoundedRect(m_boundingBox + p, 8.0f, glm::vec4(0), glm::vec4(0, 1, 0, 1), 3.0f, -100);
 
+    const auto radius = this->radius();
     const auto color = this->color();
-    painter->drawCircle(p, radius(), glm::vec4(0), color, 6.0f, -1);
+    painter->drawCircle(p, radius, glm::vec4(0), color, 6.0f, -1);
 
-    const auto labelAlpha = this->labelAlpha();
+    const auto labelAlpha = isSelected ? 1.0f : this->labelAlpha();
 
     if (m_world->canAcquire(m_unit)) {
-        painter->drawGlowCircle(p, radius(), glm::vec4(0, 1, 1, 1), -2);
+        painter->drawGlowCircle(p, radius, glm::vec4(0, 1, 1, 1), -2);
     } else {
         const auto acquirable = [this] {
             if (m_unit->type == Unit::Type::Generator)
@@ -351,7 +355,7 @@ void UnitItem::paint(UIPainter *painter) const
                 float angle = StartAngle + value * (EndAngle - StartAngle);
                 painter->drawCircleGauge(p, radius, 0.25f * color, color, StartAngle, EndAngle, angle, -2);
             };
-            float r = radius() + RadiusDelta;
+            float r = radius + RadiusDelta;
             const auto cost = m_world->actualCost(m_unit);
             if (m_unit->cost.energy > 0) {
                 addCircleGauge(r, glm::vec4(EnergyColor, labelAlpha), std::min(static_cast<float>(m_world->state().energy / cost.energy), 1.0f));
@@ -378,7 +382,10 @@ void UnitItem::paint(UIPainter *painter) const
 
     auto outerBox = GX::BoxF { p - glm::vec2(0.5f * textSize.x + LabelMargin, LabelMargin), p + glm::vec2(0.5f * textSize.x + LabelMargin, textSize.y + LabelMargin) };
     constexpr auto BoxRadius = 8.0f;
-    painter->drawRoundedRect(outerBox, BoxRadius, glm::vec4(0, 0, 0, 0.75 * labelAlpha), glm::vec4(glm::vec3(color), labelAlpha), 3.0f, 1);
+    const auto fillColor = isSelected ? glm::vec4(1, 1, 1, 0.25 * labelAlpha) : glm::vec4(0, 0, 0, 0.75 * labelAlpha);
+    const auto outlineColor = isSelected ? glm::vec4(1, 1, 1, labelAlpha) : glm::vec4(glm::vec3(color), labelAlpha);
+    const auto outlineThickness = isSelected ? 4.0f : 3.0f;
+    painter->drawRoundedRect(outerBox, BoxRadius, fillColor, outlineColor, outlineThickness, 1);
 
     const auto count = m_unit->count;
     if (count > 1) {
@@ -456,8 +463,8 @@ void World::reset()
     m_state.energy = 0;
     m_state.material = 0;
     m_state.carbon = 0;
-
     m_viewOffset = glm::vec2(0);
+    m_currentUnit = nullptr;
 }
 
 void World::update(double elapsed)
@@ -755,12 +762,13 @@ void World::mousePressEvent(const glm::vec2 &pos)
     }
     m_panningView = !accepted;
     m_lastMousePosition = pos;
+    m_elapsedSinceClick = 0.0;
 }
 
 void World::mouseReleaseEvent(const glm::vec2 &pos)
 {
     if (m_panningView) {
-        if (m_elapsedSinceClick < 500.0)
+        if (m_elapsedSinceClick < 0.5)
             m_state.energy += glm::linearRand(5, 8);
         m_panningView = false;
     } else {
@@ -802,16 +810,17 @@ StateVector World::actualCost(const Unit *unit) const
 
 bool World::unitClicked(Unit *unit)
 {
+    bool acquired = false;
+    if (unit == m_currentUnit) {
+        if (canAcquire(unit)) {
+            m_state -= actualCost(unit);
+            ++unit->count;
+            updateStateDelta();
+            acquired = true;
+        }
+    }
     m_currentUnit = unit;
-
-    if (!canAcquire(unit))
-        return false;
-
-    m_state -= actualCost(unit);
-    ++unit->count;
-    updateStateDelta();
-
-    return true;
+    return acquired;
 }
 
 bool World::canAcquire(const Unit *unit) const

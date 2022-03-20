@@ -67,6 +67,8 @@ public:
 
     StateVector actualCost(const Unit *unit) const;
 
+    const Unit *currentUnit() const { return m_currentUnit; }
+
 private:
     void paintState() const;
     void paintGraph() const;
