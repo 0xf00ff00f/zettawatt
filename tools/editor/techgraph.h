@@ -19,7 +19,21 @@ struct Cost {
     {
         return qFuzzyCompare(extropy, other.extropy) && qFuzzyCompare(energy, other.energy) && qFuzzyCompare(material, other.material) && qFuzzyCompare(carbon, other.carbon);
     }
+
+    Cost &operator+=(const Cost &other)
+    {
+        extropy += other.extropy;
+        energy += other.energy;
+        material += other.material;
+        carbon += other.carbon;
+        return *this;
+    }
 };
+
+inline Cost operator+(const Cost &lhs, const Cost &rhs)
+{
+    return { lhs.extropy + rhs.extropy, lhs.energy + rhs.energy, lhs.material + rhs.material, lhs.carbon + rhs.carbon };
+}
 
 struct Boost {
     double factor = 1.0;
@@ -84,6 +98,8 @@ public:
     void load(const QJsonObject &settings);
 
     void clear();
+
+    void autoAdjustCosts(const Cost &leafCost, const Cost &leafYield, double secondsPerUnit, double bumpPerUnit);
 
 signals:
     void unitAboutToBeAdded(const Unit *unit);

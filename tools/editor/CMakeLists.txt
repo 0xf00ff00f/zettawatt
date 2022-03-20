@@ -18,6 +18,8 @@ set(editor_SOURCES
     costwidget.h
     boostwidget.cpp
     boostwidget.h
+    autoadjustdialog.cpp
+    autoadjustdialog.h
 )
 
 add_executable(editor

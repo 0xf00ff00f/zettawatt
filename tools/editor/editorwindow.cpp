@@ -1,5 +1,6 @@
 #include "editorwindow.h"
 
+#include "autoadjustdialog.h"
 #include "techgraph.h"
 #include "techgraphview.h"
 #include "unitsettingswidget.h"
@@ -75,6 +76,17 @@ EditorWindow::EditorWindow(QWidget *parent)
         }
         file.write(QJsonDocument(m_graph->save()).toJson(QJsonDocument::Indented));
         statusBar()->showMessage(tr("Saved %1").arg(fileName), 2000);
+    });
+
+    auto *toolsMenu = menuBar()->addMenu(tr("&Tools"));
+
+    auto *autoCostsAction = new QAction(tr("&Auto adjust costs..."), this);
+    toolsMenu->addAction(autoCostsAction);
+    connect(autoCostsAction, &QAction::triggered, this, [this] {
+        AutoAdjustDialog dialog;
+        if (dialog.exec() == QDialog::Accepted) {
+            m_graph->autoAdjustCosts(dialog.leafCost(), dialog.leafYield(), dialog.secondsPerUnit(), dialog.bumpPerUnit());
+        }
     });
 }
 

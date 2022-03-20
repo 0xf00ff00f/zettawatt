@@ -5,6 +5,7 @@
 #include <QMetaEnum>
 
 #include <algorithm>
+#include <unordered_set>
 
 TechGraph::TechGraph(QObject *parent)
     : QObject(parent)
@@ -339,4 +340,98 @@ void TechGraph::clear()
 {
     m_units.clear();
     emit graphReset();
+}
+
+namespace {
+
+int childCount(const Unit *unit, std::unordered_map<const Unit *, int> &cache)
+{
+    auto it = cache.find(unit);
+    if (it != cache.end())
+        return it->second;
+    int count = 0;
+    for (auto *pred : unit->dependencies) {
+        count += childCount(pred, cache) + 1;
+    }
+    cache.insert(it, { unit, count });
+    return count;
+}
+
+void adjustCost(const Unit *unit, const Cost &leafCost, const Cost &leafYield, double secondsPerUnit, double bumpPerUnit, std::unordered_map<const Unit *, Cost> &accumulatedYield, TechGraph *techGraph)
+{
+    auto it = accumulatedYield.find(unit);
+    if (it != accumulatedYield.end()) {
+        // already visited, do nothing
+        return;
+    }
+
+    Cost expectedYield;
+    for (const auto *pred : unit->dependencies) {
+        adjustCost(pred, leafCost, leafYield, secondsPerUnit, bumpPerUnit, accumulatedYield, techGraph);
+        auto it = accumulatedYield.find(pred);
+        Q_ASSERT(it != accumulatedYield.end());
+        expectedYield += it->second;
+    }
+
+    Cost cost;
+    if (unit->cost.energy > 0.0)
+        cost.energy = expectedYield.energy > 0.0 ? secondsPerUnit * expectedYield.energy : leafCost.energy;
+    if (unit->cost.material > 0.0)
+        cost.material = expectedYield.material > 0.0 ? secondsPerUnit * expectedYield.material : leafCost.material;
+    if (unit->cost.extropy > 0.0)
+        cost.extropy = expectedYield.extropy > 0.0 ? secondsPerUnit * expectedYield.extropy : leafCost.extropy;
+
+    Cost yield;
+    if (unit->type == Unit::Type::Generator) {
+        if (unit->yield.energy > 0.0)
+            yield.energy = expectedYield.energy > 0.0 ? bumpPerUnit * expectedYield.energy : leafYield.energy;
+        if (unit->yield.material > 0.0)
+            yield.material = expectedYield.material > 0.0 ? bumpPerUnit * expectedYield.material : leafYield.material;
+        if (unit->yield.extropy > 0.0)
+            yield.extropy = expectedYield.extropy > 0.0 ? bumpPerUnit * expectedYield.extropy : leafYield.extropy;
+    }
+
+    techGraph->setUnitCost(unit, cost);
+    techGraph->setUnitYield(unit, yield);
+
+    expectedYield += unit->yield;
+    accumulatedYield.insert(it, { unit, expectedYield });
+}
+
+} // namespace
+
+void TechGraph::autoAdjustCosts(const Cost &leafCost, const Cost &leafYield, double secondsPerUnit, double bumpPerUnit)
+{
+    // find child counts
+    std::unordered_map<const Unit *, int> childCountCache;
+    for (const auto &unit : m_units)
+        childCount(unit.get(), childCountCache);
+
+    // find root units
+    std::unordered_map<const Unit *, std::unordered_set<const Unit *>> successors;
+    for (const auto &unit : m_units)
+        successors[unit.get()] = {};
+    for (const auto &unit : m_units) {
+        for (auto *pred : unit->dependencies)
+            successors[pred].insert(unit.get());
+    }
+
+    std::vector<const Unit *> rootUnits;
+    for (auto &[unit, successors] : successors) {
+        if (successors.empty())
+            rootUnits.push_back(unit);
+    }
+
+    std::sort(rootUnits.begin(), rootUnits.end(), [&childCountCache](const Unit *a, const Unit *b) {
+        auto childCount = [&childCountCache](const Unit *unit) {
+            auto it = childCountCache.find(unit);
+            Q_ASSERT(it != childCountCache.end());
+            return it->second;
+        };
+        return childCount(a) < childCount(b);
+    });
+
+    std::unordered_map<const Unit *, Cost> yieldCache;
+    for (auto *unit : rootUnits)
+        adjustCost(unit, leafCost, leafYield, secondsPerUnit, bumpPerUnit, yieldCache, this);
 }
