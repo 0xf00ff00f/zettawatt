@@ -670,11 +670,8 @@ void World::paintCurrentUnitDescription() const
         else
             boostDescription = fmt::format(U"{} {}% less efficient", m_currentUnit->boost.target->name, static_cast<int>((1 - factor) * 100 + 0.5f));
     }
-    auto boostSize = glm::vec2(0, 0);
-    if (!boostDescription.empty()) {
-        boostSize = m_painter->textBoxSize(MaxWidth, boostDescription);
-        textHeight += boostSize.y;
-    }
+    if (!boostDescription.empty())
+        textHeight += m_painter->font()->pixelHeight();
 
     constexpr auto TitleTextWidth = TitleMaxWidth + 1.0f;
     constexpr auto TextWidth = MaxWidth + 1.0f;
@@ -694,8 +691,11 @@ void World::paintCurrentUnitDescription() const
         m_painter->setFont(DescriptionFont);
         m_painter->drawTextBox(GX::BoxF { p, p + glm::vec2(TextWidth, descriptionSize.y) }, glm::vec4(1), 20, m_currentUnit->description);
 
-        p += glm::vec2(0, descriptionSize.y);
-        m_painter->drawTextBox(GX::BoxF { p, p + glm::vec2(TextWidth, boostSize.y) }, glm::vec4(1, 1, 0, 1), 20, boostDescription);
+        if (!boostDescription.empty()) {
+            p += glm::vec2(0, descriptionSize.y);
+            const auto height = m_painter->font()->pixelHeight();
+            m_painter->drawTextBox(GX::BoxF { p, p + glm::vec2(TextWidth, height) }, glm::vec4(1, 1, 0, 1), 20, boostDescription);
+        }
     }
 
     // paint cost
