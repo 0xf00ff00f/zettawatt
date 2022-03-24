@@ -38,6 +38,8 @@ std::tuple<int, int, char32_t> formattedValue(double value)
 constexpr const char *FontName = "Arimo-Regular.ttf";
 constexpr const char *BoldFontName = "Arimo-Bold.ttf";
 
+constexpr const auto BackgroundColor = glm::vec4(0.15, 0.15, 0.15, 1);
+
 template<typename StringT>
 void paintCentered(UIPainter *painter, float x, float y, const glm::vec4 &color, int depth, const StringT &s)
 {
@@ -263,15 +265,14 @@ float UnitItem::radius() const
 
 glm::vec4 UnitItem::color() const
 {
-    constexpr const auto HiddenColor = glm::vec4(0);
     constexpr const auto ActiveColor = glm::vec4(1, 0, 0, 1);
     constexpr const auto InactiveColor = glm::vec4(0.25, 0.25, 0.25, 1);
     constexpr const auto AcquiredColor = glm::vec4(1);
     switch (m_state) {
     case State::Hidden:
-        return HiddenColor;
+        return BackgroundColor;
     case State::FadeIn:
-        return glm::mix(HiddenColor, InactiveColor, m_stateTime / FadeInTime);
+        return glm::mix(BackgroundColor, InactiveColor, m_stateTime / FadeInTime);
     case State::Inactive:
         return InactiveColor;
     case State::Activating:
@@ -340,9 +341,9 @@ void UnitItem::paint(UIPainter *painter) const
     const auto labelAlpha = isSelected ? 1.0f : this->labelAlpha();
 
     if (m_world->canAcquire(m_unit)) {
-        const auto glowDistance = 0.06 + 0.02 * std::sin(m_stateTime * 5.0);
+        const auto glowDistance = 0.04 + 0.02 * std::sin(m_stateTime * 5.0);
         const auto glowStrength = 0.6;
-        painter->drawGlowCircle(p, radius, glm::vec4(0, 1, 1, 1), glowDistance, glowStrength, -2);
+        painter->drawGlowCircle(p, radius, glm::vec4(0, 1, 1, 1), BackgroundColor, glowDistance, glowStrength, -2);
     } else {
         const auto acquirable = [this] {
             if (m_unit->type == Unit::Type::Generator)

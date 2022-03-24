@@ -27,7 +27,7 @@ void GameWindow::paintGL()
 {
     glViewport(0, 0, m_width, m_height);
 
-    glClearColor(0, 0, 0, 0);
+    glClearColor(0.15, 0.15, 0.15, 1);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     glDisable(GL_CULL_FACE);

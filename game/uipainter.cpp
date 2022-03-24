@@ -338,21 +338,21 @@ void UIPainter::drawThickLine(const glm::vec2 &from, const glm::vec2 &to, float 
             depth);
 }
 
-void UIPainter::drawGlowCircle(const glm::vec2 &center, float radius, const glm::vec4 &color, float glowDistance, float glowStrength, int depth)
+void UIPainter::drawGlowCircle(const glm::vec2 &center, float radius, const glm::vec4 &glowColor, const glm::vec4 &bgColor, float glowDistance, float glowStrength, int depth)
 {
     const auto outerRadius = 3.0f * radius;
 
     const auto &p0 = center - glm::vec2(outerRadius, outerRadius);
     const auto &p1 = center + glm::vec2(outerRadius, outerRadius);
 
-    const auto bgColor = glm::vec4(2.0f * outerRadius, radius, glowDistance, glowStrength);
+    const auto size = glm::vec4(2.0f * outerRadius, radius, glowDistance, glowStrength);
 
     m_spriteBatcher->setBatchProgram(GX::ShaderManager::Program::GlowCircle);
     addQuad({ { p0.x, p0.y }, { 0.0f, 0.0f } },
             { { p1.x, p0.y }, { 1.0f, 0.0f } },
             { { p1.x, p1.y }, { 1.0f, 1.0f } },
             { { p0.x, p1.y }, { 0.0f, 1.0f } },
-            color, bgColor, depth);
+            glowColor, bgColor, size, depth);
 }
 
 void UIPainter::drawPixmap(const glm::vec2 &pos, const GX::PackedPixmap &pixmap, int depth)
