@@ -25,5 +25,5 @@ void main(void)
     float r = min(d, 0.5) / 0.5;
     float alpha = 0.5 + 0.5 * cos(r * 3.1415);
 
-    fragColor = vec4(vs_bgColor.xyz + vs_glowColor.xyz * glow, alpha);
+    fragColor = vec4(mix(vs_bgColor.xyz, vs_glowColor.xyz, glow), alpha);
 }
