@@ -64,7 +64,7 @@ bool TechGraph::load(const std::string &jsonPath)
         const auto &positionArray = unitSettings["position"];
         assert(positionArray.IsArray());
         unit->position = glm::vec2(positionArray[0].GetDouble(), positionArray[1].GetDouble());
-        unit->cost = loadStateVector(unitSettings["cost"]);
+        unit->baseCost = loadStateVector(unitSettings["cost"]);
         unit->yield = loadStateVector(unitSettings["yield"]);
         unit->boost = [this, &unitSettings] {
             const rapidjson::Value &boost = unitSettings["boost"];

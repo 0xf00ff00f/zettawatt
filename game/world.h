@@ -38,8 +38,6 @@ public:
 
     StateVector state() const { return m_state; }
 
-    StateVector actualCost(const Unit *unit) const;
-
     const Unit *currentUnit() const { return m_currentUnit; }
 
 private:

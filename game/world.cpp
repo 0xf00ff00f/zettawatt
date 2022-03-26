@@ -351,16 +351,16 @@ void GraphItem::paint(UIPainter *painter) const
                 painter->drawCircleGauge(p, radius, 0.25f * color, color, StartAngle, EndAngle, angle, 2);
             };
             float r = radius + RadiusDelta;
-            const auto cost = m_world->actualCost(m_unit);
-            if (m_unit->cost.energy > 0) {
+            const auto cost = m_unit->cost();
+            if (cost.energy > 0) {
                 addCircleGauge(r, glm::vec4(EnergyColor, labelAlpha), std::min(static_cast<float>(m_world->state().energy / cost.energy), 1.0f));
                 r += RadiusDelta;
             }
-            if (m_unit->cost.material > 0) {
+            if (cost.material > 0) {
                 addCircleGauge(r, glm::vec4(MaterialColor, labelAlpha), std::min(static_cast<float>(m_world->state().material / cost.material), 1.0f));
                 r += RadiusDelta;
             }
-            if (m_unit->cost.extropy > 0) {
+            if (cost.extropy > 0) {
                 addCircleGauge(r, glm::vec4(ExtropyColor, labelAlpha), std::min(static_cast<float>(m_world->state().extropy / cost.extropy), 1.0f));
             }
         }
@@ -664,7 +664,7 @@ void World::paintCurrentUnitDescription() const
         else
             return fmt::format(U"{:.1f}{}", value, unit);
     };
-    const auto cost = actualCost(m_currentUnit);
+    const auto cost = m_currentUnit->cost();
 
     static const auto TitleFont = UIPainter::Font { BoldFontName, 25 };
     static const auto DescriptionFont = UIPainter::Font { FontName, 20 };
@@ -827,17 +827,12 @@ void World::mouseMoveEvent(const glm::vec2 &pos)
     m_lastMousePosition = pos;
 }
 
-StateVector World::actualCost(const Unit *unit) const
-{
-    return unit->cost * powf(1.2f, unit->count);
-}
-
 bool World::unitClicked(Unit *unit)
 {
     bool acquired = false;
     if (unit == m_currentUnit) {
         if (canAcquire(unit)) {
-            m_state -= actualCost(unit);
+            m_state -= unit->cost();
             ++unit->count;
             updateStateDelta();
             acquired = true;
@@ -861,6 +856,6 @@ bool World::canAcquire(const Unit *unit) const
     }();
     if (!hasDependencies)
         return false;
-    const auto cost = actualCost(unit);
+    const auto cost = unit->cost();
     return cost.extropy <= m_state.extropy && cost.energy <= m_state.energy && cost.material <= m_state.material;
 }

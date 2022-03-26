@@ -95,13 +95,18 @@ struct Unit {
 
     glm::vec2 position;
 
-    StateVector cost;
+    StateVector baseCost;
     StateVector yield; // if type == Type::Generator
     Boost boost; // if type == Type::Boost
 
     std::vector<const Unit *> dependencies;
 
     int count = 0;
+
+    StateVector cost() const
+    {
+        return baseCost * powf(1.2f, count);
+    }
 };
 
 struct TechGraph {
