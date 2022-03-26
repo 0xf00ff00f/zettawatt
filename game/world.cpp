@@ -331,7 +331,7 @@ void GraphItem::paint(UIPainter *painter) const
     if (m_world->canAcquire(m_unit)) {
         const auto glowDistance = 0.04 + 0.02 * std::sin(m_stateTime * 5.0);
         const auto glowStrength = 0.6;
-        painter->drawGlowCircle(p, radius, m_theme->glowColor, BackgroundColor, glowDistance, glowStrength, -2);
+        painter->drawGlowCircle(p, radius, m_theme->glowColor, BackgroundColor, glowDistance, glowStrength, 5);
     } else {
         const auto acquirable = [this] {
             if (m_unit->type == Unit::Type::Generator)
