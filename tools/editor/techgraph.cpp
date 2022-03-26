@@ -5,7 +5,15 @@
 #include <QMetaEnum>
 
 #include <algorithm>
+#include <deque>
 #include <unordered_set>
+
+QDebug operator<<(QDebug debug, const Cost &cost)
+{
+    QDebugStateSaver saver(debug);
+    debug.nospace() << "(extropy=" << cost.extropy << ", energy=" << cost.energy << ", material=" << cost.material << ", carbon=" << cost.carbon << ")";
+    return debug;
+}
 
 TechGraph::TechGraph(QObject *parent)
     : QObject(parent)
@@ -342,41 +350,9 @@ void TechGraph::clear()
     emit graphReset();
 }
 
-namespace {
-
-int childCount(const Unit *unit, std::unordered_map<const Unit *, int> &cache)
-{
-    auto it = cache.find(unit);
-    if (it != cache.end())
-        return it->second;
-    int count = 0;
-    for (auto *pred : unit->dependencies) {
-        count += childCount(pred, cache) + 1;
-    }
-    cache.insert(it, { unit, count });
-    return count;
-}
-
-void topologicalSort(const Unit *unit, std::vector<const Unit *> &units, std::unordered_set<const Unit *> &visited)
-{
-    if (visited.find(unit) != visited.end())
-        return;
-    visited.insert(unit);
-    for (const auto *pred : unit->dependencies)
-        topologicalSort(pred, units, visited);
-    units.push_back(unit);
-}
-
-} // namespace
-
 void TechGraph::autoAdjustCosts(const Cost &leafCost, const Cost &leafYield, double secondsPerUnit, double bumpPerUnit)
 {
-    // find child counts
-    std::unordered_map<const Unit *, int> childCountCache;
-    for (const auto &unit : m_units)
-        childCount(unit.get(), childCountCache);
-
-    // find root units
+    // find successors
     std::unordered_map<const Unit *, std::unordered_set<const Unit *>> successors;
     for (const auto &unit : m_units)
         successors[unit.get()] = {};
@@ -385,31 +361,23 @@ void TechGraph::autoAdjustCosts(const Cost &leafCost, const Cost &leafYield, dou
             successors[pred].insert(unit.get());
     }
 
-    std::vector<const Unit *> rootUnits;
-    for (auto &[unit, successors] : successors) {
-        if (successors.empty())
-            rootUnits.push_back(unit);
-    }
+    // breadth-first search starting from the leaves
 
-    std::sort(rootUnits.begin(), rootUnits.end(), [&childCountCache](const Unit *a, const Unit *b) {
-        auto childCount = [&childCountCache](const Unit *unit) {
-            auto it = childCountCache.find(unit);
-            Q_ASSERT(it != childCountCache.end());
-            return it->second;
-        };
-        return childCount(a) < childCount(b);
-    });
+    std::unordered_set<const Unit *> visited;
 
-    std::vector<const Unit *> sortedUnits;
-    {
-        std::unordered_set<const Unit *> visited;
-        for (const auto *unit : rootUnits)
-            topologicalSort(unit, sortedUnits, visited);
+    std::deque<const Unit *> queue;
+    for (const auto &unit : m_units) {
+        if (unit->dependencies.empty())
+            queue.push_back(unit.get());
     }
 
     Cost expectedYield;
-    for (const auto *unit : sortedUnits) {
-        qDebug() << unit->name << expectedYield.energy << expectedYield.material << expectedYield.extropy;
+    while (!queue.empty()) {
+        const auto *unit = queue.front();
+        queue.pop_front();
+        if (visited.find(unit) != visited.end())
+            continue;
+        visited.insert(unit);
 
         Cost cost;
         if (unit->cost.energy > 0.0)
@@ -440,5 +408,10 @@ void TechGraph::autoAdjustCosts(const Cost &leafCost, const Cost &leafYield, dou
             if (boost.target)
                 expectedYield += (boost.factor - 1.0) * MinUnitCount * boost.target->yield;
         }
+
+        qDebug() << unit->name << "cost=" << unit->cost << "yield=" << unit->yield;
+
+        const auto &next = successors[unit];
+        std::copy(next.begin(), next.end(), std::back_inserter(queue));
     }
 }
