@@ -1,5 +1,6 @@
 #include "world.h"
 
+#include "theme.h"
 #include "tween.h"
 #include "uipainter.h"
 
@@ -101,7 +102,7 @@ static const auto UnitLabelFont = UIPainter::Font { FontName, 25 };
 class GraphItem
 {
 public:
-    GraphItem(Unit *unit, World *world);
+    GraphItem(Unit *unit, const Theme *theme, World *world);
     ~GraphItem();
 
     bool mousePressEvent(const glm::vec2 &pos);
@@ -124,6 +125,7 @@ private:
     float labelAlpha() const;
     bool isSelected() const { return m_world->currentUnit() == m_unit; }
 
+    const Theme *m_theme;
     World *m_world;
     bool m_hovered = false;
     enum class State {
@@ -149,8 +151,9 @@ private:
     static constexpr auto AcquireAnimationTime = 1.0f;
 };
 
-GraphItem::GraphItem(Unit *unit, World *world)
+GraphItem::GraphItem(Unit *unit, const Theme *theme, World *world)
     : m_world(world)
+    , m_theme(theme)
     , m_unit(unit)
     , m_wobble(6.0f)
 {
@@ -252,24 +255,24 @@ float GraphItem::radius() const
 
 glm::vec4 GraphItem::color() const
 {
-    constexpr const auto ActiveColor = glm::vec4(1, 0, 0, 1);
-    constexpr const auto InactiveColor = glm::vec4(0.25, 0.25, 0.25, 1);
+    const auto &inactiveColor = m_theme->inactiveUnit.color;
+    const auto &activeColor = m_theme->activeUnit.color;
     constexpr const auto AcquiredColor = glm::vec4(1);
     switch (m_state) {
     case State::Hidden:
-        return BackgroundColor;
+        return glm::vec4(m_theme->backgroundColor.xyz(), 0.0);
     case State::FadeIn:
-        return glm::mix(BackgroundColor, InactiveColor, m_stateTime / FadeInTime);
+        return glm::mix(glm::vec4(m_theme->backgroundColor.xyz(), 0.0), inactiveColor, m_stateTime / FadeInTime);
     case State::Inactive:
-        return InactiveColor;
+        return inactiveColor;
     case State::Activating:
-        return glm::mix(InactiveColor, ActiveColor, m_stateTime / ActivationTime);
+        return glm::mix(inactiveColor, activeColor, m_stateTime / ActivationTime);
     default:
         if (m_acquireTime > 0.0f) {
             float t = m_acquireTime / AcquireAnimationTime;
-            return glm::mix(ActiveColor, AcquiredColor, t);
+            return glm::mix(activeColor, AcquiredColor, t);
         }
-        return ActiveColor;
+        return activeColor;
     }
 }
 
@@ -322,8 +325,7 @@ void GraphItem::paint(UIPainter *painter) const
     // painter->drawRoundedRect(m_boundingBox + p, 8.0f, glm::vec4(0), glm::vec4(0, 1, 0, 1), 3.0f, -100);
 
     const auto radius = this->radius();
-    const auto color = this->color();
-    painter->drawCircle(p, radius, glm::vec4(0), color, 6.0f, -1);
+    painter->drawCircle(p, radius, glm::vec4(0), color(), 6.0f, -1);
 
     const auto labelAlpha = isSelected ? 1.0f : this->labelAlpha();
 
@@ -344,7 +346,7 @@ void GraphItem::paint(UIPainter *painter) const
             constexpr auto ExtropyColor = glm::vec3(1, 0, 1);
             const auto addCircleGauge = [&p, painter](float radius, const glm::vec4 &color, float value) {
                 constexpr auto StartAngle = 0;
-                constexpr auto EndAngle = 1.5f * M_PI;
+                constexpr auto EndAngle = 1.25f * M_PI;
                 float angle = StartAngle + value * (EndAngle - StartAngle);
                 painter->drawCircleGauge(p, radius, 0.25f * color, color, StartAngle, EndAngle, angle, 2);
             };
@@ -366,32 +368,45 @@ void GraphItem::paint(UIPainter *painter) const
 
     p += glm::vec2(0, Radius + LabelMargin);
 
+    const auto theme = [this]() -> Theme::Unit {
+        if (this->isSelected())
+            return m_theme->selectedUnit;
+        switch (m_state) {
+        case State::FadeIn:
+        case State::Inactive:
+            return m_theme->inactiveUnit;
+        case State::Activating:
+        case State::Active:
+            return m_theme->activeUnit;
+        default:
+            break;
+        }
+        return {};
+    }();
+
     constexpr auto TextHeight = 80.0f;
     const auto textBox = GX::BoxF { p - glm::vec2(0.5f * LabelTextWidth, 0), p + glm::vec2(0.5f * LabelTextWidth, TextHeight) };
     painter->setVerticalAlign(UIPainter::VerticalAlign::Top);
     painter->setHorizontalAlign(UIPainter::HorizontalAlign::Center);
     painter->setFont(UnitLabelFont);
-    auto textSize = painter->drawTextBox(textBox, glm::vec4(1, 1, 1, labelAlpha), 2, m_unit->name);
+    auto textSize = painter->drawTextBox(textBox, theme.label.textColor, 2, m_unit->name);
 
     auto outerBox = GX::BoxF { p - glm::vec2(0.5f * textSize.x + LabelMargin, LabelMargin), p + glm::vec2(0.5f * textSize.x + LabelMargin, textSize.y + LabelMargin) };
     constexpr auto BoxRadius = 8.0f;
-    const auto fillColor = isSelected ? glm::vec4(1, 1, 1, 0.25 * labelAlpha) : glm::vec4(0, 0, 0, 0.75 * labelAlpha);
-    const auto outlineColor = isSelected ? glm::vec4(1, 1, 1, labelAlpha) : glm::vec4(glm::vec3(color), labelAlpha);
-    const auto outlineThickness = isSelected ? 4.0f : 3.0f;
-    painter->drawRoundedRect(outerBox, BoxRadius, fillColor, outlineColor, outlineThickness, 1);
+    painter->drawRoundedRect(outerBox, BoxRadius, theme.label.backgroundColor, theme.label.outlineColor, theme.label.outlineThickness, 1);
 
     const auto count = m_unit->count;
     if (count > 1) {
         const auto center = glm::vec2(outerBox.max.x, outerBox.min.y);
         constexpr const auto CounterRadius = 22.0f;
 
-        painter->drawCircle(center, CounterRadius, glm::vec4(0, 0, 0, 0.75 * labelAlpha), glm::vec4(1, 1, 1, labelAlpha), 3.0f, 3);
+        painter->drawCircle(center, CounterRadius, theme.counter.backgroundColor, theme.counter.outlineColor, theme.counter.outlineThickness, 3);
 
         const auto counterBox = GX::BoxF { center - 0.5f * glm::vec2(CounterRadius), center + 0.5f * glm::vec2(CounterRadius) };
         painter->setVerticalAlign(UIPainter::VerticalAlign::Middle);
         painter->setHorizontalAlign(UIPainter::HorizontalAlign::Center);
         painter->setFont(UIPainter::Font { FontName, 20 });
-        painter->drawTextBox(counterBox, glm::vec4(1, 1, 1, labelAlpha), 4, fmt::format(U"x{}", count));
+        painter->drawTextBox(counterBox, theme.counter.textColor, 4, fmt::format(U"x{}", count));
     }
 }
 
@@ -424,14 +439,15 @@ bool GraphItem::isVisible() const
 World::World() = default;
 World::~World() = default;
 
-void World::initialize(UIPainter *painter, TechGraph *techGraph)
+void World::initialize(const Theme *theme, UIPainter *painter, TechGraph *techGraph)
 {
+    m_theme = theme;
     m_painter = painter;
     m_techGraph = techGraph;
 
     m_graphItems.clear();
     for (auto &unit : m_techGraph->units) {
-        auto item = std::make_unique<GraphItem>(unit.get(), this);
+        auto item = std::make_unique<GraphItem>(unit.get(), m_theme, this);
         item->initialize(painter);
         m_unitItems[unit.get()] = item.get();
         m_graphItems.emplace_back(std::move(item));
@@ -544,8 +560,10 @@ void World::paintState() const
         if (value == 0.0)
             return;
 
+        const auto &theme = m_theme->counter;
+
         const auto box = GX::BoxF { glm::vec2(centerX - 0.5 * CounterWidth, centerY - 0.5 * CounterHeight), glm::vec2(centerX + 0.5 * CounterWidth, centerY + 0.5 * CounterHeight) };
-        m_painter->drawRoundedRect(box, 20, glm::vec4(0, 0, 0, 0.75), glm::vec4(1, 1, 1, 1), 4.0f, TextDepth - 1);
+        m_painter->drawRoundedRect(box, 20, theme.backgroundColor, theme.outlineColor, theme.outlineThickness, TextDepth - 1);
 
         static const auto LabelFont = UIPainter::Font { FontName, 40 };
         static const auto CounterFontBig = UIPainter::Font { FontName, 70 };
@@ -563,7 +581,7 @@ void World::paintState() const
             // is this even right lol
             m_painter->drawPixmap(glm::vec2(x, y - 0.5f * (textHeight + icon.height)), icon, TextDepth);
             x += icon.width;
-            m_painter->drawText(glm::vec2(x, y), glm::vec4(1), TextDepth, label);
+            m_painter->drawText(glm::vec2(x, y), theme.textColor, TextDepth, label);
         }
         y += 60;
 
@@ -587,15 +605,15 @@ void World::paintState() const
                 const auto left = centerX - 0.5f * totalAdvance;
 
                 m_painter->setFont(CounterFontBig);
-                m_painter->drawText(glm::vec2(left, y), glm::vec4(1), TextDepth, bigText);
-                m_painter->drawText(glm::vec2(left + bigAdvance + smallAdvance, y), glm::vec4(1), TextDepth, unitText);
+                m_painter->drawText(glm::vec2(left, y), theme.textColor, TextDepth, bigText);
+                m_painter->drawText(glm::vec2(left + bigAdvance + smallAdvance, y), theme.textColor, TextDepth, unitText);
 
                 m_painter->setFont(CounterFontSmall);
-                m_painter->drawText(glm::vec2(left + bigAdvance, y), glm::vec4(1), TextDepth, smallText);
+                m_painter->drawText(glm::vec2(left + bigAdvance, y), theme.textColor, TextDepth, smallText);
             } else {
                 const auto text = fmt::format("{}{}", big, unit);
                 m_painter->setFont(CounterFontBig);
-                paintCentered(m_painter, centerX, y, glm::vec4(1), TextDepth, text);
+                paintCentered(m_painter, centerX, y, theme.textColor, TextDepth, text);
             }
         }
         y += 40;
@@ -611,7 +629,7 @@ void World::paintState() const
                 }
             }();
             m_painter->setFont(DeltaFont);
-            paintCentered(m_painter, centerX, y, glm::vec4(1), TextDepth, text);
+            paintCentered(m_painter, centerX, y, theme.textColor, TextDepth, text);
         }
     };
 
@@ -628,6 +646,8 @@ void World::paintCurrentUnitDescription() const
 {
     if (!m_currentUnit)
         return;
+
+    const auto &theme = m_theme->unitDetails;
 
     // cost
     const auto formatCost = [](double value, const std::u32string &unit) -> std::u32string {
@@ -687,11 +707,11 @@ void World::paintCurrentUnitDescription() const
     {
         glm::vec2 p = topLeft;
         m_painter->setFont(TitleFont);
-        m_painter->drawTextBox(GX::BoxF { p, p + glm::vec2(TitleTextWidth, titleSize.y) }, glm::vec4(1), 20, m_currentUnit->name);
+        m_painter->drawTextBox(GX::BoxF { p, p + glm::vec2(TitleTextWidth, titleSize.y) }, theme.textColor, 20, m_currentUnit->name);
 
         p += glm::vec2(0, titleSize.y);
         m_painter->setFont(DescriptionFont);
-        m_painter->drawTextBox(GX::BoxF { p, p + glm::vec2(TextWidth, descriptionSize.y) }, glm::vec4(1), 20, m_currentUnit->description);
+        m_painter->drawTextBox(GX::BoxF { p, p + glm::vec2(TextWidth, descriptionSize.y) }, theme.textColor, 20, m_currentUnit->description);
 
         p += glm::vec2(0, descriptionSize.y + m_painter->font()->ascent());
         if (m_currentUnit->type == Unit::Type::Booster) {
@@ -754,7 +774,7 @@ void World::paintCurrentUnitDescription() const
     }
 
     const auto outerBox = GX::BoxF { topLeft - glm::vec2(Margin, Margin), topLeft + glm::vec2(TextWidth + Margin, textHeight + Margin) };
-    m_painter->drawRoundedRect(outerBox, BoxRadius, glm::vec4(0, 0, 0, 0.75), glm::vec4(1), 3.0f, 19);
+    m_painter->drawRoundedRect(outerBox, BoxRadius, theme.backgroundColor, theme.outlineColor, theme.outlineThickness, 19);
 }
 
 void World::mousePressEvent(const glm::vec2 &pos)

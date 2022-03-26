@@ -68,6 +68,8 @@ set(game_SOURCES
     uipainter.h
     techgraph.cpp
     techgraph.h
+    theme.cpp
+    theme.h
     gamewindow.cpp
     gamewindow.h
 )
@@ -81,6 +83,8 @@ target_link_libraries(game
     fmt
     rapidjson
 ) 
+
+target_compile_definitions(game PUBLIC GLM_FORCE_SWIZZLE)
 
 if (${CMAKE_SYSTEM_NAME} MATCHES "Emscripten")
     set(CMAKE_EXECUTABLE_SUFFIX ".html")

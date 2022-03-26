@@ -1,14 +1,18 @@
 #include "gamewindow.h"
 
 #include "shadermanager.h"
+#include "theme.h"
 #include "uipainter.h"
 
 GameWindow::GameWindow(int width, int height)
     : m_width(width)
     , m_height(height)
-    , m_techGraph(std::make_unique<TechGraph>())
+    , m_techGraph(new TechGraph)
+    , m_theme(new Theme)
 {
+    m_theme->load("assets/data/theme.json");
     m_techGraph->load("assets/data/techgraph.json");
+
     initializeGL();
 }
 
@@ -20,14 +24,15 @@ void GameWindow::initializeGL()
     m_painter = std::make_unique<UIPainter>(m_shaderManager.get());
     m_painter->resize(m_width, m_height);
 
-    m_world.initialize(m_painter.get(), m_techGraph.get());
+    m_world.initialize(m_theme.get(), m_painter.get(), m_techGraph.get());
 }
 
 void GameWindow::paintGL()
 {
     glViewport(0, 0, m_width, m_height);
 
-    glClearColor(0.15, 0.15, 0.15, 1);
+    const auto &clearColor = m_theme->backgroundColor;
+    glClearColor(clearColor.x, clearColor.y, clearColor.z, clearColor.w);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     glDisable(GL_CULL_FACE);

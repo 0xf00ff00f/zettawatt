@@ -13,7 +13,7 @@
 class UIPainter;
 struct Unit;
 class GraphItem;
-class World;
+struct Theme;
 
 class World
 {
@@ -22,7 +22,7 @@ public:
     ~World();
 
     void setViewportSize(const glm::vec2 &viewportSize);
-    void initialize(UIPainter *painter, TechGraph *techGraph);
+    void initialize(const Theme *theme, UIPainter *painter, TechGraph *techGraph);
     void reset();
 
     void update(double elapsed);
@@ -48,6 +48,7 @@ private:
     void paintCurrentUnitDescription() const;
     void updateStateDelta();
 
+    const Theme *m_theme = nullptr;
     UIPainter *m_painter = nullptr;
     StateVector m_state;
     StateVector m_stateDelta;

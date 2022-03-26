@@ -14,6 +14,7 @@ class ShaderManager;
 
 class UIPainter;
 class TechGraph;
+class Theme;
 
 class GameWindow : private GX::NonCopyable
 {
@@ -35,6 +36,7 @@ private:
     int m_width;
     int m_height;
     std::unique_ptr<TechGraph> m_techGraph;
+    std::unique_ptr<Theme> m_theme;
     std::unique_ptr<GX::ShaderManager> m_shaderManager;
     std::unique_ptr<UIPainter> m_painter;
     World m_world;
