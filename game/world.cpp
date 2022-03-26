@@ -121,7 +121,6 @@ public:
 private:
     bool handleMousePress();
     void handleMouseRelease();
-    float labelAlpha() const;
     bool isSelected() const { return m_world->currentUnit() == m_unit; }
 
     const Theme *m_theme;
@@ -129,15 +128,16 @@ private:
     bool m_hovered = false;
     enum class State {
         Hidden,
-        FadeIn,
         Inactive,
-        Activating,
         Active,
+        Selected,
     };
     State m_state = State::Hidden;
+    State m_prevState = State::Hidden;
     Unit *m_unit;
     Wobble m_wobble;
     float m_stateTime = 0.0f;
+    float m_stateTransitionTime = 0.0f;
     float m_acquireTime = 0.0f;
     GX::BoxF m_labelBox;
     GX::BoxF m_boundingBox;
@@ -145,8 +145,6 @@ private:
     static constexpr auto Radius = 25.0f;
     static constexpr auto LabelTextWidth = 120.0f;
     static constexpr auto LabelMargin = 10.0f;
-    static constexpr auto ActivationTime = 2.0f;
-    static constexpr auto FadeInTime = 2.0f;
     static constexpr auto AcquireAnimationTime = 1.0f;
 };
 
@@ -184,9 +182,13 @@ void GraphItem::update(double elapsed)
     m_wobble.update(elapsed);
     if (m_acquireTime > 0.0f)
         m_acquireTime = std::max(static_cast<float>(m_acquireTime - elapsed), 0.0f);
-    const auto setState = [this](State state) {
+    static constexpr auto StateTransitionTime = 2.0f;
+    static constexpr auto SelectionTime = 0.25f;
+    const auto setState = [this](State state, float transitionTime) {
+        m_prevState = m_state;
         m_state = state;
         m_stateTime = 0.0f;
+        m_stateTransitionTime = transitionTime;
     };
     switch (m_state) {
     case State::Hidden: {
@@ -201,25 +203,25 @@ void GraphItem::update(double elapsed)
             });
         }();
         if (shouldDisplay)
-            setState(State::FadeIn);
-        break;
-    }
-    case State::FadeIn: {
-        if (m_stateTime >= FadeInTime)
-            setState(State::Inactive);
+            setState(State::Inactive, StateTransitionTime);
+        if (isSelected())
+            setState(State::Selected, SelectionTime);
         break;
     }
     case State::Inactive: {
         if (m_unit->count > 0)
-            setState(State::Activating);
-        break;
-    }
-    case State::Activating: {
-        if (m_stateTime >= ActivationTime)
-            setState(State::Active);
+            setState(State::Active, StateTransitionTime);
+        if (isSelected())
+            setState(State::Selected, SelectionTime);
         break;
     }
     case State::Active:
+        if (isSelected())
+            setState(State::Selected, SelectionTime);
+        break;
+    case State::Selected:
+        if (!isSelected())
+            setState(m_unit->count > 0 ? State::Active : State::Inactive, SelectionTime);
         break;
     }
 }
@@ -228,16 +230,9 @@ glm::vec2 GraphItem::position() const
 {
     auto p = m_unit->position;
     const auto wobbleWeight = [this] {
-        switch (m_state) {
-        case State::Inactive:
-        case State::FadeIn:
-        case State::Hidden:
-            return 1.0f;
-        case State::Activating:
-            return 1.0f - m_stateTime / ActivationTime;
-        default:
-            return 0.0f;
-        }
+        if (m_acquireTime > 0.0f && m_unit->count == 1)
+            return m_acquireTime / AcquireAnimationTime;
+        return m_unit->count > 0 ? 0.0f : 1.0f;
     }();
     p += wobbleWeight * m_wobble.offset();
     return p;
@@ -254,43 +249,26 @@ float GraphItem::radius() const
 
 glm::vec4 GraphItem::color() const
 {
-    const auto &inactiveColor = m_theme->inactiveUnit.color;
-    const auto &activeColor = m_theme->activeUnit.color;
-    constexpr const auto AcquiredColor = glm::vec4(1);
-    switch (m_state) {
-    case State::Hidden:
-        return glm::vec4(m_theme->backgroundColor.xyz(), 0.0);
-    case State::FadeIn:
-        return glm::mix(glm::vec4(m_theme->backgroundColor.xyz(), 0.0), inactiveColor, m_stateTime / FadeInTime);
-    case State::Inactive:
-        return inactiveColor;
-    case State::Activating:
-        return glm::mix(inactiveColor, activeColor, m_stateTime / ActivationTime);
-    default:
-        if (m_acquireTime > 0.0f) {
-            float t = m_acquireTime / AcquireAnimationTime;
-            return glm::mix(activeColor, AcquiredColor, t);
+    const auto stateColor = [this](State state) -> glm::vec4 {
+        switch (state) {
+        case State::Hidden:
+            return glm::vec4(m_theme->backgroundColor.xyz(), 0.0);
+        case State::Inactive:
+            return m_theme->inactiveUnit.color;
+        case State::Active:
+            return m_theme->activeUnit.color;
+        case State::Selected:
+            return m_theme->selectedUnit.color;
+        default:
+            assert(false);
+            return {};
         }
-        return activeColor;
+    };
+    if (m_stateTime < m_stateTransitionTime) {
+        const auto t = m_stateTime / m_stateTransitionTime;
+        return glm::mix(stateColor(m_prevState), stateColor(m_state), t);
     }
-}
-
-float GraphItem::labelAlpha() const
-{
-    constexpr const auto InactiveAlpha = 0.5f;
-    constexpr const auto ActiveAlpha = 1.0f;
-    switch (m_state) {
-    case State::Hidden:
-        return 0.0f;
-    case State::FadeIn:
-        return glm::mix(0.0f, InactiveAlpha, m_stateTime / FadeInTime);
-    case State::Inactive:
-        return InactiveAlpha;
-    case State::Activating:
-        return glm::mix(InactiveAlpha, ActiveAlpha, m_stateTime / ActivationTime);
-    default:
-        return ActiveAlpha;
-    }
+    return stateColor(m_state);
 }
 
 void GraphItem::initialize(UIPainter *painter)
@@ -315,6 +293,29 @@ GX::BoxF GraphItem::boundingBox() const
     return m_boundingBox + position();
 }
 
+namespace {
+
+Theme::TextBox mix(const Theme::TextBox &lhs, const Theme::TextBox &rhs, float a)
+{
+    return {
+        glm::mix(lhs.backgroundColor, rhs.backgroundColor, a),
+        glm::mix(lhs.outlineColor, rhs.outlineColor, a),
+        glm::mix(lhs.outlineThickness, rhs.outlineThickness, a),
+        glm::mix(lhs.textColor, rhs.textColor, a),
+    };
+}
+
+Theme::Unit mix(const Theme::Unit &lhs, const Theme::Unit &rhs, float a)
+{
+    return {
+        glm::mix(lhs.color, rhs.color, a),
+        mix(lhs.label, rhs.label, a),
+        mix(lhs.counter, rhs.counter, a)
+    };
+}
+
+}
+
 void GraphItem::paint(UIPainter *painter) const
 {
     const auto isSelected = this->isSelected();
@@ -323,10 +324,37 @@ void GraphItem::paint(UIPainter *painter) const
 
     // painter->drawRoundedRect(m_boundingBox + p, 8.0f, glm::vec4(0), glm::vec4(0, 1, 0, 1), 3.0f, -100);
 
-    const auto radius = this->radius();
-    painter->drawCircle(p, radius, glm::vec4(0), color(), 6.0f, -1);
+    const auto theme = [this]() -> Theme::Unit {
+        const auto stateTheme = [this](State state) -> Theme::Unit {
+            switch (state) {
+            case State::Hidden: {
+                const auto color = glm::vec4(m_theme->backgroundColor.xyz(), 0.0);
+                return Theme::Unit {
+                    color,
+                    { color, color, 0.0f, color },
+                    { color, color, 0.0f, color }
+                };
+            }
+            case State::Inactive:
+                return m_theme->inactiveUnit;
+            case State::Active:
+                return m_theme->activeUnit;
+            case State::Selected:
+                return m_theme->selectedUnit;
+            default:
+                assert(false);
+                return {};
+            }
+        };
+        if (m_stateTime < m_stateTransitionTime) {
+            const auto t = m_stateTime / m_stateTransitionTime;
+            return mix(stateTheme(m_prevState), stateTheme(m_state), t);
+        }
+        return stateTheme(m_state);
+    }();
 
-    const auto labelAlpha = isSelected ? 1.0f : this->labelAlpha();
+    const auto radius = this->radius();
+    painter->drawCircle(p, radius, glm::vec4(0), theme.color, 6.0f, -1);
 
     if (m_world->canAcquire(m_unit)) {
         const auto glowDistance = 0.04 + 0.02 * std::sin(m_stateTime * 5.0);
@@ -349,37 +377,22 @@ void GraphItem::paint(UIPainter *painter) const
             float r = radius + RadiusDelta;
             const auto &colors = m_theme->gaugeColors;
             const auto cost = m_unit->cost();
+            const auto alpha = theme.label.backgroundColor.w;
             if (cost.energy > 0) {
-                addCircleGauge(r, glm::vec4(colors.energy.xyz(), labelAlpha), std::min(static_cast<float>(m_world->state().energy / cost.energy), 1.0f));
+                addCircleGauge(r, glm::vec4(colors.energy.xyz(), alpha), std::min(static_cast<float>(m_world->state().energy / cost.energy), 1.0f));
                 r += RadiusDelta;
             }
             if (cost.material > 0) {
-                addCircleGauge(r, glm::vec4(colors.material.xyz(), labelAlpha), std::min(static_cast<float>(m_world->state().material / cost.material), 1.0f));
+                addCircleGauge(r, glm::vec4(colors.material.xyz(), alpha), std::min(static_cast<float>(m_world->state().material / cost.material), 1.0f));
                 r += RadiusDelta;
             }
             if (cost.extropy > 0) {
-                addCircleGauge(r, glm::vec4(colors.extropy.xyz(), labelAlpha), std::min(static_cast<float>(m_world->state().extropy / cost.extropy), 1.0f));
+                addCircleGauge(r, glm::vec4(colors.extropy.xyz(), alpha), std::min(static_cast<float>(m_world->state().extropy / cost.extropy), 1.0f));
             }
         }
     }
 
     p += glm::vec2(0, Radius + LabelMargin);
-
-    const auto theme = [this]() -> Theme::Unit {
-        if (this->isSelected())
-            return m_theme->selectedUnit;
-        switch (m_state) {
-        case State::FadeIn:
-        case State::Inactive:
-            return m_theme->inactiveUnit;
-        case State::Activating:
-        case State::Active:
-            return m_theme->activeUnit;
-        default:
-            break;
-        }
-        return {};
-    }();
 
     constexpr auto TextHeight = 80.0f;
     const auto textBox = GX::BoxF { p - glm::vec2(0.5f * LabelTextWidth, 0), p + glm::vec2(0.5f * LabelTextWidth, TextHeight) };
@@ -393,7 +406,7 @@ void GraphItem::paint(UIPainter *painter) const
     painter->drawRoundedRect(outerBox, BoxRadius, theme.label.backgroundColor, theme.label.outlineColor, theme.label.outlineThickness, 1);
 
     const auto count = m_unit->count;
-    if (count > 1) {
+    if (count > 0) {
         const auto center = glm::vec2(outerBox.max.x, outerBox.min.y);
         constexpr const auto CounterRadius = 22.0f;
 
