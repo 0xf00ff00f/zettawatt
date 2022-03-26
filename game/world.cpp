@@ -37,7 +37,6 @@ std::tuple<int, int, char32_t> formattedValue(double value)
 }
 
 constexpr const char *FontName = "Arimo-Regular.ttf";
-constexpr const char *BoldFontName = "Arimo-Bold.ttf";
 
 constexpr const auto BackgroundColor = glm::vec4(0.15, 0.15, 0.15, 1);
 
@@ -332,7 +331,7 @@ void GraphItem::paint(UIPainter *painter) const
     if (m_world->canAcquire(m_unit)) {
         const auto glowDistance = 0.04 + 0.02 * std::sin(m_stateTime * 5.0);
         const auto glowStrength = 0.6;
-        painter->drawGlowCircle(p, radius, glm::vec4(0, 1, 1, 1), BackgroundColor, glowDistance, glowStrength, -2);
+        painter->drawGlowCircle(p, radius, m_theme->glowColor, BackgroundColor, glowDistance, glowStrength, -2);
     } else {
         const auto acquirable = [this] {
             if (m_unit->type == Unit::Type::Generator)
@@ -341,9 +340,6 @@ void GraphItem::paint(UIPainter *painter) const
         }();
         if (acquirable) {
             constexpr auto RadiusDelta = 8;
-            constexpr auto EnergyColor = glm::vec3(1, 0.65, 0);
-            constexpr auto MaterialColor = glm::vec3(0, 1, 1);
-            constexpr auto ExtropyColor = glm::vec3(1, 0, 1);
             const auto addCircleGauge = [&p, painter](float radius, const glm::vec4 &color, float value) {
                 constexpr auto StartAngle = 0;
                 constexpr auto EndAngle = 1.25f * M_PI;
@@ -351,17 +347,18 @@ void GraphItem::paint(UIPainter *painter) const
                 painter->drawCircleGauge(p, radius, 0.25f * color, color, StartAngle, EndAngle, angle, 2);
             };
             float r = radius + RadiusDelta;
+            const auto &colors = m_theme->gaugeColors;
             const auto cost = m_unit->cost();
             if (cost.energy > 0) {
-                addCircleGauge(r, glm::vec4(EnergyColor, labelAlpha), std::min(static_cast<float>(m_world->state().energy / cost.energy), 1.0f));
+                addCircleGauge(r, glm::vec4(colors.energy.xyz(), labelAlpha), std::min(static_cast<float>(m_world->state().energy / cost.energy), 1.0f));
                 r += RadiusDelta;
             }
             if (cost.material > 0) {
-                addCircleGauge(r, glm::vec4(MaterialColor, labelAlpha), std::min(static_cast<float>(m_world->state().material / cost.material), 1.0f));
+                addCircleGauge(r, glm::vec4(colors.material.xyz(), labelAlpha), std::min(static_cast<float>(m_world->state().material / cost.material), 1.0f));
                 r += RadiusDelta;
             }
             if (cost.extropy > 0) {
-                addCircleGauge(r, glm::vec4(ExtropyColor, labelAlpha), std::min(static_cast<float>(m_world->state().extropy / cost.extropy), 1.0f));
+                addCircleGauge(r, glm::vec4(colors.extropy.xyz(), labelAlpha), std::min(static_cast<float>(m_world->state().extropy / cost.extropy), 1.0f));
             }
         }
     }
@@ -581,7 +578,7 @@ void World::paintState() const
             // is this even right lol
             m_painter->drawPixmap(glm::vec2(x, y - 0.5f * (textHeight + icon.height)), icon, TextDepth);
             x += icon.width;
-            m_painter->drawText(glm::vec2(x, y), theme.textColor, TextDepth, label);
+            m_painter->drawText(glm::vec2(x, y), theme.labelColor, TextDepth, label);
         }
         y += 60;
 
@@ -605,15 +602,15 @@ void World::paintState() const
                 const auto left = centerX - 0.5f * totalAdvance;
 
                 m_painter->setFont(CounterFontBig);
-                m_painter->drawText(glm::vec2(left, y), theme.textColor, TextDepth, bigText);
-                m_painter->drawText(glm::vec2(left + bigAdvance + smallAdvance, y), theme.textColor, TextDepth, unitText);
+                m_painter->drawText(glm::vec2(left, y), theme.valueColor, TextDepth, bigText);
+                m_painter->drawText(glm::vec2(left + bigAdvance + smallAdvance, y), theme.valueColor, TextDepth, unitText);
 
                 m_painter->setFont(CounterFontSmall);
-                m_painter->drawText(glm::vec2(left + bigAdvance, y), theme.textColor, TextDepth, smallText);
+                m_painter->drawText(glm::vec2(left + bigAdvance, y), theme.valueColor, TextDepth, smallText);
             } else {
                 const auto text = fmt::format("{}{}", big, unit);
                 m_painter->setFont(CounterFontBig);
-                paintCentered(m_painter, centerX, y, theme.textColor, TextDepth, text);
+                paintCentered(m_painter, centerX, y, theme.valueColor, TextDepth, text);
             }
         }
         y += 40;
@@ -629,7 +626,7 @@ void World::paintState() const
                 }
             }();
             m_painter->setFont(DeltaFont);
-            paintCentered(m_painter, centerX, y, theme.textColor, TextDepth, text);
+            paintCentered(m_painter, centerX, y, theme.deltaColor, TextDepth, text);
         }
     };
 
@@ -666,7 +663,7 @@ void World::paintCurrentUnitDescription() const
     };
     const auto cost = m_currentUnit->cost();
 
-    static const auto TitleFont = UIPainter::Font { BoldFontName, 25 };
+    static const auto TitleFont = UIPainter::Font { FontName, 25 };
     static const auto DescriptionFont = UIPainter::Font { FontName, 20 };
 
     constexpr auto MaxWidth = 420.0f;
@@ -707,11 +704,11 @@ void World::paintCurrentUnitDescription() const
     {
         glm::vec2 p = topLeft;
         m_painter->setFont(TitleFont);
-        m_painter->drawTextBox(GX::BoxF { p, p + glm::vec2(TitleTextWidth, titleSize.y) }, theme.textColor, 20, m_currentUnit->name);
+        m_painter->drawTextBox(GX::BoxF { p, p + glm::vec2(TitleTextWidth, titleSize.y) }, theme.titleColor, 20, m_currentUnit->name);
 
         p += glm::vec2(0, titleSize.y);
         m_painter->setFont(DescriptionFont);
-        m_painter->drawTextBox(GX::BoxF { p, p + glm::vec2(TextWidth, descriptionSize.y) }, theme.textColor, 20, m_currentUnit->description);
+        m_painter->drawTextBox(GX::BoxF { p, p + glm::vec2(TextWidth, descriptionSize.y) }, theme.descriptionColor, 20, m_currentUnit->description);
 
         p += glm::vec2(0, descriptionSize.y + m_painter->font()->ascent());
         if (m_currentUnit->type == Unit::Type::Booster) {
@@ -727,15 +724,15 @@ void World::paintCurrentUnitDescription() const
             m_painter->drawText(p, glm::vec4(1, 1, 0, 1), 20, boostDescription);
         } else {
             static const auto prefix = "Produces "s;
-            m_painter->drawText(p, glm::vec4(1, 1, 0, 1), 20, prefix);
+            m_painter->drawText(p, theme.yieldColor, 20, prefix);
             p += glm::vec2(m_painter->horizontalAdvance(prefix), 0);
-            const auto drawYield = [this, &p](const std::u32string &text, const GX::PackedPixmap &icon) {
+            const auto drawYield = [this, &theme, &p](const std::u32string &text, const GX::PackedPixmap &icon) {
                 if (text.empty())
                     return;
                 const auto textHeight = m_painter->font()->ascent() + m_painter->font()->descent();
                 m_painter->drawPixmap(glm::vec2(p.x, p.y - 0.5f * (textHeight + icon.height)), icon, 20);
                 p.x += icon.width;
-                m_painter->drawText(p, glm::vec4(1, 1, 0, 1), 20, text);
+                m_painter->drawText(p, theme.yieldColor, 20, text);
                 p.x += m_painter->horizontalAdvance(text);
             };
             const auto &yield = m_currentUnit->yield;
@@ -754,7 +751,7 @@ void World::paintCurrentUnitDescription() const
     {
         glm::vec2 p = topLeft + glm::vec2(TextWidth, m_painter->font()->ascent());
 
-        const auto drawCost = [this, &p](const std::u32string &text, const GX::PackedPixmap &icon) {
+        const auto drawCost = [this, &theme, &p](const std::u32string &text, const GX::PackedPixmap &icon) {
             if (text.empty())
                 return;
             const auto advance = m_painter->horizontalAdvance(text) + icon.width;
@@ -762,7 +759,7 @@ void World::paintCurrentUnitDescription() const
             auto x = p.x - advance;
             m_painter->drawPixmap(glm::vec2(x, p.y - 0.5f * (textHeight + icon.height)), icon, 20);
             x += icon.width;
-            m_painter->drawText(glm::vec2(x, p.y), glm::vec4(1), 20, text);
+            m_painter->drawText(glm::vec2(x, p.y), theme.costColor, 20, text);
             p.y += m_painter->font()->pixelHeight();
         };
         if (cost.energy > 0.0)
