@@ -109,5 +109,3 @@ struct TechGraph {
 
     bool load(const std::string &jsonPath);
 };
-
-std::unique_ptr<TechGraph> loadTechGraph(const std::string &jsonPath);
