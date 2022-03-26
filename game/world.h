@@ -12,36 +12,8 @@
 
 class UIPainter;
 struct Unit;
-
+class GraphItem;
 class World;
-
-class GraphItem
-{
-public:
-    explicit GraphItem(World *world);
-    virtual ~GraphItem();
-
-    virtual void initialize(UIPainter *painter);
-    virtual glm::vec2 position() const = 0;
-    virtual float radius() const = 0;
-    virtual void update(double elapsed) = 0;
-    virtual void paint(UIPainter *painter) const = 0;
-    virtual bool contains(const glm::vec2 &pos) const = 0;
-    virtual glm::vec4 color() const = 0;
-    virtual bool isVisible() const = 0;
-    virtual GX::BoxF boundingBox() const = 0;
-
-    bool mousePressEvent(const glm::vec2 &pos);
-    void mouseReleaseEvent(const glm::vec2 &pos);
-    void mouseMoveEvent(const glm::vec2 &pos);
-
-    virtual bool handleMousePress();
-    virtual void handleMouseRelease();
-
-protected:
-    World *m_world;
-    bool m_hovered = false;
-};
 
 class World
 {

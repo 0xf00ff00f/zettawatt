@@ -96,67 +96,36 @@ glm::vec2 Wobble::offset() const
 }
 } // namespace
 
-GraphItem::GraphItem(World *world)
-    : m_world(world)
-{
-}
-
-GraphItem::~GraphItem() = default;
-
-void GraphItem::initialize(UIPainter *)
-{
-}
-
-bool GraphItem::mousePressEvent(const glm::vec2 &pos)
-{
-    if (!contains(pos))
-        return false;
-    return handleMousePress();
-}
-
-void GraphItem::mouseReleaseEvent(const glm::vec2 &pos)
-{
-    if (contains(pos))
-        handleMouseRelease();
-}
-
-void GraphItem::mouseMoveEvent(const glm::vec2 &pos)
-{
-    m_hovered = contains(pos);
-}
-
-bool GraphItem::handleMousePress()
-{
-    return false;
-}
-
-void GraphItem::handleMouseRelease()
-{
-}
-
 static const auto UnitLabelFont = UIPainter::Font { FontName, 25 };
 
-class UnitItem : public GraphItem
+class GraphItem
 {
 public:
-    UnitItem(Unit *unit, World *world);
-    ~UnitItem();
+    GraphItem(Unit *unit, World *world);
+    ~GraphItem();
 
-    void initialize(UIPainter *painter) override;
-    glm::vec2 position() const override;
-    float radius() const override;
-    void update(double elapsed) override;
-    void paint(UIPainter *painter) const override;
-    bool contains(const glm::vec2 &pos) const override;
-    glm::vec4 color() const override;
-    bool handleMousePress() override;
-    bool isVisible() const override;
-    GX::BoxF boundingBox() const override;
+    bool mousePressEvent(const glm::vec2 &pos);
+    void mouseReleaseEvent(const glm::vec2 &pos);
+    void mouseMoveEvent(const glm::vec2 &pos);
+
+    void initialize(UIPainter *painter);
+    glm::vec2 position() const;
+    float radius() const;
+    void update(double elapsed);
+    void paint(UIPainter *painter) const;
+    bool contains(const glm::vec2 &pos) const;
+    glm::vec4 color() const;
+    bool isVisible() const;
+    GX::BoxF boundingBox() const;
 
 private:
+    bool handleMousePress();
+    void handleMouseRelease();
     float labelAlpha() const;
     bool isSelected() const { return m_world->currentUnit() == m_unit; }
 
+    World *m_world;
+    bool m_hovered = false;
     enum class State {
         Hidden,
         FadeIn,
@@ -180,16 +149,34 @@ private:
     static constexpr auto AcquireAnimationTime = 1.0f;
 };
 
-UnitItem::UnitItem(Unit *unit, World *world)
-    : GraphItem(world)
+GraphItem::GraphItem(Unit *unit, World *world)
+    : m_world(world)
     , m_unit(unit)
     , m_wobble(6.0f)
 {
 }
 
-UnitItem::~UnitItem() = default;
+GraphItem::~GraphItem() = default;
 
-void UnitItem::update(double elapsed)
+bool GraphItem::mousePressEvent(const glm::vec2 &pos)
+{
+    if (!contains(pos))
+        return false;
+    return handleMousePress();
+}
+
+void GraphItem::mouseReleaseEvent(const glm::vec2 &pos)
+{
+    if (contains(pos))
+        handleMouseRelease();
+}
+
+void GraphItem::mouseMoveEvent(const glm::vec2 &pos)
+{
+    m_hovered = contains(pos);
+}
+
+void GraphItem::update(double elapsed)
 {
     m_stateTime += elapsed;
     m_wobble.update(elapsed);
@@ -235,7 +222,7 @@ void UnitItem::update(double elapsed)
     }
 }
 
-glm::vec2 UnitItem::position() const
+glm::vec2 GraphItem::position() const
 {
     auto p = m_unit->position;
     const auto wobbleWeight = [this] {
@@ -254,7 +241,7 @@ glm::vec2 UnitItem::position() const
     return p;
 }
 
-float UnitItem::radius() const
+float GraphItem::radius() const
 {
     if (m_acquireTime > 0.0f) {
         float t = m_acquireTime / AcquireAnimationTime;
@@ -263,7 +250,7 @@ float UnitItem::radius() const
     return Radius;
 }
 
-glm::vec4 UnitItem::color() const
+glm::vec4 GraphItem::color() const
 {
     constexpr const auto ActiveColor = glm::vec4(1, 0, 0, 1);
     constexpr const auto InactiveColor = glm::vec4(0.25, 0.25, 0.25, 1);
@@ -286,7 +273,7 @@ glm::vec4 UnitItem::color() const
     }
 }
 
-float UnitItem::labelAlpha() const
+float GraphItem::labelAlpha() const
 {
     constexpr const auto InactiveAlpha = 0.5f;
     constexpr const auto ActiveAlpha = 1.0f;
@@ -304,7 +291,7 @@ float UnitItem::labelAlpha() const
     }
 }
 
-void UnitItem::initialize(UIPainter *painter)
+void GraphItem::initialize(UIPainter *painter)
 {
     // circle
     const GX::BoxF circleBox { glm::vec2(-Radius), glm::vec2(Radius) };
@@ -321,12 +308,12 @@ void UnitItem::initialize(UIPainter *painter)
     m_boundingBox = circleBox | m_labelBox;
 }
 
-GX::BoxF UnitItem::boundingBox() const
+GX::BoxF GraphItem::boundingBox() const
 {
     return m_boundingBox + position();
 }
 
-void UnitItem::paint(UIPainter *painter) const
+void GraphItem::paint(UIPainter *painter) const
 {
     const auto isSelected = this->isSelected();
 
@@ -408,9 +395,9 @@ void UnitItem::paint(UIPainter *painter) const
     }
 }
 
-bool UnitItem::contains(const glm::vec2 &pos) const
+bool GraphItem::contains(const glm::vec2 &pos) const
 {
-    if (m_state == UnitItem::State::Hidden)
+    if (m_state == GraphItem::State::Hidden)
         return false;
     const auto p = position();
     if (glm::distance(pos, p) < radius())
@@ -418,14 +405,18 @@ bool UnitItem::contains(const glm::vec2 &pos) const
     return (m_labelBox + p).contains(pos);
 }
 
-bool UnitItem::handleMousePress()
+bool GraphItem::handleMousePress()
 {
     if (m_world->unitClicked(m_unit))
         m_acquireTime = AcquireAnimationTime;
     return true;
 }
 
-bool UnitItem::isVisible() const
+void GraphItem::handleMouseRelease()
+{
+}
+
+bool GraphItem::isVisible() const
 {
     return m_state != State::Hidden;
 }
@@ -440,7 +431,7 @@ void World::initialize(UIPainter *painter, TechGraph *techGraph)
 
     m_graphItems.clear();
     for (auto &unit : m_techGraph->units) {
-        auto item = std::make_unique<UnitItem>(unit.get(), this);
+        auto item = std::make_unique<GraphItem>(unit.get(), this);
         item->initialize(painter);
         m_unitItems[unit.get()] = item.get();
         m_graphItems.emplace_back(std::move(item));
