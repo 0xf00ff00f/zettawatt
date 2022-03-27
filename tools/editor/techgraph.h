@@ -120,6 +120,7 @@ public:
 
     void autoAdjustCosts(const Cost &leafCost, const Cost &leafYield, double secondsPerUnit, double bumpPerUnit);
     void autoLayout(float sideLength);
+    void rotateAroundCenter(float angle);
 
 signals:
     void unitAboutToBeAdded(const Unit *unit);

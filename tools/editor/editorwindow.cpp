@@ -98,6 +98,15 @@ EditorWindow::EditorWindow(QWidget *parent)
         if (ok)
             m_graph->autoLayout(sideLength);
     });
+
+    auto *rotateAction = new QAction(tr("&Rotate..."), this);
+    toolsMenu->addAction(rotateAction);
+    connect(rotateAction, &QAction::triggered, this, [this] {
+        bool ok;
+        double angle = QInputDialog::getDouble(this, tr("Rotate around center"), tr("Angle"), 0.0, 0.0, 360.0, 1, &ok, {}, 1);
+        if (ok)
+            m_graph->rotateAroundCenter(angle);
+    });
 }
 
 EditorWindow::~EditorWindow() = default;

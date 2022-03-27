@@ -3,6 +3,7 @@
 #include <QJsonArray>
 #include <QJsonObject>
 #include <QMetaEnum>
+#include <QTransform>
 
 #include <boost/graph/adjacency_list.hpp>
 #include <boost/graph/circle_layout.hpp>
@@ -471,5 +472,19 @@ void TechGraph::autoLayout(float sideLength)
         const auto *unit = unitMap[*it];
         const auto p = positionMap[*it];
         setUnitPosition(unit, QPointF(p[0], p[1]));
+    }
+}
+
+void TechGraph::rotateAroundCenter(float angle)
+{
+    auto center = std::accumulate(m_units.begin(), m_units.end(), QPointF(0, 0), [](const QPointF &p, const auto &unit) {
+        return p + unit->position;
+    });
+    center *= 1.0f / m_units.size();
+    QTransform transform;
+    transform.rotate(angle);
+    for (auto &unit : m_units) {
+        const auto p = center + transform.map(unit->position - center);
+        setUnitPosition(unit.get(), p);
     }
 }
