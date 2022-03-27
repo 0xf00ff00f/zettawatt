@@ -84,3 +84,9 @@ bool TechGraph::load(const std::string &jsonPath)
 
     return true;
 }
+
+void TechGraph::reset()
+{
+    for (auto &unit : units)
+        unit->count = 0;
+}

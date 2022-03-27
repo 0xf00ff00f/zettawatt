@@ -490,8 +490,18 @@ void World::reset()
     m_state.energy = 0;
     m_state.material = 0;
     m_state.carbon = 0;
-    m_viewOffset = glm::vec2(0);
     m_currentUnit = nullptr;
+    m_techGraph->reset();
+
+    int leafNodes = 0;
+    m_viewOffset = glm::vec2(0);
+    for (auto &unit : m_techGraph->units) {
+        if (unit->dependencies.empty()) {
+            ++leafNodes;
+            m_viewOffset -= unit->position;
+        }
+    }
+    m_viewOffset *= 1.0f / leafNodes;
 }
 
 void World::update(double elapsed)

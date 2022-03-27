@@ -111,6 +111,6 @@ struct Unit {
 
 struct TechGraph {
     std::vector<std::unique_ptr<Unit>> units;
-
+    void reset();
     bool load(const std::string &jsonPath);
 };
