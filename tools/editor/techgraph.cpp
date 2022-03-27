@@ -454,17 +454,34 @@ void TechGraph::autoLayout(float sideLength)
     }
 
     // initialize unit property
-    for (size_t i = 0; i < m_units.size(); ++i)
-        boost::put(boost::vertex_unit, graph, i, m_units[i].get());
+    {
+        auto indexMap = boost::get(boost::vertex_index, graph);
+        auto unitMap = boost::get(boost::vertex_unit, graph);
+        for (auto [it, end] = boost::vertices(graph); it != end; ++it) {
+            unitMap[*it] = m_units[indexMap[*it]].get();
+        }
+    }
 
     // initialize weights to 1
-    for (auto [it, end] = boost::edges(graph); it != end; ++it)
-        boost::put(boost::edge_weight, graph, *it, 1.0);
+    {
+        auto weightMap = boost::get(boost::edge_weight, graph);
+        for (auto [it, end] = boost::edges(graph); it != end; ++it)
+            weightMap[*it] = 1.0;
+    }
 
     // do the thing
     boost::circle_graph_layout(graph, boost::get(boost::vertex_position, graph), 0.5 * sideLength);
-
-    boost::kamada_kawai_spring_layout(graph, boost::get(boost::vertex_position, graph), boost::get(boost::edge_weight, graph), boost::square_topology<>(sideLength), boost::side_length(sideLength));
+    boost::kamada_kawai_spring_layout(graph, boost::get(boost::vertex_position, graph), boost::get(boost::edge_weight, graph), boost::square_topology<>(sideLength), boost::side_length(sideLength),
+                                      [last_delta = 0.0](double delta_p, typename boost::graph_traits<Graph>::vertex_descriptor, const Graph &, bool global) mutable -> bool {
+                                          constexpr auto Epsilon = 1e-3;
+                                          if (global) {
+                                              auto diff = std::abs(last_delta - delta_p);
+                                              last_delta = delta_p;
+                                              return diff < Epsilon;
+                                          } else {
+                                              return delta_p < Epsilon;
+                                          }
+                                      });
 
     auto positionMap = boost::get(boost::vertex_position, graph);
     auto unitMap = boost::get(boost::vertex_unit, graph);
