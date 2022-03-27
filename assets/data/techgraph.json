@@ -1,0 +1,1380 @@
+{
+    "units": [
+        {
+            "boost": {
+                "factor": 1,
+                "target": 0
+            },
+            "cost": {
+                "carbon": 0,
+                "energy": 100,
+                "extropy": 0,
+                "material": 0
+            },
+            "dependencies": [
+            ],
+            "description": "Extract Fe₂O₃ from the ground",
+            "name": "OPEN PIT IRON MINE",
+            "position": [
+                20,
+                634
+            ],
+            "type": "Generator",
+            "yield": {
+                "carbon": 0,
+                "energy": 0,
+                "extropy": 0,
+                "material": 100
+            }
+        },
+        {
+            "boost": {
+                "factor": 1,
+                "target": 0
+            },
+            "cost": {
+                "carbon": 0,
+                "energy": 100,
+                "extropy": 0,
+                "material": 13800
+            },
+            "dependencies": [
+                0,
+                17
+            ],
+            "description": "Fe₂O₃ + 3CO → 2Fe + 3CO₂",
+            "name": "BLAST FURNACE",
+            "position": [
+                69,
+                390
+            ],
+            "type": "Generator",
+            "yield": {
+                "carbon": 0,
+                "energy": 0,
+                "extropy": 0,
+                "material": 1700
+            }
+        },
+        {
+            "boost": {
+                "factor": 1,
+                "target": 0
+            },
+            "cost": {
+                "carbon": 0,
+                "energy": 100,
+                "extropy": 0,
+                "material": 63500
+            },
+            "dependencies": [
+                1,
+                17
+            ],
+            "description": "",
+            "name": "COAL-FIRED POWER PLANT",
+            "position": [
+                -202,
+                230
+            ],
+            "type": "Generator",
+            "yield": {
+                "carbon": 0,
+                "energy": 100,
+                "extropy": 0,
+                "material": 0
+            }
+        },
+        {
+            "boost": {
+                "factor": 1,
+                "target": 0
+            },
+            "cost": {
+                "carbon": 0,
+                "energy": 3000,
+                "extropy": 0,
+                "material": 63500
+            },
+            "dependencies": [
+                2
+            ],
+            "description": "",
+            "name": "ELECTRIC ARC FURNACE",
+            "position": [
+                -447,
+                274
+            ],
+            "type": "Generator",
+            "yield": {
+                "carbon": 0,
+                "energy": 0,
+                "extropy": 0,
+                "material": 7600
+            }
+        },
+        {
+            "boost": {
+                "factor": 1,
+                "target": 0
+            },
+            "cost": {
+                "carbon": 0,
+                "energy": 3000,
+                "extropy": 0,
+                "material": 63500
+            },
+            "dependencies": [
+                2,
+                38
+            ],
+            "description": "Over 10 million people",
+            "name": "MEGA CITY",
+            "position": [
+                43,
+                34
+            ],
+            "type": "Generator",
+            "yield": {
+                "carbon": 0,
+                "energy": 0,
+                "extropy": 100,
+                "material": 0
+            }
+        },
+        {
+            "boost": {
+                "factor": 1.25,
+                "target": 4
+            },
+            "cost": {
+                "carbon": 0,
+                "energy": 0,
+                "extropy": 0,
+                "material": 292000
+            },
+            "dependencies": [
+                4
+            ],
+            "description": "Towering behemoths of glass and steel",
+            "name": "GLISTENING SKYSCRAPERS",
+            "position": [
+                282,
+                16
+            ],
+            "type": "Booster",
+            "yield": {
+                "carbon": 0,
+                "energy": 0,
+                "extropy": 0,
+                "material": 0
+            }
+        },
+        {
+            "boost": {
+                "factor": 1.25,
+                "target": 4
+            },
+            "cost": {
+                "carbon": 0,
+                "energy": 0,
+                "extropy": 3800,
+                "material": 0
+            },
+            "dependencies": [
+                4
+            ],
+            "description": "Explore the physical properties of solid state matter",
+            "name": "CONDENSED MATTER PHYSICS",
+            "position": [
+                87,
+                -209
+            ],
+            "type": "Booster",
+            "yield": {
+                "carbon": 0,
+                "energy": 0,
+                "extropy": 0,
+                "material": 0
+            }
+        },
+        {
+            "boost": {
+                "factor": 1.25,
+                "target": 8
+            },
+            "cost": {
+                "carbon": 0,
+                "energy": 0,
+                "extropy": 3100000,
+                "material": 292000
+            },
+            "dependencies": [
+                8
+            ],
+            "description": "",
+            "name": "PHOTOVOLTAIC CELLS",
+            "position": [
+                -248,
+                -333
+            ],
+            "type": "Booster",
+            "yield": {
+                "carbon": 0,
+                "energy": 0,
+                "extropy": 0,
+                "material": 0
+            }
+        },
+        {
+            "boost": {
+                "factor": 1,
+                "target": -1
+            },
+            "cost": {
+                "carbon": 0,
+                "energy": 0,
+                "extropy": 6800,
+                "material": 292000
+            },
+            "dependencies": [
+                6
+            ],
+            "description": "",
+            "name": "SEMICONDUCTOR DEVICES",
+            "position": [
+                35,
+                -468
+            ],
+            "type": "Generator",
+            "yield": {
+                "carbon": 0,
+                "energy": 0,
+                "extropy": 810,
+                "material": 0
+            }
+        },
+        {
+            "boost": {
+                "factor": 1,
+                "target": -1
+            },
+            "cost": {
+                "carbon": 0,
+                "energy": 1,
+                "extropy": 0,
+                "material": 292000
+            },
+            "dependencies": [
+                7
+            ],
+            "description": "",
+            "name": "SOLAR FARM",
+            "position": [
+                -561,
+                -299
+            ],
+            "type": "Generator",
+            "yield": {
+                "carbon": 0,
+                "energy": 1700,
+                "extropy": 0,
+                "material": 0
+            }
+        },
+        {
+            "boost": {
+                "factor": 1,
+                "target": -1
+            },
+            "cost": {
+                "carbon": 0,
+                "energy": 88300,
+                "extropy": 0,
+                "material": 292000
+            },
+            "dependencies": [
+                9
+            ],
+            "description": "",
+            "name": "GREEN HYDROGEN",
+            "position": [
+                -876,
+                -415
+            ],
+            "type": "Generator",
+            "yield": {
+                "carbon": 0,
+                "energy": 10600,
+                "extropy": 0,
+                "material": 0
+            }
+        },
+        {
+            "boost": {
+                "factor": 2,
+                "target": 8
+            },
+            "cost": {
+                "carbon": 0,
+                "energy": 13800,
+                "extropy": 3000000,
+                "material": 292000
+            },
+            "dependencies": [
+                8
+            ],
+            "description": "",
+            "name": "SPACE PROGRAM",
+            "position": [
+                -135,
+                -678
+            ],
+            "type": "Booster",
+            "yield": {
+                "carbon": 0,
+                "energy": 0,
+                "extropy": 0,
+                "material": 0
+            }
+        },
+        {
+            "boost": {
+                "factor": 1,
+                "target": -1
+            },
+            "cost": {
+                "carbon": 0,
+                "energy": 63500,
+                "extropy": 65099999.99999999,
+                "material": 292000
+            },
+            "dependencies": [
+                21,
+                24
+            ],
+            "description": "",
+            "name": "INTERNETS",
+            "position": [
+                -19,
+                -1102
+            ],
+            "type": "Generator",
+            "yield": {
+                "carbon": 0,
+                "energy": 0,
+                "extropy": 7800000,
+                "material": 0
+            }
+        },
+        {
+            "boost": {
+                "factor": 1,
+                "target": -1
+            },
+            "cost": {
+                "carbon": 0,
+                "energy": 0,
+                "extropy": 6800,
+                "material": 0
+            },
+            "dependencies": [
+                6
+            ],
+            "description": "",
+            "name": "SUPERCONDUCTORS",
+            "position": [
+                333,
+                -376
+            ],
+            "type": "Booster",
+            "yield": {
+                "carbon": 0,
+                "energy": 0,
+                "extropy": 0,
+                "material": 0
+            }
+        },
+        {
+            "boost": {
+                "factor": 1,
+                "target": -1
+            },
+            "cost": {
+                "carbon": 0,
+                "energy": 406300,
+                "extropy": 0,
+                "material": 0
+            },
+            "dependencies": [
+                10
+            ],
+            "description": "Fe₂O₃ + 3H₂ → 2Fe + 3H₂O",
+            "name": "DIRECT REDUCED IRON",
+            "position": [
+                -981,
+                -632
+            ],
+            "type": "Generator",
+            "yield": {
+                "carbon": 0,
+                "energy": 0,
+                "extropy": 0,
+                "material": 35000
+            }
+        },
+        {
+            "boost": {
+                "factor": 1,
+                "target": -1
+            },
+            "cost": {
+                "carbon": 0,
+                "energy": 0,
+                "extropy": 657000,
+                "material": 1
+            },
+            "dependencies": [
+                13
+            ],
+            "description": "",
+            "name": "SUPERCONDUCTING MAGNETS",
+            "position": [
+                589,
+                -285
+            ],
+            "type": "Generator",
+            "yield": {
+                "carbon": 0,
+                "energy": 0,
+                "extropy": 78800,
+                "material": 0
+            }
+        },
+        {
+            "boost": {
+                "factor": 1.5,
+                "target": 9
+            },
+            "cost": {
+                "carbon": 0,
+                "energy": 0,
+                "extropy": 1400000000,
+                "material": 0
+            },
+            "dependencies": [
+                9
+            ],
+            "description": "",
+            "name": "PEROVSKITE SOLAR CELL",
+            "position": [
+                -872,
+                -239
+            ],
+            "type": "Booster",
+            "yield": {
+                "carbon": 0,
+                "energy": 0,
+                "extropy": 0,
+                "material": 0
+            }
+        },
+        {
+            "boost": {
+                "factor": 1,
+                "target": -1
+            },
+            "cost": {
+                "carbon": 0,
+                "energy": 100,
+                "extropy": 0,
+                "material": 0
+            },
+            "dependencies": [
+            ],
+            "description": "Extract fossilized biomass from the ground",
+            "name": "COAL MINE",
+            "position": [
+                -199,
+                543
+            ],
+            "type": "Generator",
+            "yield": {
+                "carbon": 0,
+                "energy": 0,
+                "extropy": 0,
+                "material": 360
+            }
+        },
+        {
+            "boost": {
+                "factor": 1.25,
+                "target": 4
+            },
+            "cost": {
+                "carbon": 0,
+                "energy": 0,
+                "extropy": 3000,
+                "material": 0
+            },
+            "dependencies": [
+                4
+            ],
+            "description": "",
+            "name": "BIOTECHNOLOGY",
+            "position": [
+                -194,
+                -91
+            ],
+            "type": "Booster",
+            "yield": {
+                "carbon": 0,
+                "energy": 0,
+                "extropy": 0,
+                "material": 0
+            }
+        },
+        {
+            "boost": {
+                "factor": 1,
+                "target": -1
+            },
+            "cost": {
+                "carbon": 0,
+                "energy": 3000,
+                "extropy": 0,
+                "material": 0
+            },
+            "dependencies": [
+                29
+            ],
+            "description": "",
+            "name": "BIOFUEL",
+            "position": [
+                -684,
+                139
+            ],
+            "type": "Generator",
+            "yield": {
+                "carbon": 0,
+                "energy": 360,
+                "extropy": 0,
+                "material": 0
+            }
+        },
+        {
+            "boost": {
+                "factor": 1.25,
+                "target": 8
+            },
+            "cost": {
+                "carbon": 0,
+                "energy": 0,
+                "extropy": 3000000,
+                "material": 0
+            },
+            "dependencies": [
+                8
+            ],
+            "description": "",
+            "name": "MOS TRANSISTOR",
+            "position": [
+                194,
+                -660
+            ],
+            "type": "Booster",
+            "yield": {
+                "carbon": 0,
+                "energy": 0,
+                "extropy": 0,
+                "material": 0
+            }
+        },
+        {
+            "boost": {
+                "factor": 1.5,
+                "target": 8
+            },
+            "cost": {
+                "carbon": 0,
+                "energy": 0,
+                "extropy": 3100000,
+                "material": 0
+            },
+            "dependencies": [
+                20
+            ],
+            "description": "",
+            "name": "SELF-ALIGNED GATE",
+            "position": [
+                189,
+                -866
+            ],
+            "type": "Booster",
+            "yield": {
+                "carbon": 0,
+                "energy": 0,
+                "extropy": 0,
+                "material": 0
+            }
+        },
+        {
+            "boost": {
+                "factor": 1,
+                "target": -1
+            },
+            "cost": {
+                "carbon": 0,
+                "energy": 0,
+                "extropy": 14200000,
+                "material": 292000
+            },
+            "dependencies": [
+                21
+            ],
+            "description": "",
+            "name": "MICROPROCESSOR FAB",
+            "position": [
+                219,
+                -1109
+            ],
+            "type": "Generator",
+            "yield": {
+                "carbon": 0,
+                "energy": 0,
+                "extropy": 1700000,
+                "material": 0
+            }
+        },
+        {
+            "boost": {
+                "factor": 2,
+                "target": 8
+            },
+            "cost": {
+                "carbon": 0,
+                "energy": 0,
+                "extropy": 14100000,
+                "material": 0
+            },
+            "dependencies": [
+                21
+            ],
+            "description": "",
+            "name": "DYNAMIC RAM",
+            "position": [
+                389,
+                -948
+            ],
+            "type": "Booster",
+            "yield": {
+                "carbon": 0,
+                "energy": 0,
+                "extropy": 0,
+                "material": 0
+            }
+        },
+        {
+            "boost": {
+                "factor": 1.5,
+                "target": 8
+            },
+            "cost": {
+                "carbon": 0,
+                "energy": 13800,
+                "extropy": 14100000,
+                "material": 292000
+            },
+            "dependencies": [
+                11
+            ],
+            "description": "",
+            "name": "COMMUNICATIONS SATELLITE",
+            "position": [
+                -131,
+                -900
+            ],
+            "type": "Booster",
+            "yield": {
+                "carbon": 0,
+                "energy": 0,
+                "extropy": 0,
+                "material": 0
+            }
+        },
+        {
+            "boost": {
+                "factor": 1.2,
+                "target": 12
+            },
+            "cost": {
+                "carbon": 0,
+                "energy": 406300,
+                "extropy": 1400000000,
+                "material": 292000
+            },
+            "dependencies": [
+                12
+            ],
+            "description": "",
+            "name": "TRANSOCEANIC FIBER OPTICS",
+            "position": [
+                -21,
+                -1355
+            ],
+            "type": "Booster",
+            "yield": {
+                "carbon": 0,
+                "energy": 0,
+                "extropy": 0,
+                "material": 0
+            }
+        },
+        {
+            "boost": {
+                "factor": 1,
+                "target": -1
+            },
+            "cost": {
+                "carbon": 0,
+                "energy": 13800,
+                "extropy": 3100000,
+                "material": 292000
+            },
+            "dependencies": [
+                11
+            ],
+            "description": "",
+            "name": "HEAVY-LIFT LAUNCH VEHICLE",
+            "position": [
+                -428,
+                -616
+            ],
+            "type": "Generator",
+            "yield": {
+                "carbon": 0,
+                "energy": 0,
+                "extropy": 368500,
+                "material": 0
+            }
+        },
+        {
+            "boost": {
+                "factor": 1,
+                "target": -1
+            },
+            "cost": {
+                "carbon": 0,
+                "energy": 0,
+                "extropy": 0,
+                "material": 0
+            },
+            "dependencies": [
+                11
+            ],
+            "description": "",
+            "name": "REUSABLE LAUNCH SYSTEM",
+            "position": [
+                -401,
+                -870
+            ],
+            "type": "Generator",
+            "yield": {
+                "carbon": 0,
+                "energy": 0,
+                "extropy": 0,
+                "material": 0
+            }
+        },
+        {
+            "boost": {
+                "factor": 1,
+                "target": -1
+            },
+            "cost": {
+                "carbon": 0,
+                "energy": 63500,
+                "extropy": 299700000,
+                "material": 292000
+            },
+            "dependencies": [
+                26
+            ],
+            "description": "",
+            "name": "LUNAR SAMPLE RETURN MISSION",
+            "position": [
+                -680,
+                -703
+            ],
+            "type": "Generator",
+            "yield": {
+                "carbon": 0,
+                "energy": 0,
+                "extropy": 36000000,
+                "material": 0
+            }
+        },
+        {
+            "boost": {
+                "factor": 1.5,
+                "target": 4
+            },
+            "cost": {
+                "carbon": 0,
+                "energy": 0,
+                "extropy": 5300,
+                "material": 0
+            },
+            "dependencies": [
+                18
+            ],
+            "description": "",
+            "name": "RECOMBINANT DNA",
+            "position": [
+                -470,
+                -26
+            ],
+            "type": "Booster",
+            "yield": {
+                "carbon": 0,
+                "energy": 0,
+                "extropy": 0,
+                "material": 0
+            }
+        },
+        {
+            "boost": {
+                "factor": 1,
+                "target": -1
+            },
+            "cost": {
+                "carbon": 0,
+                "energy": 0,
+                "extropy": 142800,
+                "material": 0
+            },
+            "dependencies": [
+                13,
+                20
+            ],
+            "description": "",
+            "name": "SUPERCONDUCTING QUBIT",
+            "position": [
+                484,
+                -633
+            ],
+            "type": "Generator",
+            "yield": {
+                "carbon": 0,
+                "energy": 0,
+                "extropy": 17100,
+                "material": 0
+            }
+        },
+        {
+            "boost": {
+                "factor": 1.5,
+                "target": 22
+            },
+            "cost": {
+                "carbon": 0,
+                "energy": 0,
+                "extropy": 1400000000,
+                "material": 0
+            },
+            "dependencies": [
+                22
+            ],
+            "description": "",
+            "name": "16-BIT MICROPROCESSOR",
+            "position": [
+                460,
+                -1177
+            ],
+            "type": "Booster",
+            "yield": {
+                "carbon": 0,
+                "energy": 0,
+                "extropy": 0,
+                "material": 0
+            }
+        },
+        {
+            "boost": {
+                "factor": 2,
+                "target": 22
+            },
+            "cost": {
+                "carbon": 0,
+                "energy": 0,
+                "extropy": 1500000000,
+                "material": 0
+            },
+            "dependencies": [
+                31
+            ],
+            "description": "",
+            "name": "32-BIT MICROPROCESSOR",
+            "position": [
+                667,
+                -1252
+            ],
+            "type": "Booster",
+            "yield": {
+                "carbon": 0,
+                "energy": 0,
+                "extropy": 0,
+                "material": 0
+            }
+        },
+        {
+            "boost": {
+                "factor": 4,
+                "target": 22
+            },
+            "cost": {
+                "carbon": 0,
+                "energy": 0,
+                "extropy": 1500000000,
+                "material": 0
+            },
+            "dependencies": [
+                32
+            ],
+            "description": "",
+            "name": "64-BIT MICROPROCESSOR",
+            "position": [
+                770,
+                -1401
+            ],
+            "type": "Booster",
+            "yield": {
+                "carbon": 0,
+                "energy": 0,
+                "extropy": 0,
+                "material": 0
+            }
+        },
+        {
+            "boost": {
+                "factor": 8,
+                "target": 22
+            },
+            "cost": {
+                "carbon": 0,
+                "energy": 0,
+                "extropy": 1700000000,
+                "material": 0
+            },
+            "dependencies": [
+                33
+            ],
+            "description": "",
+            "name": "GRAPHICS PROCESSING UNIT",
+            "position": [
+                778,
+                -1526
+            ],
+            "type": "Booster",
+            "yield": {
+                "carbon": 0,
+                "energy": 0,
+                "extropy": 0,
+                "material": 0
+            }
+        },
+        {
+            "boost": {
+                "factor": 0.64,
+                "target": 12
+            },
+            "cost": {
+                "carbon": 0,
+                "energy": 0,
+                "extropy": 1400000000,
+                "material": 0
+            },
+            "dependencies": [
+                12
+            ],
+            "description": "",
+            "name": "MICROBLOGGING PLATFORM",
+            "position": [
+                -263,
+                -1281
+            ],
+            "type": "Booster",
+            "yield": {
+                "carbon": 0,
+                "energy": 0,
+                "extropy": 0,
+                "material": 0
+            }
+        },
+        {
+            "boost": {
+                "factor": 1,
+                "target": -1
+            },
+            "cost": {
+                "carbon": 0,
+                "energy": 3000,
+                "extropy": 1,
+                "material": 0
+            },
+            "dependencies": [
+                29
+            ],
+            "description": "",
+            "name": "HERBICIDE-RESISTANT CROPS",
+            "position": [
+                -700,
+                -61
+            ],
+            "type": "Generator",
+            "yield": {
+                "carbon": 0,
+                "energy": 0,
+                "extropy": 3700,
+                "material": 0
+            }
+        },
+        {
+            "boost": {
+                "factor": 1,
+                "target": -1
+            },
+            "cost": {
+                "carbon": 0,
+                "energy": 0,
+                "extropy": 0,
+                "material": 0
+            },
+            "dependencies": [
+                30
+            ],
+            "description": "Find the factors of 15",
+            "name": "49-QUBIT QUANTUM PROCESSOR",
+            "position": [
+                614,
+                -782
+            ],
+            "type": "Generator",
+            "yield": {
+                "carbon": 0,
+                "energy": 0,
+                "extropy": 0,
+                "material": 0
+            }
+        },
+        {
+            "boost": {
+                "factor": 1,
+                "target": -1
+            },
+            "cost": {
+                "carbon": 0,
+                "energy": 0,
+                "extropy": 0,
+                "material": 0
+            },
+            "dependencies": [
+                1
+            ],
+            "description": "",
+            "name": "STEEL MILL",
+            "position": [
+                172,
+                218
+            ],
+            "type": "Generator",
+            "yield": {
+                "carbon": 0,
+                "energy": 0,
+                "extropy": 0,
+                "material": 0
+            }
+        },
+        {
+            "boost": {
+                "factor": 1.5,
+                "target": 9
+            },
+            "cost": {
+                "carbon": 0,
+                "energy": 1,
+                "extropy": 1,
+                "material": 0
+            },
+            "dependencies": [
+                9
+            ],
+            "description": "",
+            "name": "MEGAPACK",
+            "position": [
+                -576,
+                -478
+            ],
+            "type": "Booster",
+            "yield": {
+                "carbon": 0,
+                "energy": 0,
+                "extropy": 0,
+                "material": 0
+            }
+        },
+        {
+            "boost": {
+                "factor": 1,
+                "target": -1
+            },
+            "cost": {
+                "carbon": 0,
+                "energy": 0,
+                "extropy": 0,
+                "material": 0
+            },
+            "dependencies": [
+                15
+            ],
+            "description": "",
+            "name": "PARTICLE ACCELERATOR",
+            "position": [
+                860,
+                -210
+            ],
+            "type": "Generator",
+            "yield": {
+                "carbon": 0,
+                "energy": 0,
+                "extropy": 0,
+                "material": 0
+            }
+        },
+        {
+            "boost": {
+                "factor": 1,
+                "target": -1
+            },
+            "cost": {
+                "carbon": 0,
+                "energy": 0,
+                "extropy": 0,
+                "material": 0
+            },
+            "dependencies": [
+                15
+            ],
+            "description": "",
+            "name": "PLASMA MAGNETIC CONFINEMENT",
+            "position": [
+                769,
+                -443
+            ],
+            "type": "Generator",
+            "yield": {
+                "carbon": 0,
+                "energy": 0,
+                "extropy": 0,
+                "material": 0
+            }
+        },
+        {
+            "boost": {
+                "factor": 1,
+                "target": -1
+            },
+            "cost": {
+                "carbon": 0,
+                "energy": 0,
+                "extropy": 0,
+                "material": 0
+            },
+            "dependencies": [
+                41
+            ],
+            "description": "",
+            "name": "EXPERIMENTAL TOKAMAK",
+            "position": [
+                843,
+                -622
+            ],
+            "type": "Generator",
+            "yield": {
+                "carbon": 0,
+                "energy": 0,
+                "extropy": 0,
+                "material": 0
+            }
+        },
+        {
+            "boost": {
+                "factor": 1,
+                "target": -1
+            },
+            "cost": {
+                "carbon": 0,
+                "energy": 0,
+                "extropy": 0,
+                "material": 0
+            },
+            "dependencies": [
+                27
+            ],
+            "description": "",
+            "name": "LEO SPACE STATION",
+            "position": [
+                -450,
+                -1132
+            ],
+            "type": "Generator",
+            "yield": {
+                "carbon": 0,
+                "energy": 0,
+                "extropy": 0,
+                "material": 0
+            }
+        },
+        {
+            "boost": {
+                "factor": 1,
+                "target": -1
+            },
+            "cost": {
+                "carbon": 0,
+                "energy": 0,
+                "extropy": 0,
+                "material": 0
+            },
+            "dependencies": [
+                27
+            ],
+            "description": "",
+            "name": "WAKE SHIELD FACILITY",
+            "position": [
+                -618,
+                -969
+            ],
+            "type": "Generator",
+            "yield": {
+                "carbon": 0,
+                "energy": 0,
+                "extropy": 0,
+                "material": 0
+            }
+        },
+        {
+            "boost": {
+                "factor": 1,
+                "target": -1
+            },
+            "cost": {
+                "carbon": 0,
+                "energy": 0,
+                "extropy": 0,
+                "material": 0
+            },
+            "dependencies": [
+                37
+            ],
+            "description": "",
+            "name": "QUANTUM ERROR CORRECTION",
+            "position": [
+                741,
+                -971
+            ],
+            "type": "Generator",
+            "yield": {
+                "carbon": 0,
+                "energy": 0,
+                "extropy": 0,
+                "material": 0
+            }
+        },
+        {
+            "boost": {
+                "factor": 1,
+                "target": -1
+            },
+            "cost": {
+                "carbon": 0,
+                "energy": 0,
+                "extropy": 0,
+                "material": 0
+            },
+            "dependencies": [
+                44,
+                43
+            ],
+            "description": "",
+            "name": "MICROGRAVITY MANUFACTURING",
+            "position": [
+                -730,
+                -1226
+            ],
+            "type": "Generator",
+            "yield": {
+                "carbon": 0,
+                "energy": 0,
+                "extropy": 0,
+                "material": 0
+            }
+        },
+        {
+            "boost": {
+                "factor": 1,
+                "target": -1
+            },
+            "cost": {
+                "carbon": 0,
+                "energy": 0,
+                "extropy": 0,
+                "material": 0
+            },
+            "dependencies": [
+                28
+            ],
+            "description": "",
+            "name": "CREWED MOON MISSION",
+            "position": [
+                -843,
+                -869
+            ],
+            "type": "Generator",
+            "yield": {
+                "carbon": 0,
+                "energy": 0,
+                "extropy": 0,
+                "material": 0
+            }
+        },
+        {
+            "boost": {
+                "factor": 1,
+                "target": -1
+            },
+            "cost": {
+                "carbon": 0,
+                "energy": 0,
+                "extropy": 0,
+                "material": 0
+            },
+            "dependencies": [
+                22
+            ],
+            "description": "",
+            "name": "FINFET TRANSISTOR",
+            "position": [
+                203,
+                -1339
+            ],
+            "type": "Generator",
+            "yield": {
+                "carbon": 0,
+                "energy": 0,
+                "extropy": 0,
+                "material": 0
+            }
+        }
+    ]
+}
