@@ -702,8 +702,9 @@ void World::paintCurrentUnitDescription() const
     const auto descriptionSize = m_painter->textBoxSize(MaxWidth, m_currentUnit->description);
     textHeight += descriptionSize.y;
 
-    // boost
-    textHeight += m_painter->font()->pixelHeight();
+    // boost/yield
+    if (m_currentUnit->type == Unit::Type::Generator || m_currentUnit->boost.target)
+        textHeight += m_painter->font()->pixelHeight();
 
     constexpr auto TitleTextWidth = TitleMaxWidth + 1.0f;
     constexpr auto TextWidth = MaxWidth + 1.0f;
@@ -725,16 +726,16 @@ void World::paintCurrentUnitDescription() const
 
         p += glm::vec2(0, descriptionSize.y + m_painter->font()->ascent());
         if (m_currentUnit->type == Unit::Type::Booster) {
-            std::u32string boostDescription;
-            if (m_currentUnit->type == Unit::Type::Booster) {
+            if (m_currentUnit->boost.target) {
+                std::u32string boostDescription;
                 const auto factor = m_currentUnit->boost.factor;
                 if (factor > 1.0)
                     boostDescription = fmt::format(U"{} {}% more efficient", m_currentUnit->boost.target->name, static_cast<int>((factor - 1) * 100 + 0.5f));
                 else
                     boostDescription = fmt::format(U"{} {}% less efficient", m_currentUnit->boost.target->name, static_cast<int>((1 - factor) * 100 + 0.5f));
-            }
 
-            m_painter->drawText(p, glm::vec4(1, 1, 0, 1), 20, boostDescription);
+                m_painter->drawText(p, glm::vec4(1, 1, 0, 1), 20, boostDescription);
+            }
         } else {
             static const auto prefix = "Produces "s;
             m_painter->drawText(p, theme.yieldColor, 20, prefix);
