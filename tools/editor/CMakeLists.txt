@@ -1,4 +1,5 @@
 find_package(Qt5 COMPONENTS Widgets REQUIRED)
+find_package(Boost REQUIRED)
 
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
@@ -28,4 +29,5 @@ add_executable(editor
 
 target_link_libraries(editor
     Qt5::Widgets
+    Boost::boost
 )

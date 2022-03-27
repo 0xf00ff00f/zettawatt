@@ -8,6 +8,7 @@
 #include <QAction>
 #include <QDockWidget>
 #include <QFileDialog>
+#include <QInputDialog>
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QMenuBar>
@@ -87,6 +88,15 @@ EditorWindow::EditorWindow(QWidget *parent)
         if (dialog.exec() == QDialog::Accepted) {
             m_graph->autoAdjustCosts(dialog.leafCost(), dialog.leafYield(), dialog.secondsPerUnit(), dialog.bumpPerUnit());
         }
+    });
+
+    auto *autoLayoutAction = new QAction(tr("&Auto layout..."), this);
+    toolsMenu->addAction(autoLayoutAction);
+    connect(autoLayoutAction, &QAction::triggered, this, [this] {
+        bool ok;
+        double sideLength = QInputDialog::getDouble(this, tr("Layout side length"), tr("Side length"), 2000.0, 100.0, 20000.0, 2, &ok, {}, 1);
+        if (ok)
+            m_graph->autoLayout(sideLength);
     });
 }
 

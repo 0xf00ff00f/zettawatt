@@ -4,6 +4,10 @@
 #include <QJsonObject>
 #include <QMetaEnum>
 
+#include <boost/graph/adjacency_list.hpp>
+#include <boost/graph/circle_layout.hpp>
+#include <boost/graph/kamada_kawai_spring_layout.hpp>
+
 #include <algorithm>
 #include <deque>
 #include <unordered_set>
@@ -413,5 +417,59 @@ void TechGraph::autoAdjustCosts(const Cost &leafCost, const Cost &leafYield, dou
 
         const auto &next = successors[unit];
         std::copy(next.begin(), next.end(), std::back_inserter(queue));
+    }
+}
+
+namespace boost {
+enum vertex_position_t { vertex_position };
+enum vertex_unit_t { vertex_unit };
+BOOST_INSTALL_PROPERTY(vertex, position);
+BOOST_INSTALL_PROPERTY(vertex, unit);
+} // namespace boost
+
+void TechGraph::autoLayout(float sideLength)
+{
+    using Position = boost::square_topology<>::point_type;
+    using VertexProperties =
+            boost::property<boost::vertex_position_t, Position,
+                            boost::property<boost::vertex_unit_t, const Unit *>>;
+    using EdgeProperties = boost::property<boost::edge_weight_t, double>;
+    using Graph = boost::adjacency_list<boost::vecS, boost::vecS, boost::undirectedS, VertexProperties, EdgeProperties>;
+
+    Graph graph(m_units.size());
+
+    // add edges
+    {
+        std::unordered_map<const Unit *, size_t> vertexIndex;
+        {
+            size_t index = 0;
+            for (const auto &unit : m_units)
+                vertexIndex[unit.get()] = index++;
+        }
+        for (const auto [unit, index] : vertexIndex) {
+            for (auto *pred : unit->dependencies)
+                boost::add_edge(vertexIndex[pred], index, graph);
+        }
+    }
+
+    // initialize unit property
+    for (size_t i = 0; i < m_units.size(); ++i)
+        boost::put(boost::vertex_unit, graph, i, m_units[i].get());
+
+    // initialize weights to 1
+    for (auto [it, end] = boost::edges(graph); it != end; ++it)
+        boost::put(boost::edge_weight, graph, *it, 1.0);
+
+    // do the thing
+    boost::circle_graph_layout(graph, boost::get(boost::vertex_position, graph), 0.5 * sideLength);
+
+    boost::kamada_kawai_spring_layout(graph, boost::get(boost::vertex_position, graph), boost::get(boost::edge_weight, graph), boost::square_topology<>(sideLength), boost::side_length(sideLength));
+
+    auto positionMap = boost::get(boost::vertex_position, graph);
+    auto unitMap = boost::get(boost::vertex_unit, graph);
+    for (auto [it, end] = boost::vertices(graph); it != end; ++it) {
+        const auto *unit = unitMap[*it];
+        const auto p = positionMap[*it];
+        setUnitPosition(unit, QPointF(p[0], p[1]));
     }
 }

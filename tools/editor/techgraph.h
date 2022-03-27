@@ -119,6 +119,7 @@ public:
     void clear();
 
     void autoAdjustCosts(const Cost &leafCost, const Cost &leafYield, double secondsPerUnit, double bumpPerUnit);
+    void autoLayout(float sideLength);
 
 signals:
     void unitAboutToBeAdded(const Unit *unit);
