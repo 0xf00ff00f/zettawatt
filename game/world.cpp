@@ -406,7 +406,7 @@ void GraphItem::paint(UIPainter *painter) const
     painter->drawRoundedRect(outerBox, BoxRadius, theme.label.backgroundColor, theme.label.outlineColor, theme.label.outlineThickness, 1);
 
     const auto count = m_unit->count;
-    if (count > 0) {
+    if (count > 1) {
         const auto center = glm::vec2(outerBox.max.x, outerBox.min.y);
         constexpr const auto CounterRadius = 22.0f;
 
