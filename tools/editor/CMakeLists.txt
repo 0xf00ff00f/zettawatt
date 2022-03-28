@@ -21,6 +21,8 @@ set(editor_SOURCES
     boostwidget.h
     autoadjustdialog.cpp
     autoadjustdialog.h
+    autolayoutdialog.cpp
+    autolayoutdialog.h
 )
 
 add_executable(editor

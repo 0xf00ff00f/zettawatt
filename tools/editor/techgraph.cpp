@@ -428,7 +428,7 @@ BOOST_INSTALL_PROPERTY(vertex, position);
 BOOST_INSTALL_PROPERTY(vertex, unit);
 } // namespace boost
 
-void TechGraph::autoLayout(float sideLength)
+void TechGraph::autoLayout(float sideLength, float tolerance, bool resetPositions)
 {
     using Position = boost::square_topology<>::point_type;
     using VertexProperties =
@@ -457,9 +457,8 @@ void TechGraph::autoLayout(float sideLength)
     {
         auto indexMap = boost::get(boost::vertex_index, graph);
         auto unitMap = boost::get(boost::vertex_unit, graph);
-        for (auto [it, end] = boost::vertices(graph); it != end; ++it) {
+        for (auto [it, end] = boost::vertices(graph); it != end; ++it)
             unitMap[*it] = m_units[indexMap[*it]].get();
-        }
     }
 
     // initialize weights to 1
@@ -469,19 +468,28 @@ void TechGraph::autoLayout(float sideLength)
             weightMap[*it] = 1.0;
     }
 
+    // initialize positions
+    if (resetPositions) {
+        boost::circle_graph_layout(graph, boost::get(boost::vertex_position, graph), 0.5 * sideLength);
+    } else {
+        auto unitMap = boost::get(boost::vertex_unit, graph);
+        auto positionMap = boost::get(boost::vertex_position, graph);
+        for (auto [it, end] = boost::vertices(graph); it != end; ++it) {
+            auto *unit = unitMap[*it];
+            Position p;
+            p[0] = unit->position.x();
+            p[1] = unit->position.y();
+            positionMap[*it] = p;
+        }
+    }
+
     // do the thing
-    boost::circle_graph_layout(graph, boost::get(boost::vertex_position, graph), 0.5 * sideLength);
-    boost::kamada_kawai_spring_layout(graph, boost::get(boost::vertex_position, graph), boost::get(boost::edge_weight, graph), boost::square_topology<>(sideLength), boost::side_length(sideLength),
-                                      [last_delta = 0.0](double delta_p, typename boost::graph_traits<Graph>::vertex_descriptor, const Graph &, bool global) mutable -> bool {
-                                          constexpr auto Epsilon = 1e-3;
-                                          if (global) {
-                                              auto diff = std::abs(last_delta - delta_p);
-                                              last_delta = delta_p;
-                                              return diff < Epsilon;
-                                          } else {
-                                              return delta_p < Epsilon;
-                                          }
-                                      });
+    boost::kamada_kawai_spring_layout(graph,
+                                      boost::get(boost::vertex_position, graph),
+                                      boost::get(boost::edge_weight, graph),
+                                      boost::square_topology<>(sideLength),
+                                      boost::side_length(sideLength),
+                                      boost::layout_tolerance<double>(tolerance));
 
     auto positionMap = boost::get(boost::vertex_position, graph);
     auto unitMap = boost::get(boost::vertex_unit, graph);
