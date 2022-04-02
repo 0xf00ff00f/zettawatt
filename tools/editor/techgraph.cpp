@@ -400,6 +400,7 @@ void TechGraph::autoAdjustCosts(const Cost &leafCost, const Cost &leafYield, dou
                 yield.material = expectedYield.material > 0.0 ? bumpPerUnit * expectedYield.material : leafYield.material;
             if (unit->yield.extropy > 0.0)
                 yield.extropy = expectedYield.extropy > 0.0 ? bumpPerUnit * expectedYield.extropy : leafYield.extropy;
+            yield.carbon = unit->yield.carbon;
         }
 
         setUnitCost(unit, cost);
