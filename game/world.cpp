@@ -842,8 +842,10 @@ void World::mouseMoveEvent(const glm::vec2 &pos)
         m_viewOffset = glm::max(m_viewOffset, -max - 0.5f * viewportSize);
         m_viewOffset = glm::min(m_viewOffset, -min + 0.5f * viewportSize);
     } else {
-        for (auto &item : m_graphItems)
-            item->mouseMoveEvent(pos - m_viewOffset);
+        for (auto &item : m_graphItems) {
+            if (item->isVisible())
+                item->mouseMoveEvent(pos - m_viewOffset);
+        }
     }
     m_lastMousePosition = pos;
 }
