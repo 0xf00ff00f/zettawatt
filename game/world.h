@@ -73,4 +73,10 @@ private:
     GX::PackedPixmap m_carbonIconSmall;
     Unit *m_currentUnit = nullptr;
     std::unique_ptr<WarningBox> m_warningBox;
+    enum class GameState {
+        Intro,
+        BeforeFirstUnit,
+        InGame,
+    };
+    GameState m_gameState = GameState::BeforeFirstUnit;
 };

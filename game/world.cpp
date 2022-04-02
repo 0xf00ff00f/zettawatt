@@ -295,7 +295,7 @@ GX::BoxF GraphItem::boundingBox() const
 
 static const auto WarningTextFont = UIPainter::Font { FontName, 40 };
 static const auto WarningAcceptFont = UIPainter::Font { FontName, 20 };
-static const auto WarningAcceptText = "GOT IT"s;
+static const auto WarningAcceptText = "DISMISS"s;
 
 class WarningBox
 {
@@ -338,7 +338,7 @@ WarningBox::WarningBox(const std::u32string &message, const Theme *theme)
 bool WarningBox::mousePressEvent(const glm::vec2 &pos)
 {
     const auto clicked = m_outerBox.contains(pos);
-    if (clicked && m_state == State::Active) {
+    if (clicked && m_state != State::FadeOut) {
         m_stateTime = 0.0f;
         m_state = State::FadeOut;
     }
@@ -635,7 +635,8 @@ void World::reset()
     }
     m_viewOffset *= 1.0f / leafNodes;
 
-    m_warningBox = std::make_unique<WarningBox>(U"Sphinx of black quartz, judge my vow", m_theme);
+    m_gameState = GameState::Intro;
+    m_warningBox = std::make_unique<WarningBox>(U"Click anywhere to increase your energy", m_theme);
 }
 
 void World::update(double elapsed)
@@ -652,6 +653,33 @@ void World::update(double elapsed)
 
     if (m_panningView)
         m_elapsedSinceClick += elapsed;
+
+    switch (m_gameState) {
+    case GameState::Intro: {
+        const auto &units = m_techGraph->units;
+        const auto canAcquireUnit = std::any_of(units.begin(), units.end(), [this](const auto &unit) {
+            return canAcquire(unit.get());
+        });
+        if (canAcquireUnit) {
+            m_warningBox = std::make_unique<WarningBox>(U"Double click on a glowing circle to acquire an unit", m_theme);
+            m_gameState = GameState::BeforeFirstUnit;
+        }
+        break;
+    }
+    case GameState::BeforeFirstUnit: {
+        const auto &units = m_techGraph->units;
+        const auto unitAcquired = std::any_of(units.begin(), units.end(), [this](const auto &unit) {
+            return unit->count > 0;
+        });
+        if (unitAcquired) {
+            m_warningBox = std::make_unique<WarningBox>(U"That's it, now keep acquiring units until you have achieved zettawatt capacity. Good luck!", m_theme);
+            m_gameState = GameState::InGame;
+        }
+        break;
+    }
+    case GameState::InGame:
+        break;
+    }
 }
 
 void World::updateStateDelta()
@@ -946,14 +974,13 @@ void World::mousePressEvent(const glm::vec2 &pos)
     if (m_warningBox) {
         if (m_warningBox->mousePressEvent(pos))
             accepted = true;
-    }
-    if (!accepted) {
+    } else {
         for (auto &item : m_graphItems) {
             if (item->mousePressEvent(pos - m_viewOffset))
                 accepted = true;
         }
+        m_panningView = !accepted;
     }
-    m_panningView = !accepted;
     m_lastMousePosition = pos;
     m_elapsedSinceClick = 0.0;
 }
@@ -963,11 +990,13 @@ void World::mouseReleaseEvent(const glm::vec2 &pos)
     if (m_panningView) {
         if (m_elapsedSinceClick < 0.5)
             m_state.energy += glm::linearRand(5, 8);
-        m_panningView = false;
     } else {
-        for (auto &item : m_graphItems)
-            item->mouseReleaseEvent(pos - m_viewOffset);
+        if (!m_warningBox) {
+            for (auto &item : m_graphItems)
+                item->mouseReleaseEvent(pos - m_viewOffset);
+        }
     }
+    m_panningView = false;
 }
 
 void World::mouseMoveEvent(const glm::vec2 &pos)
