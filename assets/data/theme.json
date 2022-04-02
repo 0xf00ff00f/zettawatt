@@ -23,6 +23,12 @@
         "yieldColor": [ 1, 1, 0, 0.75 ],
         "costColor": [ 1, 1, 0, 0.75 ]
     },
+    "warningBox": {
+        "backgroundColor": [ 0, 0, 0, 0.75 ],
+        "outlineColor": [ 1, 1, 0, 0.75 ],
+        "outlineThickness": 3.0,
+        "textColor": [ 1, 1, 0, 0.75 ]
+    },
     "inactiveUnit": {
         "color": [ 0, 0.15, 0.1, 1 ],
         "label": {

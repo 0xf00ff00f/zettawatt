@@ -97,6 +97,7 @@ bool Theme::load(const std::string &jsonPath)
     inactiveUnit = parseUnit(document["inactiveUnit"]);
     activeUnit = parseUnit(document["activeUnit"]);
     selectedUnit = parseUnit(document["selectedUnit"]);
+    warningBox = parseTextBox(document["warningBox"]);
 
     return true;
 }

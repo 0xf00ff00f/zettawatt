@@ -14,6 +14,7 @@ class UIPainter;
 struct Unit;
 class GraphItem;
 struct Theme;
+class WarningBox;
 
 class World
 {
@@ -71,4 +72,5 @@ private:
     GX::PackedPixmap m_carbonIcon;
     GX::PackedPixmap m_carbonIconSmall;
     Unit *m_currentUnit = nullptr;
+    std::unique_ptr<WarningBox> m_warningBox;
 };

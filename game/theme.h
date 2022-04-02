@@ -47,6 +47,7 @@ struct Theme {
     Unit inactiveUnit;
     Unit activeUnit;
     Unit selectedUnit;
+    TextBox warningBox;
 
     bool load(const std::string &jsonPath);
 };

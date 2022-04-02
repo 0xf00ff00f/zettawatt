@@ -293,6 +293,138 @@ GX::BoxF GraphItem::boundingBox() const
     return m_boundingBox + position();
 }
 
+static const auto WarningTextFont = UIPainter::Font { FontName, 40 };
+static const auto WarningAcceptFont = UIPainter::Font { FontName, 20 };
+static const auto WarningAcceptText = "GOT IT"s;
+
+class WarningBox
+{
+public:
+    explicit WarningBox(const std::u32string &message, const Theme *theme);
+
+    bool update(double elapsed);
+    bool mousePressEvent(const glm::vec2 &pos);
+    void paint(UIPainter *painter) const;
+
+private:
+    void initialize(UIPainter *painter) const;
+    std::u32string m_message;
+    const Theme *m_theme;
+    mutable bool m_initialized = false;
+    mutable GX::BoxF m_messageBox;
+    mutable glm::vec2 m_acceptPosition;
+    mutable GX::BoxF m_outerBox;
+    enum class State {
+        FadeIn,
+        Active,
+        FadeOut,
+    };
+    State m_state = State::FadeIn;
+    float m_stateTime = 0.0f;
+
+    static constexpr auto TextMaxWidth = 400.0f;
+    static constexpr auto SpaceHeight = 20.0f;
+    static constexpr auto Margin = 10.0f;
+    static constexpr auto FadeInTime = 2.0f;
+    static constexpr auto FadeOutTime = 0.5f;
+};
+
+WarningBox::WarningBox(const std::u32string &message, const Theme *theme)
+    : m_message(message)
+    , m_theme(theme)
+{
+}
+
+bool WarningBox::mousePressEvent(const glm::vec2 &pos)
+{
+    const auto clicked = m_outerBox.contains(pos);
+    if (clicked && m_state == State::Active) {
+        m_stateTime = 0.0f;
+        m_state = State::FadeOut;
+    }
+    return clicked;
+}
+
+void WarningBox::paint(UIPainter *painter) const
+{
+    if (!m_initialized) {
+        initialize(painter);
+        m_initialized = true;
+    }
+
+    const auto alpha = [this] {
+        switch (m_state) {
+        case State::FadeIn:
+            return static_cast<float>(m_stateTime) / FadeInTime;
+        case State::Active:
+            return 1.0f;
+        case State::FadeOut:
+            return 1.0f - static_cast<float>(m_stateTime) / FadeOutTime;
+        }
+        assert(false);
+        return 0.0f;
+    }();
+    const auto color = [alpha](const glm::vec4 &color) {
+        return glm::vec4(color.xyz(), alpha * color.w);
+    };
+
+    const auto &theme = m_theme->warningBox;
+    const auto textColor = color(theme.textColor);
+    const auto backgroundColor = color(theme.backgroundColor);
+    const auto outlineColor = color(theme.outlineColor);
+
+    // draw message
+    painter->setFont(WarningTextFont);
+    painter->setVerticalAlign(UIPainter::VerticalAlign::Top);
+    painter->setHorizontalAlign(UIPainter::HorizontalAlign::Center);
+    painter->drawTextBox(m_messageBox, textColor, 20, m_message);
+
+    // draw accept
+    painter->setFont(WarningAcceptFont);
+    painter->drawText(m_acceptPosition, textColor, 20, WarningAcceptText);
+
+    // draw box
+    constexpr auto BoxRadius = 8.0f;
+    painter->drawRoundedRect(m_outerBox, BoxRadius, backgroundColor, outlineColor, theme.outlineThickness, 19);
+}
+
+void WarningBox::initialize(UIPainter *painter) const
+{
+    painter->setFont(WarningTextFont);
+    const auto textSize = painter->textBoxSize(TextMaxWidth, m_message);
+
+    painter->setFont(WarningAcceptFont);
+    const auto acceptHeight = painter->font()->pixelHeight();
+
+    const auto boxHeight = textSize.y + SpaceHeight + acceptHeight;
+    const auto boxWidth = textSize.x;
+    const auto topLeft = painter->sceneBox().center() - glm::vec2(0.5f * boxWidth, 0.5f * boxHeight);
+
+    m_messageBox = GX::BoxF { topLeft, topLeft + glm::vec2(boxWidth + 1.0f, textSize.y) };
+
+    painter->setFont(WarningAcceptFont);
+    const auto width = painter->horizontalAdvance(WarningAcceptText);
+    m_acceptPosition = topLeft + glm::vec2(0.5 * (boxWidth - width), textSize.y + SpaceHeight + painter->font()->ascent());
+    m_outerBox = GX::BoxF { topLeft - glm::vec2(Margin, Margin), topLeft + glm::vec2(boxWidth + Margin, boxHeight + Margin) };
+}
+
+bool WarningBox::update(double elapsed)
+{
+    switch (m_state) {
+    case State::FadeIn:
+        m_stateTime += elapsed;
+        if (m_stateTime > FadeInTime)
+            m_state = State::Active;
+        break;
+    case State::Active:
+        break;
+    case State::FadeOut:
+        m_stateTime += elapsed;
+        return m_stateTime < FadeOutTime;
+    }
+    return true;
+}
+
 namespace {
 
 Theme::TextBox mix(const Theme::TextBox &lhs, const Theme::TextBox &rhs, float a)
@@ -502,11 +634,18 @@ void World::reset()
         }
     }
     m_viewOffset *= 1.0f / leafNodes;
+
+    m_warningBox = std::make_unique<WarningBox>(U"Sphinx of black quartz, judge my vow", m_theme);
 }
 
 void World::update(double elapsed)
 {
     m_state += m_stateDelta * elapsed;
+
+    if (m_warningBox) {
+        if (!m_warningBox->update(elapsed))
+            m_warningBox.reset();
+    }
 
     for (auto &item : m_graphItems)
         item->update(elapsed);
@@ -536,6 +675,9 @@ void World::paint() const
     paintGraph();
     paintState();
     paintCurrentUnitDescription();
+
+    if (m_warningBox)
+        m_warningBox->paint(m_painter);
 }
 
 void World::paintGraph() const
@@ -801,9 +943,15 @@ void World::paintCurrentUnitDescription() const
 void World::mousePressEvent(const glm::vec2 &pos)
 {
     bool accepted = false;
-    for (auto &item : m_graphItems) {
-        if (item->mousePressEvent(pos - m_viewOffset))
+    if (m_warningBox) {
+        if (m_warningBox->mousePressEvent(pos))
             accepted = true;
+    }
+    if (!accepted) {
+        for (auto &item : m_graphItems) {
+            if (item->mousePressEvent(pos - m_viewOffset))
+                accepted = true;
+        }
     }
     m_panningView = !accepted;
     m_lastMousePosition = pos;
