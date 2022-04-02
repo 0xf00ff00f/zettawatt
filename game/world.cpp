@@ -143,7 +143,7 @@ private:
     GX::BoxF m_boundingBox;
 
     static constexpr auto Radius = 25.0f;
-    static constexpr auto LabelTextWidth = 120.0f;
+    static constexpr auto LabelTextWidth = 160.0f;
     static constexpr auto LabelMargin = 10.0f;
     static constexpr auto AcquireAnimationTime = 1.0f;
 };
