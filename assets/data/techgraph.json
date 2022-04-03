@@ -36,7 +36,7 @@
                 "carbon": 0,
                 "energy": 100,
                 "extropy": 0,
-                "material": 99000
+                "material": 72000
             },
             "dependencies": [
                 0,
@@ -53,7 +53,7 @@
                 "carbon": 2100,
                 "energy": 0,
                 "extropy": 0,
-                "material": 46200
+                "material": 24000
             }
         },
         {
@@ -65,14 +65,14 @@
                 "carbon": 0,
                 "energy": 100,
                 "extropy": 0,
-                "material": 2200000
+                "material": 1152000
             },
             "dependencies": [
                 1,
                 16
             ],
             "description": "",
-            "name": "COAL-FIRED POWER PLANT",
+            "name": "COAL FIRED POWER PLANT",
             "position": [
                 206.48456902802673,
                 772.6000522783568
@@ -94,7 +94,7 @@
                 "carbon": 0,
                 "energy": 4500,
                 "extropy": 0,
-                "material": 47900000
+                "material": 18432000
             },
             "dependencies": [
                 2
@@ -110,7 +110,7 @@
                 "carbon": 900,
                 "energy": 0,
                 "extropy": 0,
-                "material": 22400000
+                "material": 6144000
             }
         },
         {
@@ -122,7 +122,7 @@
                 "carbon": 0,
                 "energy": 4500,
                 "extropy": 0,
-                "material": 47900000
+                "material": 18432000
             },
             "dependencies": [
                 2,
@@ -151,7 +151,7 @@
                 "carbon": 0,
                 "energy": 0,
                 "extropy": 0,
-                "material": 1054152000
+                "material": 294912000
             },
             "dependencies": [
                 4
@@ -206,8 +206,8 @@
             "cost": {
                 "carbon": 0,
                 "energy": 0,
-                "extropy": 2377689187.5,
-                "material": 1054152000
+                "extropy": 666589500,
+                "material": 294912000
             },
             "dependencies": [
                 8
@@ -234,8 +234,8 @@
             "cost": {
                 "carbon": 0,
                 "energy": 0,
-                "extropy": 222750,
-                "material": 1054152000
+                "extropy": 162000,
+                "material": 294912000
             },
             "dependencies": [
                 6
@@ -250,7 +250,7 @@
             "yield": {
                 "carbon": 0,
                 "energy": 0,
-                "extropy": 103950,
+                "extropy": 54000,
                 "material": 0
             }
         },
@@ -261,9 +261,9 @@
             },
             "cost": {
                 "carbon": 0,
-                "energy": 2178000,
+                "energy": 1152000,
                 "extropy": 0,
-                "material": 1054152000
+                "material": 294912000
             },
             "dependencies": [
                 7
@@ -277,7 +277,7 @@
             "type": "Generator",
             "yield": {
                 "carbon": 0,
-                "energy": 1016400,
+                "energy": 384000,
                 "extropy": 0,
                 "material": 0
             }
@@ -289,9 +289,9 @@
             },
             "cost": {
                 "carbon": 0,
-                "energy": 1099890000,
+                "energy": 312192000,
                 "extropy": 0,
-                "material": 1054152000
+                "material": 294912000
             },
             "dependencies": [
                 9
@@ -305,7 +305,7 @@
             "type": "Generator",
             "yield": {
                 "carbon": 0,
-                "energy": 513282000,
+                "energy": 104064000,
                 "extropy": 0,
                 "material": 0
             }
@@ -317,9 +317,9 @@
             },
             "cost": {
                 "carbon": 0,
-                "energy": 2178000,
-                "extropy": 2373011437.5,
-                "material": 1054152000
+                "energy": 1152000,
+                "extropy": 664159500,
+                "material": 294912000
             },
             "dependencies": [
                 8
@@ -345,9 +345,9 @@
             },
             "cost": {
                 "carbon": 0,
-                "energy": 1054152000,
-                "extropy": 25332453580500,
-                "material": 1054152000
+                "energy": 294912000,
+                "extropy": 10752912000,
+                "material": 294912000
             },
             "dependencies": [
                 20,
@@ -363,7 +363,7 @@
             "yield": {
                 "carbon": 0,
                 "energy": 0,
-                "extropy": 11821811670900,
+                "extropy": 3584304000,
                 "material": 0
             }
         },
@@ -374,7 +374,7 @@
             },
             "cost": {
                 "carbon": 0,
-                "energy": 532346760000,
+                "energy": 79921152000,
                 "extropy": 0,
                 "material": 0
             },
@@ -392,7 +392,7 @@
                 "carbon": 0,
                 "energy": 0,
                 "extropy": 0,
-                "material": 10822627200
+                "material": 1572864000
             }
         },
         {
@@ -403,8 +403,8 @@
             "cost": {
                 "carbon": 0,
                 "energy": 0,
-                "extropy": 10100,
-                "material": 1100000000
+                "extropy": 10125,
+                "material": 294912000
             },
             "dependencies": [
                 6
@@ -419,7 +419,7 @@
             "yield": {
                 "carbon": 0,
                 "energy": 0,
-                "extropy": 4700,
+                "extropy": 3375,
                 "material": 0
             }
         },
@@ -431,7 +431,7 @@
             "cost": {
                 "carbon": 0,
                 "energy": 0,
-                "extropy": 269739965725164000,
+                "extropy": 44043927552000,
                 "material": 0
             },
             "dependencies": [
@@ -475,7 +475,7 @@
                 "carbon": 0,
                 "energy": 0,
                 "extropy": 0,
-                "material": 2100
+                "material": 1500
             }
         },
         {
@@ -513,7 +513,7 @@
             },
             "cost": {
                 "carbon": 0,
-                "energy": 99000,
+                "energy": 72000,
                 "extropy": 0,
                 "material": 0
             },
@@ -529,7 +529,7 @@
             "type": "Generator",
             "yield": {
                 "carbon": 0,
-                "energy": 46200,
+                "energy": 24000,
                 "extropy": 0,
                 "material": 0
             }
@@ -542,7 +542,7 @@
             "cost": {
                 "carbon": 0,
                 "energy": 0,
-                "extropy": 2400000000,
+                "extropy": 663552000,
                 "material": 0
             },
             "dependencies": [
@@ -552,7 +552,7 @@
             "name": "MOS TRANSISTOR",
             "position": [
                 -214.0804012168004,
-                -15.26762173293574
+                -16.26762173293574
             ],
             "type": "Booster",
             "yield": {
@@ -570,7 +570,7 @@
             "cost": {
                 "carbon": 0,
                 "energy": 0,
-                "extropy": 52334889750,
+                "extropy": 667197000,
                 "material": 0
             },
             "dependencies": [
@@ -598,8 +598,8 @@
             "cost": {
                 "carbon": 0,
                 "energy": 0,
-                "extropy": 1151475162750,
-                "material": 1054152000
+                "extropy": 672057000,
+                "material": 294912000
             },
             "dependencies": [
                 20
@@ -614,7 +614,7 @@
             "yield": {
                 "carbon": 0,
                 "energy": 0,
-                "extropy": 537355075950,
+                "extropy": 224019000,
                 "material": 0
             }
         },
@@ -626,7 +626,7 @@
             "cost": {
                 "carbon": 0,
                 "energy": 0,
-                "extropy": 1200000000000,
+                "extropy": 669627000,
                 "material": 0
             },
             "dependencies": [
@@ -653,9 +653,9 @@
             },
             "cost": {
                 "carbon": 0,
-                "energy": 2178000,
-                "extropy": 52337228625,
-                "material": 1054152000
+                "energy": 1152000,
+                "extropy": 668412000,
+                "material": 294912000
             },
             "dependencies": [
                 11
@@ -681,9 +681,9 @@
             },
             "cost": {
                 "carbon": 0,
-                "energy": 24197580000,
-                "extropy": 130553982123853330000,
-                "material": 1054152000
+                "energy": 4995072000,
+                "extropy": 704846392207200,
+                "material": 294912000
             },
             "dependencies": [
                 12
@@ -709,9 +709,9 @@
             },
             "cost": {
                 "carbon": 0,
-                "energy": 2178000,
-                "extropy": 52337228625,
-                "material": 1054152000
+                "energy": 1152000,
+                "extropy": 668412000,
+                "material": 294912000
             },
             "dependencies": [
                 11
@@ -737,9 +737,9 @@
             },
             "cost": {
                 "carbon": 0,
-                "energy": 2178000,
-                "extropy": 52337228625,
-                "material": 1054152000
+                "energy": 1152000,
+                "extropy": 668412000,
+                "material": 294912000
             },
             "dependencies": [
                 11
@@ -765,9 +765,9 @@
             },
             "cost": {
                 "carbon": 0,
-                "energy": 1054152000,
-                "extropy": 12260907532962000,
-                "material": 1054152000
+                "energy": 294912000,
+                "extropy": 2752745472000,
+                "material": 294912000
             },
             "dependencies": [
                 25
@@ -782,7 +782,7 @@
             "yield": {
                 "carbon": 0,
                 "energy": 0,
-                "extropy": 5721756848715600,
+                "extropy": 917581824000,
                 "material": 0
             }
         },
@@ -794,7 +794,7 @@
             "cost": {
                 "carbon": 0,
                 "energy": 0,
-                "extropy": 7900,
+                "extropy": 7875,
                 "material": 0
             },
             "dependencies": [
@@ -822,7 +822,7 @@
             "cost": {
                 "carbon": 0,
                 "energy": 0,
-                "extropy": 2400000000,
+                "extropy": 44056528620750,
                 "material": 0
             },
             "dependencies": [
@@ -838,7 +838,7 @@
             "yield": {
                 "carbon": 0,
                 "energy": 0,
-                "extropy": 1100000000,
+                "extropy": 14685509540250,
                 "material": 0
             }
         },
@@ -850,7 +850,7 @@
             "cost": {
                 "carbon": 0,
                 "energy": 0,
-                "extropy": 130554161546713190000,
+                "extropy": 44051488193250,
                 "material": 0
             },
             "dependencies": [
@@ -859,8 +859,8 @@
             "description": "",
             "name": "16-BIT MICROPROCESSOR",
             "position": [
-                -996.3188480103768,
-                -253.5162676075082
+                -981.3188480103768,
+                -275.5162676075082
             ],
             "type": "Booster",
             "yield": {
@@ -878,7 +878,7 @@
             "cost": {
                 "carbon": 0,
                 "energy": 0,
-                "extropy": 3.058307856037822e+25,
+                "extropy": 2887182954263347000,
                 "material": 0
             },
             "dependencies": [
@@ -887,8 +887,8 @@
             "description": "",
             "name": "32-BIT MICROPROCESSOR",
             "position": [
-                -1230.1495668831194,
-                -375.0952253305387
+                -1150.1495668831194,
+                -403.0952253305387
             ],
             "type": "Booster",
             "yield": {
@@ -906,7 +906,7 @@
             "cost": {
                 "carbon": 0,
                 "energy": 0,
-                "extropy": 7.312136055802182e+26,
+                "extropy": 1.1912516889936164e+22,
                 "material": 0
             },
             "dependencies": [
@@ -916,7 +916,7 @@
             "name": "64-BIT MICROPROCESSOR",
             "position": [
                 -1244.6838300212767,
-                -561.5351245797215
+                -604.5351245797215
             ],
             "type": "Booster",
             "yield": {
@@ -934,7 +934,7 @@
             "cost": {
                 "carbon": 0,
                 "energy": 0,
-                "extropy": 0,
+                "extropy": 3.0496151507605107e+24,
                 "material": 0
             },
             "dependencies": [
@@ -943,8 +943,8 @@
             "description": "",
             "name": "GRAPHICS PROCESSING UNIT",
             "position": [
-                -1077.6193311576894,
-                -698.4449528021873
+                -1178.6193311576894,
+                -764.4449528021873
             ],
             "type": "Booster",
             "yield": {
@@ -962,7 +962,7 @@
             "cost": {
                 "carbon": 0,
                 "energy": 0,
-                "extropy": 130554173637202410000,
+                "extropy": 704904457932000,
                 "material": 0
             },
             "dependencies": [
@@ -989,7 +989,7 @@
             },
             "cost": {
                 "carbon": 0,
-                "energy": 99000,
+                "energy": 72000,
                 "extropy": 0,
                 "material": 0
             },
@@ -1006,7 +1006,7 @@
             "yield": {
                 "carbon": 0,
                 "energy": 0,
-                "extropy": 2286900,
+                "extropy": 864000,
                 "material": 0
             }
         },
@@ -1018,7 +1018,7 @@
             "cost": {
                 "carbon": 0,
                 "energy": 0,
-                "extropy": 52300000000,
+                "extropy": 2887182959303774700,
                 "material": 0
             },
             "dependencies": [
@@ -1034,7 +1034,7 @@
             "yield": {
                 "carbon": 0,
                 "energy": 0,
-                "extropy": 24400000000,
+                "extropy": 962394319767925000,
                 "material": 0
             }
         },
@@ -1047,7 +1047,7 @@
                 "carbon": 0,
                 "energy": 4500,
                 "extropy": 0,
-                "material": 2200000
+                "material": 1152000
             },
             "dependencies": [
                 1
@@ -1063,7 +1063,7 @@
                 "carbon": 3400,
                 "energy": 0,
                 "extropy": 0,
-                "material": 1000000
+                "material": 384000
             }
         },
         {
@@ -1073,8 +1073,8 @@
             },
             "cost": {
                 "carbon": 0,
-                "energy": 1054152000,
-                "extropy": 269739965725164000,
+                "energy": 294912000,
+                "extropy": 44043927552000,
                 "material": 0
             },
             "dependencies": [
@@ -1101,9 +1101,9 @@
             },
             "cost": {
                 "carbon": 0,
-                "energy": 2200000,
-                "extropy": 107800000,
-                "material": 1100000000
+                "energy": 1152000,
+                "extropy": 41472000,
+                "material": 294912000
             },
             "dependencies": [
                 14
@@ -1118,7 +1118,7 @@
             "yield": {
                 "carbon": 0,
                 "energy": 0,
-                "extropy": 50300000,
+                "extropy": 13824000,
                 "material": 0
             }
         },
@@ -1130,8 +1130,8 @@
             "cost": {
                 "carbon": 0,
                 "energy": 0,
-                "extropy": 107811000,
-                "material": 1054152000
+                "extropy": 41472000,
+                "material": 294912000
             },
             "dependencies": [
                 14
@@ -1157,9 +1157,9 @@
             },
             "cost": {
                 "carbon": 0,
-                "energy": 2200000000,
-                "extropy": 2400000000000,
-                "material": 1100000000000
+                "energy": 1152000,
+                "extropy": 667197000,
+                "material": 294912000
             },
             "dependencies": [
                 40
@@ -1185,9 +1185,9 @@
             },
             "cost": {
                 "carbon": 0,
-                "energy": 1054152000,
-                "extropy": 557313978771000,
-                "material": 1054152000
+                "energy": 294912000,
+                "extropy": 172046592000,
+                "material": 294912000
             },
             "dependencies": [
                 26
@@ -1202,7 +1202,7 @@
             "yield": {
                 "carbon": 0,
                 "energy": 0,
-                "extropy": 260079856759800,
+                "extropy": 57348864000,
                 "material": 0
             }
         },
@@ -1213,9 +1213,9 @@
             },
             "cost": {
                 "carbon": 0,
-                "energy": 1054152000,
-                "extropy": 557313978771000,
-                "material": 1054152000
+                "energy": 294912000,
+                "extropy": 172046592000,
+                "material": 294912000
             },
             "dependencies": [
                 26
@@ -1242,7 +1242,7 @@
             "cost": {
                 "carbon": 0,
                 "energy": 0,
-                "extropy": 269700000000000000,
+                "extropy": 1.1912516889939188e+22,
                 "material": 0
             },
             "dependencies": [
@@ -1258,7 +1258,7 @@
             "yield": {
                 "carbon": 0,
                 "energy": 0,
-                "extropy": 125900000000000000,
+                "extropy": 3970838963313062700000,
                 "material": 0
             }
         },
@@ -1269,9 +1269,9 @@
             },
             "cost": {
                 "carbon": 0,
-                "energy": 532346760000,
-                "extropy": 130554088520158380000,
-                "material": 1054152000
+                "energy": 79921152000,
+                "extropy": 704878650943200,
+                "material": 294912000
             },
             "dependencies": [
                 43,
@@ -1287,8 +1287,8 @@
             "yield": {
                 "carbon": 0,
                 "energy": 0,
-                "extropy": 60925241309407240000,
-                "material": 491937600
+                "extropy": 234959550314400,
+                "material": 98304000
             }
         },
         {
@@ -1299,7 +1299,7 @@
             "cost": {
                 "carbon": 0,
                 "energy": 0,
-                "extropy": 130554143410979370000,
+                "extropy": 44043927552000,
                 "material": 0
             },
             "dependencies": [
@@ -1308,8 +1308,8 @@
             "description": "",
             "name": "FINFET TRANSISTOR",
             "position": [
-                -608.0114283930905,
-                -543.8777321294463
+                -658.0114283930905,
+                -537.8777321294463
             ],
             "type": "Booster",
             "yield": {
@@ -1327,7 +1327,7 @@
             "cost": {
                 "carbon": 0,
                 "energy": 0,
-                "extropy": 557313978771000,
+                "extropy": 172046592000,
                 "material": 0
             },
             "dependencies": [
@@ -1354,9 +1354,9 @@
             },
             "cost": {
                 "carbon": 0,
-                "energy": 24197580000,
+                "energy": 4995072000,
                 "extropy": 0,
-                "material": 1054152000
+                "material": 294912000
             },
             "dependencies": [
                 47
@@ -1370,7 +1370,7 @@
             "type": "Generator",
             "yield": {
                 "carbon": 0,
-                "energy": 11292204000,
+                "energy": 1665024000,
                 "extropy": 0,
                 "material": 0
             }
@@ -1382,9 +1382,9 @@
             },
             "cost": {
                 "carbon": 0,
-                "energy": 532346760000,
-                "extropy": 2.872189947443484e+21,
-                "material": 23191344000
+                "energy": 79921152000,
+                "extropy": 11278058415091200,
+                "material": 4718592000
             },
             "dependencies": [
                 27
@@ -1399,7 +1399,7 @@
             "yield": {
                 "carbon": 0,
                 "energy": 0,
-                "extropy": 1340355308806959300000,
+                "extropy": 3759352805030400,
                 "material": 0
             }
         },
@@ -1410,9 +1410,9 @@
             },
             "cost": {
                 "carbon": 0,
-                "energy": 532346760000,
-                "extropy": 6.728277283285871e+26,
-                "material": 11224610496000
+                "energy": 79921152000,
+                "extropy": 739118837581766500000,
+                "material": 1207959552000
             },
             "dependencies": [
                 49
@@ -1428,7 +1428,7 @@
                 "carbon": 0,
                 "energy": 0,
                 "extropy": 0,
-                "material": 5238151564800
+                "material": 402653184000
             }
         },
         {
@@ -1438,8 +1438,8 @@
             },
             "cost": {
                 "carbon": 0,
-                "energy": 532346760000,
-                "extropy": 6.728277283285871e+26,
+                "energy": 79921152000,
+                "extropy": 739118837581766500000,
                 "material": 0
             },
             "dependencies": [
@@ -1456,7 +1456,7 @@
                 "carbon": 0,
                 "energy": 0,
                 "extropy": 0,
-                "material": 238097798400
+                "material": 25165824000
             }
         },
         {
@@ -1466,9 +1466,9 @@
             },
             "cost": {
                 "carbon": 0,
-                "energy": 532346760000,
-                "extropy": 1.6086699322764962e+28,
-                "material": 246941430912000
+                "energy": 79921152000,
+                "extropy": 3.049604323824432e+24,
+                "material": 19327352832000
             },
             "dependencies": [
                 50,
@@ -1483,7 +1483,7 @@
             "type": "Generator",
             "yield": {
                 "carbon": 0,
-                "energy": 248428488000,
+                "energy": 26640384000,
                 "extropy": 0,
                 "material": 0
             }
@@ -1495,9 +1495,9 @@
             },
             "cost": {
                 "carbon": 0,
-                "energy": 257655831840000,
-                "extropy": 1.6203471077268229e+28,
-                "material": 2629432356350976000
+                "energy": 20459814912000,
+                "extropy": 4.879384241216821e+25,
+                "material": 79164837199872000
             },
             "dependencies": [
                 52
@@ -1512,7 +1512,7 @@
             "yield": {
                 "carbon": 0,
                 "energy": 0,
-                "extropy": 7.561619836058507e+27,
+                "extropy": 1.6264614137389402e+25,
                 "material": 0
             }
         },
@@ -1523,9 +1523,9 @@
             },
             "cost": {
                 "carbon": 0,
-                "energy": 257655831840000,
-                "extropy": 1.6203471077268229e+28,
-                "material": 119519652561408000
+                "energy": 20459814912000,
+                "extropy": 4.879384241216821e+25,
+                "material": 4947802324992000
             },
             "dependencies": [
                 52
@@ -1541,7 +1541,7 @@
                 "carbon": 0,
                 "energy": 0,
                 "extropy": 0,
-                "material": 55775837861990400
+                "material": 1649267441664000
             }
         },
         {
@@ -1551,9 +1551,9 @@
             },
             "cost": {
                 "carbon": 0,
-                "energy": 532346760000,
+                "energy": 79921152000,
                 "extropy": 0,
-                "material": 510209568000
+                "material": 75497472000
             },
             "dependencies": [
                 54,
@@ -1570,7 +1570,7 @@
             "yield": {
                 "carbon": 0,
                 "energy": 0,
-                "extropy": 1.4272103328182148e+25,
+                "extropy": 15398309116286802000,
                 "material": 0
             }
         },
@@ -1581,9 +1581,9 @@
             },
             "cost": {
                 "carbon": 0,
-                "energy": 532346760000,
+                "energy": 79921152000,
                 "extropy": 0,
-                "material": 246941430912000
+                "material": 19327352832000
             },
             "dependencies": [
                 55
@@ -1598,7 +1598,7 @@
             "yield": {
                 "carbon": 0,
                 "energy": 0,
-                "extropy": 3.412330159374386e+26,
+                "extropy": 6.3533423413009e+22,
                 "material": 0
             }
         },
@@ -1610,23 +1610,23 @@
             "cost": {
                 "carbon": 0,
                 "energy": 0,
-                "extropy": 5934279245953607000,
-                "material": 1054152000
+                "extropy": 744532305621010200000,
+                "material": 19327352832000
             },
             "dependencies": [
-                21
+                31
             ],
             "description": "Microelectromechanical systems",
             "name": "MEMS",
             "position": [
-                -883.1322305843753,
-                -496.65422822483356
+                -950.1322305843751,
+                -589.6542282248336
             ],
             "type": "Generator",
             "yield": {
                 "carbon": 0,
                 "energy": 0,
-                "extropy": 2769330314778350000,
+                "extropy": 248177435207003400000,
                 "material": 0
             }
         },
@@ -1638,8 +1638,8 @@
             "cost": {
                 "carbon": 0,
                 "energy": 0,
-                "extropy": 1.3901399345626465e+24,
-                "material": 510209568000
+                "extropy": 180448934641459200,
+                "material": 75497472000
             },
             "dependencies": [
                 46,
@@ -1649,14 +1649,14 @@
             "description": "Like MEMS, but smaller",
             "name": "NEMS",
             "position": [
-                -822.6427621178407,
-                -802.7745769609219
+                -825.6427621178407,
+                -854.7745769609219
             ],
             "type": "Generator",
             "yield": {
                 "carbon": 0,
                 "energy": 0,
-                "extropy": 6.487319694625683e+23,
+                "extropy": 60149644880486400,
                 "material": 0
             }
         },
@@ -1667,9 +1667,9 @@
             },
             "cost": {
                 "carbon": 0,
-                "energy": 532346760000,
-                "extropy": 7.312136055802255e+26,
-                "material": 246941430912000
+                "energy": 79921152000,
+                "extropy": 1.90600270239027e+23,
+                "material": 19327352832000
             },
             "dependencies": [
                 55
@@ -1695,9 +1695,9 @@
             },
             "cost": {
                 "carbon": 0,
-                "energy": 11711628720000,
-                "extropy": 1.6203471077268229e+28,
-                "material": 246941430912000
+                "energy": 1278738432000,
+                "extropy": 4.879384241216821e+25,
+                "material": 19327352832000
             },
             "dependencies": [
                 59,
@@ -1714,7 +1714,7 @@
                 "carbon": 0,
                 "energy": 0,
                 "extropy": 0,
-                "material": 115239334425600
+                "material": 6442450944000
             }
         },
         {
@@ -1724,9 +1724,9 @@
             },
             "cost": {
                 "carbon": 0,
-                "energy": 11711628720000,
-                "extropy": 1.6203471077268229e+28,
-                "material": 119519652561408000
+                "energy": 1278738432000,
+                "extropy": 4.879384241216821e+25,
+                "material": 4947802324992000
             },
             "dependencies": [
                 52
@@ -1740,7 +1740,7 @@
             "type": "Generator",
             "yield": {
                 "carbon": 0,
-                "energy": 5465426736000,
+                "energy": 426246144000,
                 "extropy": 0,
                 "material": 0
             }
@@ -1752,9 +1752,9 @@
             },
             "cost": {
                 "carbon": 0,
-                "energy": 257700000000000,
+                "energy": 20459814912000,
                 "extropy": 0,
-                "material": 5.78e+19
+                "material": 1266637395197952000
             },
             "dependencies": [
                 61
@@ -1768,7 +1768,7 @@
             "type": "Generator",
             "yield": {
                 "carbon": 0,
-                "energy": 120200000000000,
+                "energy": 6819938304000,
                 "extropy": 0,
                 "material": 0
             }
@@ -1780,9 +1780,9 @@
             },
             "cost": {
                 "carbon": 0,
-                "energy": 11711628720000,
-                "extropy": 1.6203471077268229e+28,
-                "material": 5432711480064000
+                "energy": 1300000000000,
+                "extropy": 4.88e+25,
+                "material": 309200000000000
             },
             "dependencies": [
                 56
@@ -1790,8 +1790,8 @@
             "description": "",
             "name": "NUCLEAR ELECTRIC PROPULSION",
             "position": [
-                174.1681384372717,
-                -1665.6644372782348
+                91.1681384372717,
+                -1628.6644372782348
             ],
             "type": "Booster",
             "yield": {
@@ -1808,9 +1808,9 @@
             },
             "cost": {
                 "carbon": 0,
-                "energy": 257655831840000,
-                "extropy": 3.5665152133165595e+29,
-                "material": 2629432356350976000
+                "energy": 20500000000000,
+                "extropy": 7.807e+26,
+                "material": 79200000000000000
             },
             "dependencies": [
                 63
@@ -1818,8 +1818,8 @@
             "description": "",
             "name": "MARS SAMPLE RETURN MISSION",
             "position": [
-                -59.53526436447444,
-                -1785.6802767396935
+                -156.53526436447444,
+                -1695.6802767396935
             ],
             "type": "Booster",
             "yield": {
@@ -1837,7 +1837,7 @@
             "cost": {
                 "carbon": 0,
                 "energy": 0,
-                "extropy": 6.32e+22,
+                "extropy": 3.049615150760513e+24,
                 "material": 0
             },
             "dependencies": [
@@ -1853,7 +1853,7 @@
             "yield": {
                 "carbon": 0,
                 "energy": 0,
-                "extropy": 2.95e+22,
+                "extropy": 1.0165383835868376e+24,
                 "material": 0
             }
         },
@@ -1864,8 +1864,8 @@
             },
             "cost": {
                 "carbon": 0,
-                "energy": 5668428300480000,
-                "extropy": 3.5665152133165595e+29,
+                "energy": 327400000000000,
+                "extropy": 7.807e+26,
                 "material": 0
             },
             "dependencies": [
@@ -1875,15 +1875,15 @@
             "description": "Mine one of the moons of Mars",
             "name": "PHOBOS MINING",
             "position": [
-                -466.6830388029409,
-                -1607.6165470275764
+                -549.6830388029409,
+                -2043.6165470275764
             ],
             "type": "Generator",
             "yield": {
                 "carbon": 0,
                 "energy": 0,
                 "extropy": 0,
-                "material": 26995505525203354000
+                "material": 422200000000000000
             }
         },
         {
@@ -1893,9 +1893,9 @@
             },
             "cost": {
                 "carbon": 0,
-                "energy": 5668428300480000,
+                "energy": 327400000000000,
                 "extropy": 0,
-                "material": 1272645260473872400000
+                "material": 2.03e+19
             },
             "dependencies": [
                 64
@@ -1903,14 +1903,14 @@
             "description": "",
             "name": "MARS BASE",
             "position": [
-                -294.9176629594476,
-                -1926.5783884447128
+                -299.9176629594476,
+                -1857.5783884447128
             ],
             "type": "Generator",
             "yield": {
                 "carbon": 0,
                 "energy": 0,
-                "extropy": 1.6643737662143945e+29,
+                "extropy": 2.6019999999999998e+26,
                 "material": 0
             }
         },
@@ -1921,8 +1921,8 @@
             },
             "cost": {
                 "carbon": 0,
-                "energy": 124705422610560000,
-                "extropy": 7.846333469296432e+30,
+                "energy": 5200000000000000,
+                "extropy": 0,
                 "material": 0
             },
             "dependencies": [
@@ -1931,15 +1931,15 @@
             "description": "Mine the other moon of Mars",
             "name": "DEIMOS MINING",
             "position": [
-                -614.8603126919038,
-                -1788.4456249692194
+                -661.8603126919038,
+                -2248.4456249692194
             ],
             "type": "Generator",
             "yield": {
                 "carbon": 0,
                 "energy": 0,
                 "extropy": 0,
-                "material": 593901121554473800000
+                "material": 6800000000000000000
             }
         },
         {
@@ -1949,9 +1949,9 @@
             },
             "cost": {
                 "carbon": 0,
-                "energy": 124705422610560000,
+                "energy": 5200000000000000,
                 "extropy": 0,
-                "material": 6.159603060693542e+23
+                "material": 5.2e+21
             },
             "dependencies": [
                 67
@@ -1959,14 +1959,14 @@
             "description": "",
             "name": "THARSIS CITY",
             "position": [
-                -375.4627322680326,
-                -2139.893361778706
+                -224.4627322680326,
+                -2063.893361778706
             ],
             "type": "Generator",
             "yield": {
                 "carbon": 0,
                 "energy": 0,
-                "extropy": 3.661622285671668e+30,
+                "extropy": 0,
                 "material": 0
             }
         },
@@ -1978,8 +1978,8 @@
             "cost": {
                 "carbon": 0,
                 "energy": 0,
-                "extropy": 6.728e+26,
-                "material": 246900000000000
+                "extropy": 7.391e+20,
+                "material": 19300000000000
             },
             "dependencies": [
                 58
@@ -1987,8 +1987,8 @@
             "description": "",
             "name": "MOLECULAR ASSEMBLER",
             "position": [
-                -646.8197493107145,
-                -954.0289068166735
+                -634.8197493107145,
+                -963.0289068166735
             ],
             "type": "Booster",
             "yield": {
@@ -2006,7 +2006,7 @@
             "cost": {
                 "carbon": 0,
                 "energy": 0,
-                "extropy": 3.56476363699901e+29,
+                "extropy": 7.807e+26,
                 "material": 0
             },
             "dependencies": [
@@ -2034,7 +2034,7 @@
             "cost": {
                 "carbon": 0,
                 "energy": 0,
-                "extropy": 1.6086699322764962e+28,
+                "extropy": 3e+24,
                 "material": 0
             },
             "dependencies": [
@@ -2043,8 +2043,8 @@
             "description": "",
             "name": "ROD LOGIC PROCESSOR",
             "position": [
-                -446.6402205316458,
-                -1104.207313562797
+                -444.6402205316458,
+                -1115.207313562797
             ],
             "type": "Booster",
             "yield": {
@@ -2061,9 +2061,9 @@
             },
             "cost": {
                 "carbon": 0,
-                "energy": 257655831840000,
-                "extropy": 3.5665152133165595e+29,
-                "material": 2629432356350976000
+                "energy": 20500000000000,
+                "extropy": 7.807e+26,
+                "material": 79200000000000000
             },
             "dependencies": [
                 63
@@ -2071,8 +2071,8 @@
             "description": "",
             "name": "NUCLEAR PULSE PROPULSION",
             "position": [
-                319.0258938457439,
-                -1874.2069833723517
+                318.0258938457439,
+                -1805.2069833723517
             ],
             "type": "Booster",
             "yield": {
@@ -2089,18 +2089,18 @@
             },
             "cost": {
                 "carbon": 0,
-                "energy": 5668428300480000,
-                "extropy": 3.5665152133165595e+29,
-                "material": 1272645260473872400000
+                "energy": 327400000000000,
+                "extropy": 7.807e+26,
+                "material": 2.03e+19
             },
             "dependencies": [
                 73
             ],
             "description": "",
-            "name": "TITAN SAMPLE RETURN MISSION",
+            "name": "TITAN BASE",
             "position": [
-                258.9285307221785,
-                -2081.8524660216044
+                262.9285307221785,
+                -2063.8524660216044
             ],
             "type": "Booster",
             "yield": {
@@ -2117,18 +2117,18 @@
             },
             "cost": {
                 "carbon": 0,
-                "energy": 5668428300480000,
-                "extropy": 3.5665152133165595e+29,
-                "material": 1272645260473872400000
+                "energy": 327400000000000,
+                "extropy": 7.807e+26,
+                "material": 2.03e+19
             },
             "dependencies": [
                 73
             ],
             "description": "",
-            "name": "MERCURY SAMPLE RETURN MISSION",
+            "name": "MERCURY BASE",
             "position": [
-                621.3681363456026,
-                -1868.142526921638
+                603.3681363456026,
+                -1927.142526921638
             ],
             "type": "Booster",
             "yield": {
@@ -2145,9 +2145,9 @@
             },
             "cost": {
                 "carbon": 0,
-                "energy": 257655831840000,
+                "energy": 20500000000000,
                 "extropy": 0,
-                "material": 2629432356350976000
+                "material": 79200000000000000
             },
             "dependencies": [
                 61,
@@ -2156,15 +2156,15 @@
             "description": "",
             "name": "MERCURY AUTONOMOUS SOLAR COLLECTOR FACTORY",
             "position": [
-                986.472114080746,
-                -1995.9307868824817
+                988.472114080746,
+                -2055.9307868824817
             ],
             "type": "Generator",
             "yield": {
                 "carbon": 0,
                 "energy": 0,
                 "extropy": 0,
-                "material": 1227068432963788800
+                "material": 26400000000000000
             }
         },
         {
@@ -2174,9 +2174,9 @@
             },
             "cost": {
                 "carbon": 0,
-                "energy": 124705422610560000,
+                "energy": 5200000000000000,
                 "extropy": 0,
-                "material": 2.799819573042519e+22
+                "material": 3.243e+20
             },
             "dependencies": [
                 75
@@ -2184,15 +2184,15 @@
             "description": "",
             "name": "MERCURY MASS DRIVER",
             "position": [
-                616.6923966626096,
-                -2126.094143336122
+                608.6923966626096,
+                -2169.094143336122
             ],
             "type": "Generator",
             "yield": {
                 "carbon": 0,
                 "energy": 0,
                 "extropy": 0,
-                "material": 1.3065824674198424e+22
+                "material": 1.081e+20
             }
         },
         {
@@ -2202,9 +2202,9 @@
             },
             "cost": {
                 "carbon": 0,
-                "energy": 5668428300480000,
+                "energy": 327400000000000,
                 "extropy": 0,
-                "material": 1272645260473872400000
+                "material": 2.03e+19
             },
             "dependencies": [
                 76,
@@ -2213,13 +2213,13 @@
             "description": "",
             "name": "SOLAR SATELLITE SWARM",
             "position": [
-                830.1736598607599,
-                -2384.7786492266096
+                857.1736598607599,
+                -2399.7786492266096
             ],
             "type": "Generator",
             "yield": {
                 "carbon": 0,
-                "energy": 2645266540224000,
+                "energy": 109100000000000,
                 "extropy": 0,
                 "material": 0
             }
@@ -2231,9 +2231,9 @@
             },
             "cost": {
                 "carbon": 0,
-                "energy": 11711628720000,
-                "extropy": 1.6203471077268229e+28,
-                "material": 5432711480064000
+                "energy": 1278738432000,
+                "extropy": 4.879384241216821e+25,
+                "material": 309237645312000
             },
             "dependencies": [
                 52
@@ -2249,7 +2249,7 @@
                 "carbon": 0,
                 "energy": 0,
                 "extropy": 0,
-                "material": 2535265357363200
+                "material": 103079215104000
             }
         },
         {
@@ -2259,9 +2259,9 @@
             },
             "cost": {
                 "carbon": 0,
-                "energy": 47900000,
-                "extropy": 52300000000,
-                "material": 1100000000
+                "energy": 18432000,
+                "extropy": 669627000,
+                "material": 294912000
             },
             "dependencies": [
                 41,
@@ -2276,7 +2276,7 @@
             "type": "Generator",
             "yield": {
                 "carbon": 0,
-                "energy": 22400000000,
+                "energy": 6144000,
                 "extropy": 0,
                 "material": 0
             }
@@ -2290,7 +2290,7 @@
                 "carbon": 0,
                 "energy": 0,
                 "extropy": 0,
-                "material": 2200000
+                "material": 1152000
             },
             "dependencies": [
                 1
@@ -2318,7 +2318,7 @@
                 "carbon": 0,
                 "energy": 4500,
                 "extropy": 0,
-                "material": 1100000000
+                "material": 294912000
             },
             "dependencies": [
                 81
@@ -2332,7 +2332,7 @@
             "type": "Generator",
             "yield": {
                 "carbon": 800,
-                "energy": 2100,
+                "energy": 1500,
                 "extropy": 0,
                 "material": 0
             }
