@@ -48,6 +48,13 @@ struct Box {
         return *this;
     }
 
+    Box &operator*=(float scale)
+    {
+        min *= scale;
+        max *= scale;
+        return *this;
+    }
+
     Box &operator|=(const Box &rhs)
     {
         min = glm::min(min, rhs.min);
@@ -75,6 +82,13 @@ template<typename Point>
 inline Box<Point> operator+(Box<Point> lhs, const Point &rhs)
 {
     lhs += rhs;
+    return lhs;
+}
+
+template<typename Point>
+inline Box<Point> operator*(Box<Point> lhs, float scale)
+{
+    lhs *= scale;
     return lhs;
 }
 

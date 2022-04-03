@@ -8,6 +8,7 @@
 #include <spdlog/spdlog.h>
 
 #include <algorithm>
+#include <iostream>
 
 #include "gamewindow.h"
 
@@ -97,15 +98,32 @@ static std::unique_ptr<GameWindow> gameWindow;
 static bool processEvents()
 {
     SDL_Event event;
+    const auto mouseButton = [&event] {
+        switch (event.button.button) {
+        case SDL_BUTTON_LEFT:
+            return MouseButton::Left;
+        case SDL_BUTTON_MIDDLE:
+            return MouseButton::Middle;
+        case SDL_BUTTON_RIGHT:
+            return MouseButton::Right;
+        case SDL_BUTTON_WHEELUP:
+            return MouseButton::WheelUp;
+        case SDL_BUTTON_WHEELDOWN:
+            return MouseButton::WheelDown;
+        default:
+            return MouseButton::None;
+        }
+    };
+
     while (SDL_PollEvent(&event)) {
         switch (event.type) {
-        case SDL_MOUSEBUTTONDOWN:
-            if (event.button.button == SDL_BUTTON_LEFT)
-                gameWindow->mousePressEvent(glm::vec2(event.button.x, event.button.y));
+        case SDL_MOUSEBUTTONDOWN: {
+            gameWindow->mousePressEvent(mouseButton(), glm::vec2(event.button.x, event.button.y));
             break;
+        }
         case SDL_MOUSEBUTTONUP:
             if (event.button.button == SDL_BUTTON_LEFT)
-                gameWindow->mouseReleaseEvent(glm::vec2(event.button.x, event.button.y));
+                gameWindow->mouseReleaseEvent(mouseButton(), glm::vec2(event.button.x, event.button.y));
             break;
         case SDL_MOUSEMOTION:
             gameWindow->mouseMoveEvent(glm::vec2(event.motion.x, event.motion.y));

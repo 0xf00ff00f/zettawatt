@@ -3,12 +3,14 @@
 #include "shadermanager.h"
 #include "theme.h"
 #include "uipainter.h"
+#include "world.h"
 
 GameWindow::GameWindow(int width, int height)
     : m_width(width)
     , m_height(height)
     , m_techGraph(new TechGraph)
     , m_theme(new Theme)
+    , m_world(new World)
 {
     m_theme->load("assets/data/theme.json");
     m_techGraph->load("assets/data/techgraph.json");
@@ -24,7 +26,7 @@ void GameWindow::initializeGL()
     m_painter = std::make_unique<UIPainter>(m_shaderManager.get());
     m_painter->resize(m_width, m_height);
 
-    m_world.initialize(m_theme.get(), m_painter.get(), m_techGraph.get());
+    m_world->initialize(m_theme.get(), m_painter.get(), m_techGraph.get());
 }
 
 void GameWindow::paintGL()
@@ -41,28 +43,28 @@ void GameWindow::paintGL()
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     m_painter->startPainting();
-    m_world.paint();
+    m_world->paint();
     m_painter->donePainting();
 }
 
 void GameWindow::update(double elapsed)
 {
-    m_world.update(elapsed);
+    m_world->update(elapsed);
 }
 
-void GameWindow::mousePressEvent(const glm::vec2 &pos)
+void GameWindow::mousePressEvent(MouseButton button, const glm::vec2 &pos)
 {
-    m_world.mousePressEvent(mapToScene(pos));
+    m_world->mousePressEvent(button, mapToScene(pos));
 }
 
-void GameWindow::mouseReleaseEvent(const glm::vec2 &pos)
+void GameWindow::mouseReleaseEvent(MouseButton button, const glm::vec2 &pos)
 {
-    m_world.mouseReleaseEvent(mapToScene(pos));
+    m_world->mouseReleaseEvent(button, mapToScene(pos));
 }
 
 void GameWindow::mouseMoveEvent(const glm::vec2 &pos)
 {
-    m_world.mouseMoveEvent(mapToScene(pos));
+    m_world->mouseMoveEvent(mapToScene(pos));
 }
 
 glm::vec2 GameWindow::mapToScene(const glm::vec2 &windowPos) const

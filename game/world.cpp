@@ -635,6 +635,7 @@ void World::reset()
         }
     }
     m_viewOffset *= 1.0f / leafNodes;
+    m_viewScale = 1.0f;
 
     m_gameState = GameState::Intro;
     m_warningBox = std::make_unique<WarningBox>(U"Click anywhere to increase your energy", m_theme);
@@ -712,6 +713,7 @@ void World::paint() const
 void World::paintGraph() const
 {
     m_painter->saveTransform();
+    m_painter->scale(m_viewScale);
     m_painter->translate(m_viewOffset);
 
     for (auto [from, to] : m_edges) {
@@ -731,7 +733,7 @@ void World::paintGraph() const
     for (auto &item : m_graphItems) {
         if (!item->isVisible())
             continue;
-        const auto boundingBox = item->boundingBox() + m_viewOffset;
+        const auto boundingBox = (item->boundingBox() + m_viewOffset) * m_viewScale;
         if (!m_painter->sceneBox().contains(boundingBox))
             continue;
         item->paint(m_painter);
@@ -969,56 +971,69 @@ void World::paintCurrentUnitDescription() const
     m_painter->drawRoundedRect(outerBox, BoxRadius, theme.backgroundColor, theme.outlineColor, theme.outlineThickness, 19);
 }
 
-void World::mousePressEvent(const glm::vec2 &pos)
+void World::mousePressEvent(MouseButton button, const glm::vec2 &pos)
 {
-    bool accepted = false;
-    if (m_warningBox) {
-        if (m_warningBox->mousePressEvent(pos))
-            accepted = true;
-    } else {
-        for (auto &item : m_graphItems) {
-            if (item->mousePressEvent(pos - m_viewOffset))
-                accepted = true;
+    constexpr auto ZoomFactor = 1.1f;
+    constexpr auto MaxZoomFactor = 1.0f;
+    constexpr auto MinZoomFactor = 0.5f;
+    switch (button) {
+    case MouseButton::Left: {
+        bool accepted = false;
+        if (m_warningBox) {
+            accepted = m_warningBox->mousePressEvent(pos);
+        } else {
+            const auto scenePos = pos * (1.0f / m_viewScale) - m_viewOffset;
+            for (auto &item : m_graphItems) {
+                if (item->mousePressEvent(scenePos))
+                    accepted = true;
+            }
+            m_panningView = !accepted;
         }
-        m_panningView = !accepted;
+        m_lastMousePosition = pos;
+        m_elapsedSinceClick = 0.0;
+        break;
     }
-    m_lastMousePosition = pos;
-    m_elapsedSinceClick = 0.0;
+    case MouseButton::WheelDown: {
+        m_viewScale = std::max(MinZoomFactor, m_viewScale * (1.0f / ZoomFactor));
+        clampViewOffset();
+        break;
+    }
+    case MouseButton::WheelUp: {
+        m_viewScale = std::min(MaxZoomFactor, m_viewScale * ZoomFactor);
+        clampViewOffset();
+        break;
+    }
+    default:
+        break;
+    }
 }
 
-void World::mouseReleaseEvent(const glm::vec2 &pos)
+void World::mouseReleaseEvent(MouseButton button, const glm::vec2 &pos)
 {
-    if (m_panningView) {
-        if (m_elapsedSinceClick < 0.5)
-            m_state.energy += glm::linearRand(5, 8);
-    } else {
-        if (!m_warningBox) {
-            for (auto &item : m_graphItems)
-                item->mouseReleaseEvent(pos - m_viewOffset);
+    switch (button) {
+    case MouseButton::Left: {
+        if (m_panningView) {
+            if (m_elapsedSinceClick < 0.5)
+                m_state.energy += glm::linearRand(5, 8);
+        } else {
+            if (!m_warningBox) {
+                for (auto &item : m_graphItems)
+                    item->mouseReleaseEvent(pos - m_viewOffset);
+            }
         }
+        m_panningView = false;
+        break;
     }
-    m_panningView = false;
+    default:
+        break;
+    }
 }
 
 void World::mouseMoveEvent(const glm::vec2 &pos)
 {
     if (m_panningView) {
-        m_viewOffset += pos - m_lastMousePosition;
-        auto [min, max] = [this] {
-            auto min = glm::vec2(std::numeric_limits<float>::max());
-            auto max = glm::vec2(std::numeric_limits<float>::lowest());
-            for (const auto &unit : m_graphItems) {
-                if (unit->isVisible()) {
-                    const auto p = unit->position();
-                    min = glm::min(min, p);
-                    max = glm::max(max, p);
-                }
-            }
-            return std::pair(min, max);
-        }();
-        const auto viewportSize = m_painter->sceneBox().size();
-        m_viewOffset = glm::max(m_viewOffset, -max - 0.5f * viewportSize);
-        m_viewOffset = glm::min(m_viewOffset, -min + 0.5f * viewportSize);
+        m_viewOffset += (pos - m_lastMousePosition) * (1.0f / m_viewScale);
+        clampViewOffset();
     } else {
         for (auto &item : m_graphItems) {
             if (item->isVisible())
@@ -1026,6 +1041,23 @@ void World::mouseMoveEvent(const glm::vec2 &pos)
         }
     }
     m_lastMousePosition = pos;
+}
+
+void World::clampViewOffset()
+{
+    auto min = glm::vec2(std::numeric_limits<float>::max());
+    auto max = glm::vec2(std::numeric_limits<float>::lowest());
+    for (const auto &unit : m_graphItems) {
+        if (unit->isVisible()) {
+            const auto p = unit->position();
+            min = glm::min(min, p);
+            max = glm::max(max, p);
+        }
+    }
+    // viewport size in scene space
+    const auto viewportSize = m_painter->sceneBox().size() * (1.0f / m_viewScale);
+    m_viewOffset = glm::max(m_viewOffset, -max - 0.5f * viewportSize);
+    m_viewOffset = glm::min(m_viewOffset, -min + 0.5f * viewportSize);
 }
 
 bool World::unitClicked(Unit *unit)

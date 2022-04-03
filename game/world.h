@@ -1,5 +1,6 @@
 #pragma once
 
+#include "gamewindow.h"
 #include "techgraph.h"
 
 #include <textureatlas.h>
@@ -29,8 +30,8 @@ public:
     void update(double elapsed);
     void paint() const;
 
-    void mousePressEvent(const glm::vec2 &pos);
-    void mouseReleaseEvent(const glm::vec2 &pos);
+    void mousePressEvent(MouseButton button, const glm::vec2 &pos);
+    void mouseReleaseEvent(MouseButton button, const glm::vec2 &pos);
     void mouseMoveEvent(const glm::vec2 &pos);
 
     bool unitClicked(Unit *unit);
@@ -46,6 +47,7 @@ private:
     void paintGraph() const;
     void paintCurrentUnitDescription() const;
     void updateStateDelta();
+    void clampViewOffset();
 
     const Theme *m_theme = nullptr;
     UIPainter *m_painter = nullptr;
@@ -63,6 +65,7 @@ private:
     bool m_panningView = false;
     double m_elapsedSinceClick = 0.0;
     glm::vec2 m_viewOffset;
+    float m_viewScale = 1.0f;
     GX::PackedPixmap m_extropyIcon;
     GX::PackedPixmap m_extropyIconSmall;
     GX::PackedPixmap m_energyIcon;

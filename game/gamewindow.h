@@ -2,8 +2,6 @@
 
 #include "noncopyable.h"
 
-#include "world.h"
-
 #include <glm/glm.hpp>
 
 #include <memory>
@@ -15,6 +13,16 @@ class ShaderManager;
 class UIPainter;
 class TechGraph;
 class Theme;
+class World;
+
+enum class MouseButton {
+    Left,
+    Middle,
+    Right,
+    WheelUp,
+    WheelDown,
+    None,
+};
 
 class GameWindow : private GX::NonCopyable
 {
@@ -25,8 +33,8 @@ public:
     void paintGL();
     void update(double elapsed);
 
-    void mousePressEvent(const glm::vec2 &pos);
-    void mouseReleaseEvent(const glm::vec2 &pos);
+    void mousePressEvent(MouseButton button, const glm::vec2 &pos);
+    void mouseReleaseEvent(MouseButton button, const glm::vec2 &pos);
     void mouseMoveEvent(const glm::vec2 &pos);
 
 private:
@@ -39,5 +47,5 @@ private:
     std::unique_ptr<Theme> m_theme;
     std::unique_ptr<GX::ShaderManager> m_shaderManager;
     std::unique_ptr<UIPainter> m_painter;
-    World m_world;
+    std::unique_ptr<World> m_world;
 };
