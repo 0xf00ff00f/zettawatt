@@ -143,7 +143,7 @@ private:
     GX::BoxF m_boundingBox;
 
     static constexpr auto Radius = 25.0f;
-    static constexpr auto LabelTextWidth = 160.0f;
+    static constexpr auto LabelTextWidth = 180.0f;
     static constexpr auto LabelMargin = 10.0f;
     static constexpr auto AcquireAnimationTime = 1.0f;
 };
@@ -258,7 +258,7 @@ glm::vec4 GraphItem::color() const
         case State::Active:
             return m_theme->activeUnit.color;
         case State::Selected:
-            return m_theme->selectedUnit.color;
+            return m_unit->count > 0 ? m_theme->selectedUnit.color : m_theme->inactiveUnit.color;
         default:
             assert(false);
             return {};
@@ -486,7 +486,8 @@ void GraphItem::paint(UIPainter *painter) const
     }();
 
     const auto radius = this->radius();
-    painter->drawCircle(p, radius, glm::vec4(0), theme.color, 6.0f, -1);
+    const auto color = this->color();
+    painter->drawCircle(p, radius, glm::vec4(0), color, 6.0f, -1);
 
     if (m_world->canAcquire(m_unit)) {
         const auto glowDistance = 0.04 + 0.02 * std::sin(m_stateTime * 5.0);
