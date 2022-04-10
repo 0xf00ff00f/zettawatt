@@ -11,15 +11,13 @@ uniform mat4 modelViewProjection;
 out vec2 vs_texcoord;
 out vec4 vs_fillColor;
 out vec4 vs_outlineColor;
-out float vs_size;
-out float vs_outlineSize;
+out float vs_innerRadius;
 
 void main(void)
 {
     vs_texcoord = texcoord;
     vs_fillColor = fgColor;
     vs_outlineColor = bgColor;
-    vs_size = size.x;
-    vs_outlineSize = size.y;
+    vs_innerRadius = size.x;
     gl_Position = modelViewProjection * vec4(position, 0, 1);
 }

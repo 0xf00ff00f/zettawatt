@@ -487,7 +487,7 @@ void GraphItem::paint(UIPainter *painter) const
 
     const auto radius = this->radius();
     const auto color = this->color();
-    painter->drawCircle(p, radius, glm::vec4(0), color, 6.0f, -1);
+    painter->drawCircle(p, radius, glm::vec4(0), color, 5.0f, -1);
 
     if (m_world->canAcquire(m_unit)) {
         const auto glowDistance = 0.04 + 0.02 * std::sin(m_stateTime * 5.0);

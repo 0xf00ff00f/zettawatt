@@ -217,7 +217,8 @@ void UIPainter::drawCircle(const glm::vec2 &center, float radius, const glm::vec
     const auto p0 = center - glm::vec2(radius, radius);
     const auto p1 = center + glm::vec2(radius, radius);
 
-    const auto size = glm::vec4(2.0f * radius, outlineSize, 0, 0);
+    const auto innerRadius = 0.5f - outlineSize / (2.0f * radius);
+    const auto size = glm::vec4(innerRadius, 0, 0, 0);
 
     m_spriteBatcher->setBatchProgram(GX::ShaderManager::Program::Circle);
     addQuad({ { p0.x, p0.y }, { 0.0f, 0.0f } },
@@ -277,7 +278,9 @@ void UIPainter::drawRoundedRect(const GX::BoxF &box, float radius, const glm::ve
 {
     m_spriteBatcher->setBatchProgram(GX::ShaderManager::Program::Circle);
 
-    const auto size = glm::vec4(2.0f * radius, outlineSize, 0, 0);
+    const auto scale = m_transform[0][0];
+    const auto innerRadius = 0.5f - (outlineSize / scale) / (2.0f * radius);
+    const auto size = glm::vec4(innerRadius, 0, 0, 0);
 
     const auto drawPatch = [this, &fillColor, &outlineColor, size, depth](const glm::vec2 &p0, const glm::vec2 &p1, const glm::vec2 &t0, const glm::vec2 &t1) {
         addQuad({ { p0.x, p0.y }, { t0.x, t0.y } },
@@ -326,15 +329,12 @@ void UIPainter::drawThickLine(const glm::vec2 &from, const glm::vec2 &to, float 
     const auto p2 = to - 0.5f * thickness * tangent;
     const auto p3 = to + 0.5f * thickness * tangent;
 
-    const auto size = glm::vec4(2.0f * thickness, 0, 0, 0);
-
     addQuad({ p0, { 0.0f, 0.0f } },
             { p2, { 1.0f, 0.0f } },
             { p3, { 1.0f, 1.0f } },
             { p1, { 0.0f, 1.0f } },
             fromColor,
             toColor,
-            size,
             depth);
 }
 

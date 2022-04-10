@@ -9,7 +9,7 @@
     "counter": {
         "backgroundColor": [ 0, 0, 0, 0.75 ],
         "outlineColor": [ 0, 0.75, 0.5, 0.75 ],
-        "outlineThickness": 3.0,
+        "outlineThickness": 2.0,
         "labelColor": [ 0, 0.75, 0.5, 0.75 ],
         "valueColor": [ 1, 1, 1, 0.75 ],
         "deltaColor": [ 1, 1, 1, 0.25 ]
@@ -17,7 +17,7 @@
     "unitDetails": {
         "backgroundColor": [ 0, 0, 0, 0.75 ],
         "outlineColor": [ 0, 0.75, 0.5, 0.75 ],
-        "outlineThickness": 3.0,
+        "outlineThickness": 2.0,
         "titleColor": [ 1, 1, 1, 0.75 ],
         "descriptionColor": [ 1, 1, 1, 0.5 ],
         "yieldColor": [ 1, 1, 0, 0.75 ],
@@ -26,7 +26,7 @@
     "warningBox": {
         "backgroundColor": [ 0, 0, 0, 0.75 ],
         "outlineColor": [ 1, 1, 0, 0.75 ],
-        "outlineThickness": 3.0,
+        "outlineThickness": 2.0,
         "textColor": [ 1, 1, 0, 0.75 ]
     },
     "inactiveUnit": {
@@ -34,13 +34,13 @@
         "label": {
             "backgroundColor": [ 0, 0, 0, 0.25 ],
             "outlineColor": [ 0, 0.75, 0.5, 0.25 ],
-            "outlineThickness": 3.0,
+            "outlineThickness": 2.0,
             "textColor": [ 1, 1, 1, 0.25 ]
         },
         "counter": {
             "backgroundColor": [ 1, 1, 1, 1 ],
             "outlineColor": [ 1, 1, 1, 1 ],
-            "outlineThickness": 3.0,
+            "outlineThickness": 2.0,
             "textColor": [ 1, 1, 1, 1 ]
         }
     },
@@ -49,13 +49,13 @@
         "label": {
             "backgroundColor": [ 0, 0, 0, 0.75 ],
             "outlineColor": [ 0, 0.75, 0.5, 0.75 ],
-            "outlineThickness": 3.0,
+            "outlineThickness": 2.0,
             "textColor": [ 1, 1, 1, 0.75 ]
         },
         "counter": {
             "backgroundColor": [ 0.25, 0.25, 0.25, 1 ],
             "outlineColor": [ 0.75, 0.75, 0.75, 1 ],
-            "outlineThickness": 3.0,
+            "outlineThickness": 2.0,
             "textColor": [ 1, 1, 1, 0.75 ]
         }
     },
@@ -64,13 +64,13 @@
         "label": {
             "backgroundColor": [ 1, 1, 1, 0.75 ],
             "outlineColor": [ 1, 1, 1, 0.75 ],
-            "outlineThickness": 3.0,
+            "outlineThickness": 2.0,
             "textColor": [ 0, 0, 0, 0.75 ]
         },
         "counter": {
             "backgroundColor": [ 0.25, 0.25, 0.25, 1 ],
             "outlineColor": [ 0.75, 0.75, 0.75, 1 ],
-            "outlineThickness": 3.0,
+            "outlineThickness": 2.0,
             "textColor": [ 1, 1, 1, 0.75 ]
         }
     }
